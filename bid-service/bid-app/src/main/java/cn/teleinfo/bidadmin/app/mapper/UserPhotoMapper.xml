@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.app.mapper.UserPhotoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="userPhotoResultMap" type="cn.teleinfo.bidadmin.app.entity.UserPhoto">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="photo" property="photo"/>
+    </resultMap>
+
+
+    <select id="selectUserPhotoPage" resultMap="userPhotoResultMap">
+        select * from app_user_photo where is_deleted = 0
+    </select>
+
+</mapper>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.cms.mapper.ArticleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="articleResultMap" type="cn.teleinfo.bidadmin.cms.entity.Article">
+        <id column="ID" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="CATEGORY_ID" property="categoryId"/>
+        <result column="TITLE" property="title"/>
+        <result column="LINK" property="link"/>
+        <result column="COLOR" property="color"/>
+        <result column="IMAGE" property="image"/>
+        <result column="KEYWORDS" property="keywords"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="WEIGHT" property="weight"/>
+        <result column="WEIGHT_DATE" property="weightDate"/>
+        <result column="HITS" property="hits"/>
+        <result column="POSID" property="posid"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="TOPS" property="tops"/>
+        <result column="STEPONS" property="stepons"/>
+    </resultMap>
+
+    <resultMap id="articleVOResultMap" type="cn.teleinfo.bidadmin.cms.vo.ArticleVO">
+        <id column="ID" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="CATEGORY_ID" property="categoryId"/>
+        <result column="TITLE" property="title"/>
+        <result column="LINK" property="link"/>
+        <result column="COLOR" property="color"/>
+        <result column="IMAGE" property="image"/>
+        <result column="status" property="status"/>
+        <result column="KEYWORDS" property="keywords"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="WEIGHT" property="weight"/>
+        <result column="WEIGHT_DATE" property="weightDate"/>
+        <result column="HITS" property="hits"/>
+        <result column="POSID" property="posid"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="TOPS" property="tops"/>
+        <result column="STEPONS" property="stepons"/>
+        <result column="topId" property="topId"/>
+        <result column="steponsId" property="steponsId"/>
+    </resultMap>
+
+    <select id="selectArticlePage" resultMap="articleResultMap">
+        select * from cms_article where is_deleted = 0
+    </select>
+
+    <select id="selectArticlePageWithBId" resultMap="articleVOResultMap">
+        select c.*,t.id as topId,s.id as steponsId from cms_article c
+          left join cms_stepons s on c.id=s.CONTENT_ID
+              <if test="bid !=null and bid !=''">
+                 and s.bid=#{bid}
+              </if>
+          left join cms_tops t on c.id =t.CONTENT_ID
+            <if test="bid !=null and bid !=''">
+               and t.bid=#{bid}
+            </if>
+        where
+          c.is_deleted=0 and c.status=1 and c.POSID=0
+          <if test="article.categoryId !=null and article.categoryId !=''">
+             and  c.CATEGORY_ID=#{article.categoryId}
+          </if>
+        order by
+            c.create_time desc
+    </select>
+
+</mapper>

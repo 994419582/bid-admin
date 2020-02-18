@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.blockchain.mapper.DposStakeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="dposStakeResultMap" type="cn.teleinfo.bidadmin.blockchain.entity.DposStake">
+        <id column="ID" property="id"/>
+        <result column="Owner" property="owner"/>
+        <result column="StakeCount" property="stakeCount"/>
+        <result column="StakeTime" property="stakeTime"/>
+    </resultMap>
+
+    <select id="selectDposStakePage" resultMap="dposStakeResultMap">
+        select * from bif_dpos_stake where is_deleted = 0
+    </select>
+
+    <select id="findStakeByOwner" resultMap="dposStakeResultMap">
+        select * from bif_dpos_stake
+        <where>
+            <if test="owner != null and owner != ''">
+                owner=${owner}
+            </if>
+        </where>
+    </select>
+
+    <insert id="saveStake" parameterType="cn.teleinfo.bidadmin.blockchain.entity.DposStake">
+        INSERT INTO bif_dpos_stake(Owner, StakeCount, StakeTime)
+        VALUES (#{owner},#{stakeCount},#{stakeTime})
+    </insert>
+
+    <update id="updateStake" parameterType="cn.teleinfo.bidadmin.blockchain.entity.DposStake">
+        UPDATE bif_dpos_stake
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="null != stakeCount and '' != stakeCount">
+                StakeCount = #{stakeCount}
+            </if>
+            <if test="null != stakeTime and '' != stakeTime">
+                StakeTime = #{stakeTime}
+            </if>
+        </trim>
+        WHERE Owner = #{owner} and id = #{id}
+    </update>
+
+    <insert id="saveBatchStakes" parameterType="list">
+        insert into bif_dpos_stake(Owner, StakeCount, StakeTime)
+        <foreach collection="list" item="item" open="values" separator=",">
+            (#{item.owner},#{item.stakeCount},#{item.stakeTime})
+        </foreach>
+        ON duplicate KEY UPDATE
+        StakeCount=VALUES(StakeCount),
+        StakeTime=VALUES(StakeTime)
+    </insert>
+</mapper>

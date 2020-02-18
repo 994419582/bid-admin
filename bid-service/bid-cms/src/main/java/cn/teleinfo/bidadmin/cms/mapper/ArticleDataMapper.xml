@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.cms.mapper.ArticleDataMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="articleDataResultMap" type="cn.teleinfo.bidadmin.cms.entity.ArticleData">
+        <id column="ID" property="id"/>
+        <result column="CONTENT" property="content"/>
+        <result column="COPYFROM" property="copyfrom"/>
+        <result column="RELATION" property="relation"/>
+        <result column="ALLOW_COMMENT" property="allowComment"/>
+    </resultMap>
+
+
+    <select id="selectArticleDataPage" resultMap="articleDataResultMap">
+        select * from cms_article_data where is_deleted = 0
+    </select>
+
+</mapper>

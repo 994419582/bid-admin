@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.cms.mapper.CommentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="commentResultMap" type="cn.teleinfo.bidadmin.cms.entity.Comment">
+        <id column="ID" property="id"/>
+        <result column="CATEGORY_ID" property="categoryId"/>
+        <result column="CONTENT_ID" property="contentId"/>
+        <result column="TITLE" property="title"/>
+        <result column="CONTENT" property="content"/>
+        <result column="NAME" property="name"/>
+        <result column="IP" property="ip"/>
+        <result column="CREATETIME" property="createtime"/>
+        <result column="AUDIT_USER_ID" property="auditUserId"/>
+        <result column="AUDIT_DATE" property="auditDate"/>
+        <result column="isDeleted" property="isDeleted"/>
+    </resultMap>
+
+
+    <select id="selectCommentPage" resultMap="commentResultMap">
+        select * from cms_comment where isDeleted = 0
+    </select>
+
+</mapper>

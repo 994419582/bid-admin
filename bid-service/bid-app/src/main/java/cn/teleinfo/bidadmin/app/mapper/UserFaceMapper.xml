@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.app.mapper.UserFaceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="userFaceResultMap" type="cn.teleinfo.bidadmin.app.entity.UserFace">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="bid" property="bid"/>
+        <result column="face_token" property="faceToken"/>
+        <result column="url" property="url"/>
+    </resultMap>
+
+
+    <select id="selectUserFacePage" resultMap="userFaceResultMap">
+        select * from app_user_face where is_deleted = 0
+    </select>
+
+</mapper>

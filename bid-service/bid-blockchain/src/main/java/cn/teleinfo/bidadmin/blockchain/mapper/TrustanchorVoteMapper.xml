@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.blockchain.mapper.TrustanchorVoteMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="trustanchorVoteResultMap" type="cn.teleinfo.bidadmin.blockchain.entity.TrustanchorVote">
+        <id column="ID" property="id"/>
+        <result column="Voter" property="Voter"/>
+        <result column="TrustAnchor" property="TrustAnchor"/>
+        <result column="validity" property="validity"/>
+        <result column="VoteTime" property="VoteTime"/>
+    </resultMap>
+
+
+    <select id="selectTrustanchorVotePage" resultMap="trustanchorVoteResultMap">
+        select * from bif_trustanchor_vote where is_deleted = 0
+    </select>
+
+</mapper>

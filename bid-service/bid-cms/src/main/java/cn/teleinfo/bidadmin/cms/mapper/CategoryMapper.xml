@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.cms.mapper.CategoryMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="categoryResultMap" type="cn.teleinfo.bidadmin.cms.entity.Category">
+        <id column="ID" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="PARENT_ID" property="parentId"/>
+        <result column="PARENT_IDS" property="parentIds"/>
+        <result column="SITE_ID" property="siteId"/>
+        <result column="OFFICE_ID" property="officeId"/>
+        <result column="MODULE" property="module"/>
+        <result column="NAME" property="name"/>
+        <result column="IMAGE" property="image"/>
+        <result column="HREF" property="href"/>
+        <result column="TARGET" property="target"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="KEYWORDS" property="keywords"/>
+        <result column="SORT" property="sort"/>
+        <result column="IN_MENU" property="inMenu"/>
+        <result column="IN_LIST" property="inList"/>
+        <result column="ALLOW_COMMENT" property="allowComment"/>
+        <result column="IS_AUDIT" property="isAudit"/>
+        <result column="REMARKS" property="remarks"/>
+    </resultMap>
+
+    <resultMap id="treeNodeResultMap" type="org.springblade.core.tool.node.TreeNode">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="title" property="title"/>
+        <result column="value" property="value"/>
+        <result column="key" property="key"/>
+    </resultMap>
+
+
+    <select id="tree" resultMap="treeNodeResultMap">
+        select c.id, c.parent_id, c.name as title, c.id as 'value', c.module as 'key' from cms_category c where c.is_deleted = 0
+
+        <if test="mod!=null">
+            and c.MODULE !=${mod}
+        </if>
+    </select>
+    <sql id="cmsCategoryDaoJoins">
+	    LEFT JOIN cms_category c ON c.id = a.parent_id
+		JOIN sys_dept o ON o.id = a.office_id
+		JOIN sys_user u ON u.id = a.create_user
+		JOIN cms_site s ON a.site_id = s.id
+	</sql>
+    <select id="selectCategoryPage" resultMap="categoryResultMap">
+        select * from cms_category where is_deleted = 0
+    </select>
+    <select id="findStats" resultType="cn.teleinfo.bidadmin.cms.vo.CategoryVO">
+        select max(c.id) AS "id",
+        max(c.name) AS "name",
+        max(cp.id) AS "parentId",
+        max(cp.name) AS "parentName",
+        count(*) AS "cnt",
+        sum(a.hits) AS "hits",
+        sum(a.tops) As "tops",
+        sum(a.STEPONS) AS "stepons",
+        max(a.update_time) as "updateTime",
+        max(o.id) AS "officeId",
+        max(o.dept_Name) AS "officeName",
+        max(s.id) as "siteId",
+        max(s.name) as "siteName"
+        FROM cms_article a
+        RIGHT JOIN cms_category c ON c.id = a.category_id
+        left JOIN cms_category cp ON c.parent_id = cp.id
+        JOIN sys_dept o ON o.id = c.office_id
+        JOIN cms_site s on s.id=c.SITE_ID
+        <where>
+            a.is_deleted = 0
+            <if test="category.siteId != null and category.siteId != ''">
+              AND c.site_id = #{category.siteId}
+            </if>
+            <if test="category.officeId != null and category.officeId != ''">
+                AND (c.office_id = #{category.officeId})
+            </if>
+            <if test="category.createTime != null ">
+                AND a.update_time <![CDATA[ >= #{category.createTime} ]]>
+            </if>
+            <if test="category.updateTime != null ">
+                AND a.update_time <![CDATA[ <= #{category.updateTime} ]]>
+            </if>
+            <if test="category.id != null and category.id != ''">
+                AND (c.id = #{category.id} )
+            </if>
+            group by s.id,cp.sort, cp.id, c.sort, c.id
+            order by s.id,cp.sort, cp.id, c.sort, c.id
+        </where>
+    </select>
+
+
+</mapper>

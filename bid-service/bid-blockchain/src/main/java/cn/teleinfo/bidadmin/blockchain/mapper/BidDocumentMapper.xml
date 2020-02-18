@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.blockchain.mapper.BidDocumentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="bidDocumentResultMap" type="cn.teleinfo.bidadmin.blockchain.entity.BidDocument">
+        <id column="Id" property="id"/>
+        <result column="bid" property="bid"/>
+        <result column="name" property="name"/>
+        <result column="Contexts" property="contexts"/>
+        <result column="TYPE" property="type"/>
+        <result column="ISENABLE" property="isEnable"/>
+        <result column="BALANCE" property="balance"/>
+    </resultMap>
+
+    <select id="selectBidDocumentPage" resultMap="bidDocumentResultMap">
+        select * from bid_document where is_deleted = 0
+    </select>
+
+    <select id="findDocumentByBId" resultMap="bidDocumentResultMap">
+        select * from bid_document
+        <where>
+            <if test="bid != null and bid != ''">
+                bid= #{bid}
+            </if>
+        </where>
+    </select>
+
+    <insert id="saveDocument" parameterType="cn.teleinfo.bidadmin.blockchain.entity.BidDocument">
+        INSERT INTO bid_document(bid, `name`, Contexts, `TYPE`, ISENABLE, BALANCE)
+        VALUES (#{bid},#{name},#{Contexts},#{type},#{isEnable},#{balance})
+    </insert>
+
+    <update id="updateDocument" parameterType="cn.teleinfo.bidadmin.blockchain.entity.BidDocument">
+        UPDATE bid_document
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="null != name and '' != name">
+                `name` = #{name}
+            </if>
+            <if test="null != Contexts and '' != Contexts">
+                Contexts = #{Contexts}
+            </if>
+            <if test="null != TYPE and '' != TYPE">
+                `TYPE` = #{type}
+            </if>
+            <if test="null != ISENABLE and '' != ISENABLE">
+                ISENABLE = #{isEnable}
+            </if>
+            <if test="null != BALANCE and '' != BALANCE">
+                BALANCE = #{balance}
+            </if>
+        </trim>
+        WHERE bid = #{bid} and id = #{id}
+    </update>
+
+    <insert id="saveBatchDocuments" parameterType="cn.teleinfo.bidadmin.blockchain.entity.BidDocument">
+        insert into bid_document(bid, `name`, Contexts, `TYPE`, ISENABLE, BALANCE)
+        <foreach collection="list" item="item" open="values" separator=",">
+            (#{item.bid},#{item.name},#{item.Contexts},#{item.type},#{item.isEnable},#{item.balance})
+        </foreach>
+        ON duplicate KEY UPDATE
+        `name`=VALUES(`name`),
+        ISENABLE=VALUES(ISENABLE),
+        BALANCE=VALUES(BALANCE)
+    </insert>
+</mapper>

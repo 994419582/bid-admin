@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.cms.mapper.JoinusMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="joinusResultMap" type="cn.teleinfo.bidadmin.cms.entity.Joinus">
+        <id column="ID" property="id"/>
+        <result column="NAME" property="name"/>
+        <result column="QUALIFICATIONS" property="qualifications"/>
+        <result column="IMAGE" property="image"/>
+        <result column="REMARKS" property="remarks"/>
+        <result column="CREATE_USER" property="createUser"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_USER" property="updateUser"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+        <result column="IS_DELETED" property="isDeleted"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="STATUS" property="status"/>
+    </resultMap>
+
+
+    <select id="selectJoinusPage" resultMap="joinusResultMap">
+        select * from website_joinus where is_deleted = 0
+    </select>
+
+</mapper>

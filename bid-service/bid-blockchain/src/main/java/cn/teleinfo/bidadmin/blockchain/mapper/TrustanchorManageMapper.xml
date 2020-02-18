@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.blockchain.mapper.TrustanchorManageMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="trustanchorManageResultMap" type="cn.teleinfo.bidadmin.blockchain.entity.TrustanchorManage">
+        <id column="id" property="id"/>
+        <result column="Owner" property="Owner"/>
+        <result column="Type" property="Type"/>
+        <result column="Name" property="Name"/>
+        <result column="company" property="company"/>
+        <result column="companyUrl" property="companyUrl"/>
+        <result column="Website" property="Website"/>
+        <result column="DocumentUrl" property="DocumentUrl"/>
+        <result column="ServerUrl" property="ServerUrl"/>
+        <result column="email" property="email"/>
+        <result column="Description" property="Description"/>
+        <result column="Status" property="Status"/>
+        <result column="VoteCount" property="VoteCount"/>
+        <result column="Active" property="Active"/>
+        <result column="TotalBounty" property="TotalBounty"/>
+        <result column="ExtractedBounty" property="ExtractedBounty"/>
+        <result column="LastExtractTime" property="LastExtractTime"/>
+        <result column="CreateTime" property="CreateTime"/>
+        <result column="UpdateTime" property="UpdateTime"/>
+    </resultMap>
+
+
+    <select id="selectTrustanchorManagePage" resultMap="trustanchorManageResultMap">
+        select * from bif_trustanchor_manage where is_deleted = 0
+    </select>
+
+</mapper>

@@ -1,0 +1,29 @@
+#服务器端口
+server:
+    port: 8305
+
+#数据源配置
+spring:
+  datasource:
+    url: ${blade.datasource.dev.url}
+    username: ${blade.datasource.dev.username}
+    password: ${blade.datasource.dev.password}
+
+
+swagger:
+  title: bid-admin 接口文档系统
+  description: bid-admin 接口文档系统
+  version: 2.4.0
+  base-packages: cn.teleinfo.bidadmin
+  contact:
+    name: shiweijun
+    email: shiweijun@teleinfo.cn
+
+ipfs:
+  multiAddr: /ip4/39.99.132.122/tcp/5001
+  host: 39.99.132.122
+  uploadPort: 5001
+  catPort : 8080
+mybatis-plus:
+  configuration:
+    cache-enabled: false

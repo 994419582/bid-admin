@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.cms.mapper.SiteMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="siteResultMap" type="cn.teleinfo.bidadmin.cms.entity.Site">
+        <id column="ID" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="NAME" property="name"/>
+        <result column="TITLE" property="title"/>
+        <result column="LOGO" property="logo"/>
+        <result column="LOGO_HASH" property="logoHash"/>
+        <result column="DOMAIN" property="domain"/>
+        <result column="KEYWORDS" property="keywords"/>
+        <result column="COPYRIGHT" property="copyright"/>
+        <result column="REMARKS" property="remarks"/>
+    </resultMap>
+
+
+    <select id="selectSitePage" resultMap="siteResultMap">
+        select * from cms_site where is_deleted = 0
+    </select>
+
+</mapper>

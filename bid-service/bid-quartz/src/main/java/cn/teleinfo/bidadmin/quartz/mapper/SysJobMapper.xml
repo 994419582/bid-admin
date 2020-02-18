@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.quartz.mapper.SysJobMapper">
+
+	<resultMap type="cn.teleinfo.bidadmin.quartz.entity.SysJob" id="SysJobResult">
+		<id     property="id"          column="id"          />
+		<result property="jobName"        column="job_name"        />
+		<result property="jobGroup"       column="job_group"       />
+		<result property="methodName"     column="method_name"     />
+		<result property="methodParams"   column="method_params"   />
+		<result property="cronExpression" column="cron_expression" />
+		<result property="misfirePolicy"  column="misfire_policy"  />
+		<result property="status"         column="status"          />
+		<result property="createUser"       column="create_user"       />
+		<result property="createTime"     column="create_time"     />
+		<result property="updateUser"       column="update_user"       />
+		<result property="updateTime"     column="update_time"     />
+		<result property="remark"         column="remark"          />
+		<result column="is_deleted" property="isDeleted"/>
+
+	</resultMap>
+	
+	<sql id="selectJobVo">
+        select id,
+         job_name AS jobName,
+         job_group AS jobGroup,
+         method_name as methodName,
+         method_params as methodParams,
+         cron_expression as cronExpression,
+         misfire_policy as misfirePolicy,
+          status,
+          create_user as createUser,
+          create_time as createTime,
+          update_user as updateUser,
+          update_time as updateTime,
+         is_deleted as isDeleted,
+          remark
+		from qrtz_job
+    </sql>
+
+</mapper> 

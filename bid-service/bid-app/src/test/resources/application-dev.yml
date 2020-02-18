@@ -1,0 +1,36 @@
+#服务器端口
+server:
+  port: 6000
+
+#数据源配置
+spring:
+  datasource:
+    url: ${blade.datasource.dev.url}
+    username: ${blade.datasource.dev.username}
+    password: ${blade.datasource.dev.password}
+api:
+  identity:
+    fri:
+      base:
+        cert: ywzd14
+      reserve:
+        cert: rzfw01
+      equest:
+        url: http://MA1.chnctid.cn:8100/ctid/api/v1/request
+      auth:
+        url: http://MA1.chnctid.cn:8200/ctid/api/v1/authentication
+    customerNumber: gtyx01
+    appName: Alipay
+    cardReaderVersion: 1230
+    liveDetectionControlVersion: 1230
+    authCodeControlVersion: 1230
+    authMode: "0x42"
+    # 身份认证配置文件路径
+    configUrl: cssconfig.properties
+  app:
+    face:
+      bif:
+        appId: 17793445
+        apiKey: eFGlfzppUEIVl4IO7WwfLFqK
+        secretKey: ArqeIVctuBM13ZeDfFGpxXV0BmjcY9Qs
+        configUrl: cssconfig.properties

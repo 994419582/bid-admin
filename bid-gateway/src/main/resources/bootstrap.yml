@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+    loadbalancer:
+      retry:
+        enabled: true
+# 聚合文档配置
+blade:
+  document:
+    resources:
+      - name: 授权模块
+        location: /bid-auth
+      - name: 工作台模块
+        location: /bid-desk
+      - name: 系统模块
+        location: /bid-system
+      - name: 定时任务
+        location: /bid-quartz
+      - name: cms系统
+        location: /bid-cms
+      - name: blockchain系统
+        location: /bid-blockchain
+      - name: app后台服务
+        location: /bid-app
+info:
+  version: 1.0.0
+
+#durid登陆账号密码
+loginUsername : root
+loginPassword : 123456

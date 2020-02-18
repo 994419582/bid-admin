@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.blockchain.mapper.BidDocumentPukMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="bidDocumentPukResultMap" type="cn.teleinfo.bidadmin.blockchain.entity.BidDocumentPuk">
+        <id column="id" property="id"/>
+        <result column="owner" property="owner"/>
+        <result column="Type" property="type"/>
+        <result column="Controller" property="controller"/>
+        <result column="Authority" property="authority"/>
+        <result column="PublicKey" property="publicKey"/>
+    </resultMap>
+
+    <select id="selectBidDocumentPukPage" resultMap="bidDocumentPukResultMap">
+        select * from bid_document_puk where is_deleted = 0
+    </select>
+
+    <select id="findDocumentPukByOwnerPublicKey" resultMap="bidDocumentPukResultMap">
+        select * from bid_document_puk
+        <where>
+            <if test="owner != null and owner != ''">
+                owner=${owner}
+            </if>
+            <if test="PublicKey != null and PublicKey != ''">
+                PublicKey=${PublicKey}
+            </if>
+        </where>
+    </select>
+
+    <insert id="saveDocumentPuk" parameterType="cn.teleinfo.bidadmin.blockchain.entity.BidDocumentPuk">
+        INSERT INTO bid_document_puk(owner, `Type`, Controller, Authority, PublicKey)
+        VALUES (#{owner},#{Type},#{Controller},#{Authority},#{PublicKey})
+    </insert>
+
+    <update id="updateDocumentPuk" parameterType="cn.teleinfo.bidadmin.blockchain.entity.BidDocumentPuk">
+        UPDATE bid_document_puk
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="null != Controller and '' != Controller">
+                `Controller` = #{Controller}
+            </if>
+            <if test="null != Authority and '' != Authority">
+                Authority = #{Authority}
+            </if>
+            <if test="null != TYPE and '' != TYPE">
+                `TYPE` = #{type}
+            </if>
+        </trim>
+        WHERE owner = #{owner} and PublicKey = #{PublicKey} and id = #{id}
+    </update>
+
+    <insert id="saveBatchDocumentPuks" parameterType="list">
+        insert into bid_document_puk(owner, `Type`, Controller, Authority, PublicKey)
+        <foreach collection="list" item="item" open="values" separator=",">
+            (#{item.owner},#{item.type},#{item.controller},#{item.authority},#{item.publicKey})
+        </foreach>
+        ON duplicate KEY UPDATE
+        `Type`=VALUES(`Type`),
+        Controller=VALUES(Controller),
+        Authority=VALUES(Authority),
+        PublicKey=VALUES(PublicKey)
+    </insert>
+</mapper>
