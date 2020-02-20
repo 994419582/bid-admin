@@ -25,6 +25,7 @@
         <module>bid-cms-api</module>
         <module>bid-blockchain-api</module>
         <module>bid-app-api</module>
+        <module>bid-soybean-api</module>
     </modules>
 
     <dependencies>

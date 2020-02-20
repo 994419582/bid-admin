@@ -25,6 +25,7 @@
         <module>bid-quartz</module>
         <module>bid-cms</module>
         <module>bid-blockchain</module>
+        <module>bid-soybean</module>
     </modules>
 
     <dependencies>
