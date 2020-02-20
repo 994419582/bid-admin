@@ -10,6 +10,7 @@ import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -28,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/wx/user")
-@Api(value = "", tags = "微信接口")
+@Api(value = "微信小程序", tags = "微信小程序接口")
 public class WxMaUserController extends BladeController {
 
     private IUserService userService;
@@ -40,6 +41,7 @@ public class WxMaUserController extends BladeController {
      * @param code
      * @return
      */
+    @ApiOperation(value = "登录", notes = "接收wx.login请求")
     @GetMapping("/login")
     public R login(@RequestParam(name = "appid") String appid, @RequestParam(name = "code") String code) {
         if (StringUtils.isBlank(code)) {
@@ -79,6 +81,7 @@ public class WxMaUserController extends BladeController {
      * @param iv
      * @return
      */
+    @ApiOperation(value = "获取用户信息", notes = "获取用户信息")
     @GetMapping("/info")
     public R info(@RequestParam(name = "appid") String appid,
                   @RequestParam(name = "sessionKey") String sessionKey,
@@ -116,6 +119,7 @@ public class WxMaUserController extends BladeController {
      * @param iv
      * @return
      */
+    @ApiOperation(value = "绑定手机号", notes = "绑定手机号")
     @GetMapping("/phone")
     public R phone(
             @RequestParam(name = "id") Integer id,
