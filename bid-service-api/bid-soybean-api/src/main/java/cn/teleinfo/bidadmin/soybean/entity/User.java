@@ -53,12 +53,6 @@ public class User implements Serializable {
     private String phone;
 
     /**
-     * 排序
-     */
-    @ApiModelProperty(value = "排序")
-    private Integer sort;
-
-    /**
      * 证件类型ID
      */
     @ApiModelProperty(value = "证件类型ID")
