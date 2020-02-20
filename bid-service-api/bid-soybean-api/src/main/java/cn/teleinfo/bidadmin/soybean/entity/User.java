@@ -75,4 +75,34 @@ public class User implements Serializable {
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
+
+    /**
+     * 性别
+     */
+    @ApiModelProperty(value = "性别")
+    private String gender;
+
+    /**
+     * 国家
+     */
+    @ApiModelProperty(value = "国家")
+    private String country;
+
+    /**
+     * 省
+     */
+    @ApiModelProperty(value = "省")
+    private String province;
+
+    /**
+     * 市
+     */
+    @ApiModelProperty(value = "市")
+    private String city;
+
+    /**
+     * 头像
+     */
+    @ApiModelProperty(value = "头像")
+    private String avatarUrl;
 }

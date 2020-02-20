@@ -13,6 +13,11 @@
         <result column="id_number" property="idNumber"/>
         <result column="status" property="status"/>
         <result column="remarks" property="remarks"/>
+        <result column="gender" property="gender"/>
+        <result column="country" property="country"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="avatar_url" property="avatarUrl"/>
     </resultMap>
 
 </mapper>
