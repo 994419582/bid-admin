@@ -114,11 +114,11 @@ public class User extends BaseEntity {
      */
     @ApiModelProperty(value = "居住地址")
     private String homeAddress;
+
     /**
      * 详细地址
      */
     @ApiModelProperty(value = "详细地址")
     private String detailAddress;
-
 
 }
