@@ -13,35 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.service;
+package cn.teleinfo.bidadmin.soybean.service.impl;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import org.springblade.core.mp.base.BaseService;
+import cn.teleinfo.bidadmin.soybean.entity.Clockln;
+import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
+import cn.teleinfo.bidadmin.soybean.mapper.ClocklnMapper;
+import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
+import org.springblade.core.mp.base.BaseServiceImpl;
+import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 /**
- *  服务类
+ *  服务实现类
  *
  * @author Blade
  * @since 2020-02-21
  */
-public interface IUserService extends BaseService<User> {
+@Service
+public class ClocklnServiceImpl extends BaseServiceImpl<ClocklnMapper, Clockln> implements IClocklnService {
 
-	/**
-	 * 自定义分页
-	 *
-	 * @param page
-	 * @param user
-	 * @return
-	 */
-	IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user);
+	@Override
+	public IPage<ClocklnVO> selectClocklnPage(IPage<ClocklnVO> page, ClocklnVO clockln) {
+		return page.setRecords(baseMapper.selectClocklnPage(page, clockln));
+	}
 
-	/**
-	 * 根据openid查询
-	 *
-	 * @param openid
-	 * @return
-	 */
-	User findByWechatId(String openid);
 }

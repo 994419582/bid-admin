@@ -15,11 +15,10 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import cn.teleinfo.bidadmin.soybean.mapper.UserMapper;
-import cn.teleinfo.bidadmin.soybean.service.IUserService;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import cn.teleinfo.bidadmin.soybean.entity.ChildrenGroup;
+import cn.teleinfo.bidadmin.soybean.vo.ChildrenGroupVO;
+import cn.teleinfo.bidadmin.soybean.mapper.ChildrenGroupMapper;
+import cn.teleinfo.bidadmin.soybean.service.IChildrenGroupService;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -31,15 +30,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @since 2020-02-21
  */
 @Service
-public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implements IUserService {
+public class ChildrenGroupServiceImpl extends BaseServiceImpl<ChildrenGroupMapper, ChildrenGroup> implements IChildrenGroupService {
 
 	@Override
-	public IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user) {
-		return page.setRecords(baseMapper.selectUserPage(page, user));
+	public IPage<ChildrenGroupVO> selectChildrenGroupPage(IPage<ChildrenGroupVO> page, ChildrenGroupVO childrenGroup) {
+		return page.setRecords(baseMapper.selectChildrenGroupPage(page, childrenGroup));
 	}
 
-	@Override
-	public User findByWechatId(String openid) {
-		return baseMapper.selectOne(Wrappers.<User>query().eq("wechat_id", openid));
-	}
 }

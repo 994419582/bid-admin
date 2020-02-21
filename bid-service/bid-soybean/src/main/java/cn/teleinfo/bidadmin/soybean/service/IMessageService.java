@@ -15,8 +15,8 @@
  */
 package cn.teleinfo.bidadmin.soybean.service;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
+import cn.teleinfo.bidadmin.soybean.entity.Message;
+import cn.teleinfo.bidadmin.soybean.vo.MessageVO;
 import org.springblade.core.mp.base.BaseService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -26,22 +26,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @author Blade
  * @since 2020-02-21
  */
-public interface IUserService extends BaseService<User> {
+public interface IMessageService extends BaseService<Message> {
 
 	/**
 	 * 自定义分页
 	 *
 	 * @param page
-	 * @param user
+	 * @param message
 	 * @return
 	 */
-	IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user);
+	IPage<MessageVO> selectMessagePage(IPage<MessageVO> page, MessageVO message);
 
-	/**
-	 * 根据openid查询
-	 *
-	 * @param openid
-	 * @return
-	 */
-	User findByWechatId(String openid);
 }

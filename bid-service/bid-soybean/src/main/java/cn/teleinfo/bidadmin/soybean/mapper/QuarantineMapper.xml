@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.soybean.mapper.QuarantineMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="quarantineResultMap" type="cn.teleinfo.bidadmin.soybean.entity.Quarantine">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="user_id" property="userId"/>
+        <result column="other_city" property="otherCity"/>
+        <result column="start_time" property="startTime"/>
+        <result column="address" property="address"/>
+        <result column="temperature" property="temperature"/>
+        <result column="fever" property="fever"/>
+        <result column="fatigue" property="fatigue"/>
+        <result column="hoose" property="hoose"/>
+        <result column="dyspnea" property="dyspnea"/>
+        <result column="diarrhea" property="diarrhea"/>
+        <result column="muscle" property="muscle"/>
+        <result column="other" property="other"/>
+        <result column="remarks" property="remarks"/>
+    </resultMap>
+
+
+    <select id="selectQuarantinePage" resultMap="quarantineResultMap">
+        select * from soybean_quarantine where is_deleted = 0
+    </select>
+
+</mapper>

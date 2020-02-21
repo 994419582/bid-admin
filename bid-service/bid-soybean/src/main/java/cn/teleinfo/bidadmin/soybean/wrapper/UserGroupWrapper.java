@@ -13,35 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.service;
+package cn.teleinfo.bidadmin.soybean.wrapper;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import org.springblade.core.mp.base.BaseService;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import lombok.AllArgsConstructor;
+import org.springblade.core.mp.support.BaseEntityWrapper;
+import org.springblade.core.tool.utils.BeanUtil;
+import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
+import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 
 /**
- *  服务类
+ * 包装类,返回视图层所需的字段
  *
  * @author Blade
  * @since 2020-02-21
  */
-public interface IUserService extends BaseService<User> {
+public class UserGroupWrapper extends BaseEntityWrapper<UserGroup, UserGroupVO>  {
 
-	/**
-	 * 自定义分页
-	 *
-	 * @param page
-	 * @param user
-	 * @return
-	 */
-	IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user);
+    public static UserGroupWrapper build() {
+        return new UserGroupWrapper();
+    }
 
-	/**
-	 * 根据openid查询
-	 *
-	 * @param openid
-	 * @return
-	 */
-	User findByWechatId(String openid);
+	@Override
+	public UserGroupVO entityVO(UserGroup userGroup) {
+		UserGroupVO userGroupVO = BeanUtil.copy(userGroup, UserGroupVO.class);
+
+		return userGroupVO;
+	}
+
 }

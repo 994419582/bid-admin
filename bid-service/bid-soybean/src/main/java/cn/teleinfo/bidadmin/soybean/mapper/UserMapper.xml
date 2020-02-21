@@ -5,19 +5,29 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="userResultMap" type="cn.teleinfo.bidadmin.soybean.entity.User">
         <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
         <result column="wechat_id" property="wechatId"/>
         <result column="nickname" property="nickname"/>
         <result column="name" property="name"/>
         <result column="phone" property="phone"/>
         <result column="id_type" property="idType"/>
         <result column="id_number" property="idNumber"/>
-        <result column="status" property="status"/>
         <result column="remarks" property="remarks"/>
         <result column="gender" property="gender"/>
         <result column="country" property="country"/>
         <result column="province" property="province"/>
         <result column="city" property="city"/>
         <result column="avatar_url" property="avatarUrl"/>
+        <result column="home_id" property="homeId"/>
+        <result column="home_address" property="homeAddress"/>
+        <result column="detail_address" property="detailAddress"/>
     </resultMap>
+
+
+    <select id="selectUserPage" resultMap="userResultMap">
+        select * from soybean_user where is_deleted = 0
+    </select>
 
 </mapper>

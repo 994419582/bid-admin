@@ -31,10 +31,10 @@ import org.springblade.core.mp.base.BaseEntity;
  * @since 2020-02-21
  */
 @Data
-@TableName("soybean_user")
+@TableName("soybean_clockln")
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(value = "User对象", description = "User对象")
-public class User extends BaseEntity {
+@ApiModel(value = "Clockln对象", description = "Clockln对象")
+public class Clockln extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -45,80 +45,50 @@ public class User extends BaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
   private Integer id;
     /**
-     * 微信ID
+     * 用户主键
      */
-    @ApiModelProperty(value = "微信ID")
-    private String wechatId;
+    @ApiModelProperty(value = "用户主键")
+    private Integer userId;
     /**
-     * 微信昵称
+     * 打卡地址
      */
-    @ApiModelProperty(value = "微信昵称")
-    private String nickname;
+    @ApiModelProperty(value = "打卡地址")
+    private String address;
     /**
-     * 姓名
+     * 健康状态
      */
-    @ApiModelProperty(value = "姓名")
-    private String name;
+    @ApiModelProperty(value = "健康状态")
+    private Integer healthy;
     /**
-     * 联系电话
+     * 是否有就诊入院
      */
-    @ApiModelProperty(value = "联系电话")
-    private String phone;
+    @ApiModelProperty(value = "是否有就诊入院")
+    private Integer hospital;
     /**
-     * 证件类型ID
+     * 是否接触过武汉人同或经过武汉午
      */
-    @ApiModelProperty(value = "证件类型ID")
-    private String idType;
+    @ApiModelProperty(value = "是否接触过武汉人同或经过武汉午")
+    private Integer wuhan;
     /**
-     * 证件号码
+     * 计划反京时间
      */
-    @ApiModelProperty(value = "证件号码")
-    private String idNumber;
+    @ApiModelProperty(value = "计划反京时间")
+    private String gobacktime;
     /**
      * 备注
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
     /**
-     * 性别
+     * 是否在隔离器
      */
-    @ApiModelProperty(value = "性别")
-    private String gender;
+    @ApiModelProperty(value = "是否在隔离器")
+    private Integer quarantine;
     /**
-     * 国家
+     * 未返京原因
      */
-    @ApiModelProperty(value = "国家")
-    private String country;
-    /**
-     * 省
-     */
-    @ApiModelProperty(value = "省")
-    private String province;
-    /**
-     * 市
-     */
-    @ApiModelProperty(value = "市")
-    private String city;
-    /**
-     * 头像
-     */
-    @ApiModelProperty(value = "头像")
-    private String avatarUrl;
-    /**
-     * 居家观察地址
-     */
-    @ApiModelProperty(value = "居家观察地址")
-    private Integer homeId;
-    /**
-     * 居住地址
-     */
-    @ApiModelProperty(value = "居住地址")
-    private String homeAddress;
-    /**
-     * 详细地址
-     */
-    @ApiModelProperty(value = "详细地址")
-    private String detailAddress;
+    @ApiModelProperty(value = "未返京原因")
+    private String reason;
 
 
 }

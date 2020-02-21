@@ -13,35 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.service;
+package cn.teleinfo.bidadmin.soybean.mapper;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import org.springblade.core.mp.base.BaseService;
+import cn.teleinfo.bidadmin.soybean.entity.QuarantineTrip;
+import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import java.util.List;
 
 /**
- *  服务类
+ *  Mapper 接口
  *
  * @author Blade
  * @since 2020-02-21
  */
-public interface IUserService extends BaseService<User> {
+public interface QuarantineTripMapper extends BaseMapper<QuarantineTrip> {
 
 	/**
 	 * 自定义分页
 	 *
 	 * @param page
-	 * @param user
+	 * @param quarantineTrip
 	 * @return
 	 */
-	IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user);
+	List<QuarantineTripVO> selectQuarantineTripPage(IPage page, QuarantineTripVO quarantineTrip);
 
-	/**
-	 * 根据openid查询
-	 *
-	 * @param openid
-	 * @return
-	 */
-	User findByWechatId(String openid);
 }

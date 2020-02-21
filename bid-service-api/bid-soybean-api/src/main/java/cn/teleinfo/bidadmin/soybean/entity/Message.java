@@ -31,10 +31,10 @@ import org.springblade.core.mp.base.BaseEntity;
  * @since 2020-02-21
  */
 @Data
-@TableName("soybean_user")
+@TableName("soybean_message")
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(value = "User对象", description = "User对象")
-public class User extends BaseEntity {
+@ApiModel(value = "Message对象", description = "Message对象")
+public class Message extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -45,80 +45,35 @@ public class User extends BaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
   private Integer id;
     /**
-     * 微信ID
+     * 消息类型
      */
-    @ApiModelProperty(value = "微信ID")
-    private String wechatId;
+    @ApiModelProperty(value = "消息类型")
+    private Integer msgType;
     /**
-     * 微信昵称
+     * 消息
      */
-    @ApiModelProperty(value = "微信昵称")
-    private String nickname;
+    @ApiModelProperty(value = "消息")
+    private String message;
     /**
-     * 姓名
+     * 标题
      */
-    @ApiModelProperty(value = "姓名")
-    private String name;
+    @ApiModelProperty(value = "标题")
+    private String title;
     /**
-     * 联系电话
+     * 消息发送人
      */
-    @ApiModelProperty(value = "联系电话")
-    private String phone;
-    /**
-     * 证件类型ID
-     */
-    @ApiModelProperty(value = "证件类型ID")
-    private String idType;
-    /**
-     * 证件号码
-     */
-    @ApiModelProperty(value = "证件号码")
-    private String idNumber;
+    @ApiModelProperty(value = "消息发送人")
+    private Integer sender;
     /**
      * 备注
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
     /**
-     * 性别
+     * 回馈意见
      */
-    @ApiModelProperty(value = "性别")
-    private String gender;
-    /**
-     * 国家
-     */
-    @ApiModelProperty(value = "国家")
-    private String country;
-    /**
-     * 省
-     */
-    @ApiModelProperty(value = "省")
-    private String province;
-    /**
-     * 市
-     */
-    @ApiModelProperty(value = "市")
-    private String city;
-    /**
-     * 头像
-     */
-    @ApiModelProperty(value = "头像")
-    private String avatarUrl;
-    /**
-     * 居家观察地址
-     */
-    @ApiModelProperty(value = "居家观察地址")
-    private Integer homeId;
-    /**
-     * 居住地址
-     */
-    @ApiModelProperty(value = "居住地址")
-    private String homeAddress;
-    /**
-     * 详细地址
-     */
-    @ApiModelProperty(value = "详细地址")
-    private String detailAddress;
+    @ApiModelProperty(value = "回馈意见")
+    private String answer;
 
 
 }

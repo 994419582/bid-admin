@@ -13,35 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.service;
+package cn.teleinfo.bidadmin.soybean.service.impl;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import org.springblade.core.mp.base.BaseService;
+import cn.teleinfo.bidadmin.soybean.entity.GroupLog;
+import cn.teleinfo.bidadmin.soybean.vo.GroupLogVO;
+import cn.teleinfo.bidadmin.soybean.mapper.GroupLogMapper;
+import cn.teleinfo.bidadmin.soybean.service.IGroupLogService;
+import org.springblade.core.mp.base.BaseServiceImpl;
+import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 /**
- *  服务类
+ *  服务实现类
  *
  * @author Blade
  * @since 2020-02-21
  */
-public interface IUserService extends BaseService<User> {
+@Service
+public class GroupLogServiceImpl extends BaseServiceImpl<GroupLogMapper, GroupLog> implements IGroupLogService {
 
-	/**
-	 * 自定义分页
-	 *
-	 * @param page
-	 * @param user
-	 * @return
-	 */
-	IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user);
+	@Override
+	public IPage<GroupLogVO> selectGroupLogPage(IPage<GroupLogVO> page, GroupLogVO groupLog) {
+		return page.setRecords(baseMapper.selectGroupLogPage(page, groupLog));
+	}
 
-	/**
-	 * 根据openid查询
-	 *
-	 * @param openid
-	 * @return
-	 */
-	User findByWechatId(String openid);
 }

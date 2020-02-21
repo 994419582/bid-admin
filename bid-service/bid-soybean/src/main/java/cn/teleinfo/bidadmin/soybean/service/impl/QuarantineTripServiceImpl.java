@@ -15,11 +15,10 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import cn.teleinfo.bidadmin.soybean.mapper.UserMapper;
-import cn.teleinfo.bidadmin.soybean.service.IUserService;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import cn.teleinfo.bidadmin.soybean.entity.QuarantineTrip;
+import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
+import cn.teleinfo.bidadmin.soybean.mapper.QuarantineTripMapper;
+import cn.teleinfo.bidadmin.soybean.service.IQuarantineTripService;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -31,15 +30,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @since 2020-02-21
  */
 @Service
-public class UserServiceImpl extends BaseServiceImpl<UserMapper, User> implements IUserService {
+public class QuarantineTripServiceImpl extends BaseServiceImpl<QuarantineTripMapper, QuarantineTrip> implements IQuarantineTripService {
 
 	@Override
-	public IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user) {
-		return page.setRecords(baseMapper.selectUserPage(page, user));
+	public IPage<QuarantineTripVO> selectQuarantineTripPage(IPage<QuarantineTripVO> page, QuarantineTripVO quarantineTrip) {
+		return page.setRecords(baseMapper.selectQuarantineTripPage(page, quarantineTrip));
 	}
 
-	@Override
-	public User findByWechatId(String openid) {
-		return baseMapper.selectOne(Wrappers.<User>query().eq("wechat_id", openid));
-	}
 }

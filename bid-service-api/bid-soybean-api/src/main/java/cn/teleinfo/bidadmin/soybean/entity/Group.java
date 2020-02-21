@@ -31,10 +31,10 @@ import org.springblade.core.mp.base.BaseEntity;
  * @since 2020-02-21
  */
 @Data
-@TableName("soybean_user")
+@TableName("soybean_group")
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(value = "User对象", description = "User对象")
-public class User extends BaseEntity {
+@ApiModel(value = "Group对象", description = "Group对象")
+public class Group extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -45,75 +45,55 @@ public class User extends BaseEntity {
     @TableId(value = "id", type = IdType.AUTO)
   private Integer id;
     /**
-     * 微信ID
+     * 群组名
      */
-    @ApiModelProperty(value = "微信ID")
-    private String wechatId;
-    /**
-     * 微信昵称
-     */
-    @ApiModelProperty(value = "微信昵称")
-    private String nickname;
-    /**
-     * 姓名
-     */
-    @ApiModelProperty(value = "姓名")
+    @ApiModelProperty(value = "群组名")
     private String name;
     /**
-     * 联系电话
+     * 群组名全称
      */
-    @ApiModelProperty(value = "联系电话")
-    private String phone;
-    /**
-     * 证件类型ID
-     */
-    @ApiModelProperty(value = "证件类型ID")
-    private String idType;
-    /**
-     * 证件号码
-     */
-    @ApiModelProperty(value = "证件号码")
-    private String idNumber;
+    @ApiModelProperty(value = "群组名全称")
+    private String fullName;
     /**
      * 备注
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
     /**
-     * 性别
+     * 群logo
      */
-    @ApiModelProperty(value = "性别")
-    private String gender;
+    @ApiModelProperty(value = "群logo")
+    private String logo;
     /**
-     * 国家
+     * 群人数
      */
-    @ApiModelProperty(value = "国家")
-    private String country;
+    @ApiModelProperty(value = "群人数")
+    private Integer userAccount;
     /**
-     * 省
+     * 群管理员
      */
-    @ApiModelProperty(value = "省")
-    private String province;
+    @ApiModelProperty(value = "群管理员")
+    private String managers;
     /**
-     * 市
+     * 是否需要审批(0:否，1:是)
      */
-    @ApiModelProperty(value = "市")
-    private String city;
+    @ApiModelProperty(value = "是否需要审批(0:否，1:是)")
+    private Integer approval;
     /**
-     * 头像
+     * 群组类型（公司，社区，其他）
      */
-    @ApiModelProperty(value = "头像")
-    private String avatarUrl;
+    @ApiModelProperty(value = "群组类型（公司，社区，其他）")
+    private Integer groupType;
     /**
-     * 居家观察地址
+     * 公司地址ID（只有公司和社区需要）
      */
-    @ApiModelProperty(value = "居家观察地址")
-    private Integer homeId;
+    @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
+    private Integer addressId;
     /**
-     * 居住地址
+     * 公司地址名称
      */
-    @ApiModelProperty(value = "居住地址")
-    private String homeAddress;
+    @ApiModelProperty(value = "公司地址名称")
+    private String addressName;
     /**
      * 详细地址
      */

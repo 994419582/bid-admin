@@ -18,8 +18,8 @@ package cn.teleinfo.bidadmin.soybean.wrapper;
 import lombok.AllArgsConstructor;
 import org.springblade.core.mp.support.BaseEntityWrapper;
 import org.springblade.core.tool.utils.BeanUtil;
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
+import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
+import cn.teleinfo.bidadmin.soybean.vo.ParentGroupVO;
 
 /**
  * 包装类,返回视图层所需的字段
@@ -27,17 +27,17 @@ import cn.teleinfo.bidadmin.soybean.vo.UserVO;
  * @author Blade
  * @since 2020-02-21
  */
-public class UserWrapper extends BaseEntityWrapper<User, UserVO>  {
+public class ParentGroupWrapper extends BaseEntityWrapper<ParentGroup, ParentGroupVO>  {
 
-    public static UserWrapper build() {
-        return new UserWrapper();
+    public static ParentGroupWrapper build() {
+        return new ParentGroupWrapper();
     }
 
 	@Override
-	public UserVO entityVO(User user) {
-		UserVO userVO = BeanUtil.copy(user, UserVO.class);
+	public ParentGroupVO entityVO(ParentGroup parentGroup) {
+		ParentGroupVO parentGroupVO = BeanUtil.copy(parentGroup, ParentGroupVO.class);
 
-		return userVO;
+		return parentGroupVO;
 	}
 
 }

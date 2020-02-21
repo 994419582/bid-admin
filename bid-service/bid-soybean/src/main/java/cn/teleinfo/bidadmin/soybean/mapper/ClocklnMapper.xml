@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.soybean.mapper.ClocklnMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="clocklnResultMap" type="cn.teleinfo.bidadmin.soybean.entity.Clockln">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="user_id" property="userId"/>
+        <result column="address" property="address"/>
+        <result column="healthy" property="healthy"/>
+        <result column="hospital" property="hospital"/>
+        <result column="wuhan" property="wuhan"/>
+        <result column="gobacktime" property="gobacktime"/>
+        <result column="remarks" property="remarks"/>
+        <result column="quarantine" property="quarantine"/>
+        <result column="reason" property="reason"/>
+    </resultMap>
+
+
+    <select id="selectClocklnPage" resultMap="clocklnResultMap">
+        select * from soybean_clockln where is_deleted = 0
+    </select>
+
+</mapper>

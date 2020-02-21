@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.soybean.mapper.GroupMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="groupResultMap" type="cn.teleinfo.bidadmin.soybean.entity.Group">
+        <id column="id" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="name" property="name"/>
+        <result column="full_name" property="fullName"/>
+        <result column="remarks" property="remarks"/>
+        <result column="logo" property="logo"/>
+        <result column="user_account" property="userAccount"/>
+        <result column="managers" property="managers"/>
+        <result column="approval" property="approval"/>
+        <result column="group_type" property="groupType"/>
+        <result column="address_id" property="addressId"/>
+        <result column="address_name" property="addressName"/>
+        <result column="detail_address" property="detailAddress"/>
+    </resultMap>
+
+
+    <select id="selectGroupPage" resultMap="groupResultMap">
+        select * from soybean_group where is_deleted = 0
+    </select>
+
+</mapper>

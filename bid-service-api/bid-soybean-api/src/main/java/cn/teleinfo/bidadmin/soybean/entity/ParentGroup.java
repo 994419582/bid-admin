@@ -13,23 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.vo;
+package cn.teleinfo.bidadmin.soybean.entity;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springblade.core.mp.base.BaseEntity;
 
 /**
- * 视图实体类
+ * 实体类
  *
  * @author Blade
  * @since 2020-02-21
  */
 @Data
+@TableName("soybean_parent_group")
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(value = "UserVO对象", description = "UserVO对象")
-public class UserVO extends User {
-	private static final long serialVersionUID = 1L;
+@ApiModel(value = "ParentGroup对象", description = "ParentGroup对象")
+public class ParentGroup extends BaseEntity {
+
+    private static final long serialVersionUID = 1L;
+
+  @TableId(value = "id", type = IdType.AUTO)
+  private Integer id;
+  private Integer parentId;
+  private Integer groupId;
+
 
 }

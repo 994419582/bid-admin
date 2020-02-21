@@ -13,35 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.service;
+package cn.teleinfo.bidadmin.soybean.vo;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import org.springblade.core.mp.base.BaseService;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import cn.teleinfo.bidadmin.soybean.entity.ChildrenGroup;
+import io.swagger.annotations.ApiModel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
- *  服务类
+ * 视图实体类
  *
  * @author Blade
  * @since 2020-02-21
  */
-public interface IUserService extends BaseService<User> {
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ApiModel(value = "ChildrenGroupVO对象", description = "ChildrenGroupVO对象")
+public class ChildrenGroupVO extends ChildrenGroup {
+	private static final long serialVersionUID = 1L;
 
-	/**
-	 * 自定义分页
-	 *
-	 * @param page
-	 * @param user
-	 * @return
-	 */
-	IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user);
-
-	/**
-	 * 根据openid查询
-	 *
-	 * @param openid
-	 * @return
-	 */
-	User findByWechatId(String openid);
 }
