@@ -105,4 +105,23 @@ public class User implements Serializable {
      */
     @ApiModelProperty(value = "头像")
     private String avatarUrl;
+
+    /**
+     * homeId
+     */
+    @ApiModelProperty(value = "homeId")
+    private Integer homeId;
+
+    /**
+     * 居住地址
+     */
+    @ApiModelProperty(value = "居住地址")
+    private Integer homeAddress;
+
+    /**
+     * 详细地址
+     */
+    @ApiModelProperty(value = "详细地址")
+    private Integer detailAddress;
+
 }

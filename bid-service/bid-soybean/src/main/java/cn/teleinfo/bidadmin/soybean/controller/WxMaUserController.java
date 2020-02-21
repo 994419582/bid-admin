@@ -104,6 +104,11 @@ public class WxMaUserController extends BladeController {
             user = new User();
         }
         user.setNickname(userInfo.getNickName());
+        user.setGender(userInfo.getGender());
+//        user.setCountry(userInfo.getCountry());
+//        user.setProvince(userInfo.getProvince());
+//        user.setCity(userInfo.getCity());
+
         userService.saveOrUpdate(user);
         return R.data(UserWrapper.build().entityVO(user));
     }
@@ -122,7 +127,7 @@ public class WxMaUserController extends BladeController {
     @ApiOperation(value = "绑定手机号", notes = "绑定手机号")
     @GetMapping("/phone")
     public R phone(
-            @RequestParam(name = "id") Integer id,
+            @RequestParam(name = "openid") String openid,
             @RequestParam(name = "appid") String appid,
             @RequestParam(name = "sessionKey") String sessionKey,
             @RequestParam(name = "signature") String signature,
@@ -139,7 +144,7 @@ public class WxMaUserController extends BladeController {
         // 解密
         WxMaPhoneNumberInfo phoneNoInfo = wxService.getUserService().getPhoneNoInfo(sessionKey, encryptedData, iv);
         // 根据openid绑定并更新用户信息
-        User user = userService.getById(id);
+        User user = userService.findByWechatId(openid);
         if (user == null) {
             return R.fail("user not found");
         }
