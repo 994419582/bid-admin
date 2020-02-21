@@ -17,6 +17,7 @@ package cn.teleinfo.bidadmin.soybean.service;
 
 import cn.teleinfo.bidadmin.soybean.entity.QuarantineTrip;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
+import com.baomidou.mybatisplus.extension.service.IService;
 import org.springblade.core.mp.base.BaseService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -26,7 +27,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @author Blade
  * @since 2020-02-21
  */
-public interface IQuarantineTripService extends BaseService<QuarantineTrip> {
+public interface IQuarantineTripService extends IService<QuarantineTrip> {
 
 	/**
 	 * 自定义分页

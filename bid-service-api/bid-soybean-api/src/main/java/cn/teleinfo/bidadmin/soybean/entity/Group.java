@@ -24,6 +24,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import java.io.Serializable;
+
 /**
  * 实体类
  *
@@ -32,9 +34,8 @@ import org.springblade.core.mp.base.BaseEntity;
  */
 @Data
 @TableName("soybean_group")
-@EqualsAndHashCode(callSuper = true)
 @ApiModel(value = "Group对象", description = "Group对象")
-public class Group extends BaseEntity {
+public class Group implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

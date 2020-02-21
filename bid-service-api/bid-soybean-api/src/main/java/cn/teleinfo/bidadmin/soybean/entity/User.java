@@ -24,6 +24,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import java.io.Serializable;
+
 /**
  * 实体类
  *
@@ -32,9 +34,8 @@ import org.springblade.core.mp.base.BaseEntity;
  */
 @Data
 @TableName("soybean_user")
-@EqualsAndHashCode(callSuper = true)
 @ApiModel(value = "User对象", description = "User对象")
-public class User extends BaseEntity {
+public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

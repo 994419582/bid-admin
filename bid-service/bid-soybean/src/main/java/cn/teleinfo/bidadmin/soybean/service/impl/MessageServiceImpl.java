@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.Message;
 import cn.teleinfo.bidadmin.soybean.vo.MessageVO;
 import cn.teleinfo.bidadmin.soybean.mapper.MessageMapper;
 import cn.teleinfo.bidadmin.soybean.service.IMessageService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,7 +31,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @since 2020-02-21
  */
 @Service
-public class MessageServiceImpl extends BaseServiceImpl<MessageMapper, Message> implements IMessageService {
+public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> implements IMessageService {
 
 	@Override
 	public IPage<MessageVO> selectMessagePage(IPage<MessageVO> page, MessageVO message) {

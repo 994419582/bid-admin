@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.vo.ParentGroupVO;
 import cn.teleinfo.bidadmin.soybean.mapper.ParentGroupMapper;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,7 +31,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @since 2020-02-21
  */
 @Service
-public class ParentGroupServiceImpl extends BaseServiceImpl<ParentGroupMapper, ParentGroup> implements IParentGroupService {
+public class ParentGroupServiceImpl extends ServiceImpl<ParentGroupMapper, ParentGroup> implements IParentGroupService {
 
 	@Override
 	public IPage<ParentGroupVO> selectParentGroupPage(IPage<ParentGroupVO> page, ParentGroupVO parentGroup) {

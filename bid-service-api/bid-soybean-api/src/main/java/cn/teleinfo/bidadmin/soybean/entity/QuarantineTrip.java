@@ -24,6 +24,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -34,9 +35,8 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("soybean_quarantine_trip")
-@EqualsAndHashCode(callSuper = true)
 @ApiModel(value = "QuarantineTrip对象", description = "QuarantineTrip对象")
-public class QuarantineTrip extends BaseEntity {
+public class QuarantineTrip implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
