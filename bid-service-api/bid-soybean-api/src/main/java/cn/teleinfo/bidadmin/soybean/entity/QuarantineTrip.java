@@ -18,6 +18,7 @@ package cn.teleinfo.bidadmin.soybean.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -57,6 +58,7 @@ public class QuarantineTrip implements Serializable {
      * 返程时间
      */
     @ApiModelProperty(value = "返程时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime gobackTime;
     /**
      * 交通方式

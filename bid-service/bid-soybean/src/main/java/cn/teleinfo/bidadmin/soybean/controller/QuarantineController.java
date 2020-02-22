@@ -62,6 +62,17 @@ public class QuarantineController extends BladeController {
 	}
 
 	/**
+	 * 分页
+	 */
+	@GetMapping("/select")
+	@ApiOperationSupport(order = 2)
+	@ApiOperation(value = "分页", notes = "传入quarantine")
+	public R<List<Quarantine>> select(Quarantine quarantine, Query query) {
+		IPage<Quarantine> pages = quarantineService.page(Condition.getPage(query), Condition.getQueryWrapper(quarantine));
+		return R.data(pages.getRecords());
+	}
+
+	/**
 	* 分页 
 	*/
 	@GetMapping("/list")

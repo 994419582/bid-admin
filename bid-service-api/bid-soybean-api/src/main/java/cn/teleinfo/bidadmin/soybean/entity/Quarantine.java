@@ -18,6 +18,7 @@ package cn.teleinfo.bidadmin.soybean.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -52,6 +53,7 @@ public class Quarantine implements Serializable {
      * 开始观察时间
      */
     @ApiModelProperty(value = "开始观察时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime startTime;
     /**
      * 当前地点
@@ -62,7 +64,7 @@ public class Quarantine implements Serializable {
      * 体温
      */
     @ApiModelProperty(value = "体温")
-    private Integer temperature;
+    private Double temperature;
     /**
      * 发热
      */

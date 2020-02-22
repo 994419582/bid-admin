@@ -64,6 +64,17 @@ public class UserController extends BladeController {
 	/**
 	* 分页 
 	*/
+	@GetMapping("/select")
+    @ApiOperationSupport(order = 2)
+	@ApiOperation(value = "分页", notes = "传入user")
+	public R<List<User>> select(User user, Query query) {
+		IPage<User> pages = userService.page(Condition.getPage(query), Condition.getQueryWrapper(user));
+		return R.data(pages.getRecords());
+	}
+
+	/**
+	* 分页
+	*/
 	@GetMapping("/list")
     @ApiOperationSupport(order = 2)
 	@ApiOperation(value = "分页", notes = "传入user")
