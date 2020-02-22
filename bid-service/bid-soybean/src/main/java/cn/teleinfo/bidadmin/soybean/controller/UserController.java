@@ -121,7 +121,7 @@ public class UserController extends BladeController {
     @ApiOperationSupport(order = 7)
 	@ApiOperation(value = "逻辑删除", notes = "传入ids")
 	public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids) {
-		return R.status(userService.deleteLogic(Func.toIntList(ids)));
+		return R.status(userService.removeByIds(Func.toIntList(ids)));
 	}
 
 	

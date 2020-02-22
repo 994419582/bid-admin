@@ -37,7 +37,7 @@ public interface AppConstant {
     String APPLICATION_DESK_NAME = APPLICATION_NAME_PREFIX + "desk";
 
     /**
-     * 毛豆模块名称
+     * 模块名称
      */
     String APPLICATION_SOYBEAN_NAME = APPLICATION_NAME_PREFIX + "soybean";
 
