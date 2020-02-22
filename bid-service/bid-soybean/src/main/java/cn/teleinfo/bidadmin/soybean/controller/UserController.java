@@ -45,7 +45,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/user")
-@Api(value = "", tags = "接口")
+@Api(value = "", tags = "用户")
 public class UserController extends BladeController {
 
 	private IUserService userService;

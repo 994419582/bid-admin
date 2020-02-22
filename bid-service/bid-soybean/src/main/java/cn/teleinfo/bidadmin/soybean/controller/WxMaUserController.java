@@ -54,14 +54,14 @@ public class WxMaUserController extends BladeController {
             WxMaJscode2SessionResult session = wxService.getUserService().getSessionInfo(code);
             log.info("login wechat success [openid = {}, session_key = {}]", session.getOpenid(), session.getSessionKey());
             // 查询openid是否存在，否则
-            if (StrUtil.isNotBlank(session.getOpenid())) {
-                User user = userService.findByWechatId(session.getOpenid());
-                if (user == null) {
-                    user = new User();
-                    user.setWechatId(session.getOpenid());
-                    userService.save(user);
-                }
-            }
+//            if (StrUtil.isNotBlank(session.getOpenid())) {
+//                User user = userService.findByWechatId(session.getOpenid());
+//                if (user == null) {
+//                    user = new User();
+//                    user.setWechatId(session.getOpenid());
+//                    userService.save(user);
+//                }
+//            }
             return R.data(session);
         } catch (WxErrorException e) {
             log.error(e.getMessage(), e);
