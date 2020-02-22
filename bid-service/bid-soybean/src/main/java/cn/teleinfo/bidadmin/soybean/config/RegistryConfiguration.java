@@ -35,6 +35,7 @@ public class RegistryConfiguration implements WebMvcConfigurer {
 		secureRegistry.excludePathPatterns("/soybean/front/**");
 		// TODO 权限暂时全部放开
 		secureRegistry.excludePathPatterns("/wx/**");
+		secureRegistry.excludePathPatterns("/user/**");
 		return secureRegistry;
 	}
 
