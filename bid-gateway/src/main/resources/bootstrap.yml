@@ -28,6 +28,8 @@ blade:
         location: /bid-blockchain
       - name: app后台服务
         location: /bid-app
+      - name: soybean后台服务
+        location: /bid-soybean
 info:
   version: 1.0.0
 
