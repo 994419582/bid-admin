@@ -50,6 +50,20 @@ public class UserController extends BladeController {
 
 	private IUserService userService;
 
+    /**
+     * 是否存在
+     */
+    @GetMapping("/exist")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "是否存在", notes = "是否存在user")
+    public R<UserVO> detail(@RequestParam(name = "openid") String openid) {
+        User detail = userService.findByWechatId(openid);
+        if (detail == null) {
+            return R.data(null);
+        }
+        return R.data(UserWrapper.build().entityVO(detail));
+    }
+
 	/**
 	* 详情
 	*/
@@ -63,6 +77,17 @@ public class UserController extends BladeController {
 
 	/**
 	* 分页 
+	*/
+	@GetMapping("/select")
+    @ApiOperationSupport(order = 2)
+	@ApiOperation(value = "分页", notes = "传入user")
+	public R<List<User>> select(User user, Query query) {
+		IPage<User> pages = userService.page(Condition.getPage(query), Condition.getQueryWrapper(user));
+		return R.data(pages.getRecords());
+	}
+
+	/**
+	* 分页
 	*/
 	@GetMapping("/list")
     @ApiOperationSupport(order = 2)

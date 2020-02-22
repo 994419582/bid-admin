@@ -19,7 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.Quarantine;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineVO;
 import cn.teleinfo.bidadmin.soybean.mapper.QuarantineMapper;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineService;
-import org.springblade.core.mp.base.BaseServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -30,7 +30,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @since 2020-02-21
  */
 @Service
-public class QuarantineServiceImpl extends BaseServiceImpl<QuarantineMapper, Quarantine> implements IQuarantineService {
+public class QuarantineServiceImpl extends ServiceImpl<QuarantineMapper, Quarantine> implements IQuarantineService {
 
 	@Override
 	public IPage<QuarantineVO> selectQuarantinePage(IPage<QuarantineVO> page, QuarantineVO quarantine) {

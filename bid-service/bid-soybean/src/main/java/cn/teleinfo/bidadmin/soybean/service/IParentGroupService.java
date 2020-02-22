@@ -17,6 +17,7 @@ package cn.teleinfo.bidadmin.soybean.service;
 
 import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.vo.ParentGroupVO;
+import com.baomidou.mybatisplus.extension.service.IService;
 import org.springblade.core.mp.base.BaseService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -26,7 +27,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @author Blade
  * @since 2020-02-21
  */
-public interface IParentGroupService extends BaseService<ParentGroup> {
+public interface IParentGroupService extends IService<ParentGroup> {
 
 	/**
 	 * 自定义分页

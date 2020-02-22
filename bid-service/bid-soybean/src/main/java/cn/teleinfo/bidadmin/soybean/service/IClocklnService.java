@@ -17,7 +17,7 @@ package cn.teleinfo.bidadmin.soybean.service;
 
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
-import org.springblade.core.mp.base.BaseService;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 /**
@@ -26,7 +26,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @author Blade
  * @since 2020-02-21
  */
-public interface IClocklnService extends BaseService<Clockln> {
+public interface IClocklnService extends IService<Clockln> {
 
 	/**
 	 * 自定义分页

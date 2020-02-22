@@ -23,6 +23,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import java.io.Serializable;
+
 /**
  * 实体类
  *
@@ -31,9 +33,8 @@ import org.springblade.core.mp.base.BaseEntity;
  */
 @Data
 @TableName("soybean_parent_group")
-@EqualsAndHashCode(callSuper = true)
 @ApiModel(value = "ParentGroup对象", description = "ParentGroup对象")
-public class ParentGroup extends BaseEntity {
+public class ParentGroup implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

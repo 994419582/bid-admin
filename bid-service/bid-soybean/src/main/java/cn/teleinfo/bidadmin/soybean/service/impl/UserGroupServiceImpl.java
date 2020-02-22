@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import cn.teleinfo.bidadmin.soybean.mapper.UserGroupMapper;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,7 +31,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @since 2020-02-21
  */
 @Service
-public class UserGroupServiceImpl extends BaseServiceImpl<UserGroupMapper, UserGroup> implements IUserGroupService {
+public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup> implements IUserGroupService {
 
 	@Override
 	public IPage<UserGroupVO> selectUserGroupPage(IPage<UserGroupVO> page, UserGroupVO userGroup) {

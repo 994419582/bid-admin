@@ -19,7 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.mapper.ClocklnMapper;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
-import org.springblade.core.mp.base.BaseServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -30,7 +30,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @since 2020-02-21
  */
 @Service
-public class ClocklnServiceImpl extends BaseServiceImpl<ClocklnMapper, Clockln> implements IClocklnService {
+public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> implements IClocklnService {
 
 	@Override
 	public IPage<ClocklnVO> selectClocklnPage(IPage<ClocklnVO> page, ClocklnVO clockln) {

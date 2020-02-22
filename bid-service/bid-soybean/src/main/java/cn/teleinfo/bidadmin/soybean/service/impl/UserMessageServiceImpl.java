@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.UserMessage;
 import cn.teleinfo.bidadmin.soybean.vo.UserMessageVO;
 import cn.teleinfo.bidadmin.soybean.mapper.UserMessageMapper;
 import cn.teleinfo.bidadmin.soybean.service.IUserMessageService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,7 +31,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
  * @since 2020-02-21
  */
 @Service
-public class UserMessageServiceImpl extends BaseServiceImpl<UserMessageMapper, UserMessage> implements IUserMessageService {
+public class UserMessageServiceImpl extends ServiceImpl<UserMessageMapper, UserMessage> implements IUserMessageService {
 
 	@Override
 	public IPage<UserMessageVO> selectUserMessagePage(IPage<UserMessageVO> page, UserMessageVO userMessage) {

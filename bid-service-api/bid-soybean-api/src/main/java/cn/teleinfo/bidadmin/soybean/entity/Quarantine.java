@@ -18,12 +18,14 @@ package cn.teleinfo.bidadmin.soybean.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -34,9 +36,8 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName("soybean_quarantine")
-@EqualsAndHashCode(callSuper = true)
 @ApiModel(value = "Quarantine对象", description = "Quarantine对象")
-public class Quarantine extends BaseEntity {
+public class Quarantine implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -52,6 +53,7 @@ public class Quarantine extends BaseEntity {
      * 开始观察时间
      */
     @ApiModelProperty(value = "开始观察时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime startTime;
     /**
      * 当前地点
@@ -62,7 +64,7 @@ public class Quarantine extends BaseEntity {
      * 体温
      */
     @ApiModelProperty(value = "体温")
-    private Integer temperature;
+    private Double temperature;
     /**
      * 发热
      */
