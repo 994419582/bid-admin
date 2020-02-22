@@ -6,7 +6,7 @@
     <resultMap id="childrenGroupResultMap" type="cn.teleinfo.bidadmin.soybean.entity.ChildrenGroup">
         <id column="id" property="id"/>
         <result column="status" property="status"/>
-        <result column="parent_id" property="parentId"/>
+        <result column="child_id" property="childId"/>
         <result column="group_id" property="groupId"/>
     </resultMap>
 
