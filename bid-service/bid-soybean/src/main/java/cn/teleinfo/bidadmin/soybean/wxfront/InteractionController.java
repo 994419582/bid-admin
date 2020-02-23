@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.controller;
+package cn.teleinfo.bidadmin.soybean.wxfront;
 
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Quarantine;
@@ -52,7 +52,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/wx/interaction")
-@Api(value = "", tags = "用户打卡交互接口")
+@Api(value = "用户打卡交互接口", tags = "用户打卡交互接口")
 public class InteractionController extends BladeController {
 
 	private IClocklnService clocklnService;

@@ -31,6 +31,7 @@ import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
 import org.springblade.core.tool.utils.StringUtil;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -66,7 +67,7 @@ public class WxClocklnCensusController extends BladeController {
 			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
 			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query")
 	})
-	public R<IPage<ClocklnVO>> list(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") Date clocklnTime, Query query) {
+	public R<IPage<ClocklnVO>> list(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime, Query query) {
 		if (groupId == null){
 			return R.fail("群组ID不能为空");
 		}
@@ -88,7 +89,7 @@ public class WxClocklnCensusController extends BladeController {
 			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
 			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query")
 	})
-	public R census(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") Date clocklnTime) {
+	public R census(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd") Date clocklnTime) {
 		DecimalFormat df = new DecimalFormat("#.00");
 		if (groupId == null){
 			return R.fail("群组ID不能为空");
@@ -101,7 +102,7 @@ public class WxClocklnCensusController extends BladeController {
 
 		StringBuffer buffer=new StringBuffer("{");
 		//写入总体统计数据
-		buffer.append("\"totality\":{\"total\":"+group.getUserAccount()+",\"clockIn\":"+list.size()+",\"unClockIn\":"+(group.getUserAccount()-list.size())+"},");
+		buffer.append("'totality':{'total':"+group.getUserAccount()+",'clockIn':"+list.size()+",'unClockIn':"+(group.getUserAccount()-list.size())+"},");
 
 		double healthy=0;
 		double healthyPer=0;
@@ -110,12 +111,12 @@ public class WxClocklnCensusController extends BladeController {
 		double other=0;
 		double otherPer=0;
 
-		double beijing=0;
-		double beijingPer=0;
-		double hubei=0;
-		double hubeiPer=0;
-		double otherRegion=0;
-		double otherRegionPer=0;
+		double beijing=0.0;
+		double beijingPer=0.0;
+		double hubei=0.0;
+		double hubeiPer=0.0;
+		double otherRegion=0.0;
+		double otherRegionPer=0.0;
 
 		for (ClocklnVO c:list ) {
 			if (c.getHealthy() != null && c.getHealthy()==1){
@@ -146,14 +147,14 @@ public class WxClocklnCensusController extends BladeController {
 
 
 		//计算并写入第一张饼图数据
-		buffer.append("\"healthy\":{[\"name\":\"健康\",\"value\":"+ healthy+",\"percent\":"+df.format(healthyPer)+"]," +
-				"[\"name\":\"发烧，咳嗽\",\"value\":"+ferver+",\"percent\":"+df.format(ferverPer)+"]," +
-				"[\"name\":\"其他症状\",\"value\":"+other+",\"percent\":"+df.format(otherPer)+"]},");
+		buffer.append("'healthy':{['name':'健康','value':"+ new Double(healthy).intValue()+",'percent':"+df.format(healthyPer)+"]," +
+				"['name':'发烧，咳嗽','value':"+new Double(ferver).intValue()+",'percent':"+df.format(ferverPer)+"]," +
+				"['name':'其他症状','value':"+new Double(other).intValue()+",'percent':"+df.format(otherPer)+"]},");
 
 		//计算并写入第二张饼图数据
-		buffer.append("\"region\":{[\"name\":\"北京\",\"value\":"+ beijing+",\"percent\":"+df.format(+beijingPer)+"]," +
-				"[\"name\":\"湖北\",\"value\":"+hubei+",\"percent\":"+df.format(hubeiPer)+"]," +
-				"[\"name\":\"其他地区\",\"value\":"+otherRegion+",\"percent\":"+df.format(otherRegionPer)+"]}}");
+		buffer.append("'region':{['name':'北京','value':"+new Double(beijing).intValue()+",'percent':"+df.format(+beijingPer)+"]," +
+				"['name':'湖北','value':"+new Double(hubei).intValue()+",'percent':"+df.format(hubeiPer)+"]," +
+				"['name':'其他地区','value':"+new Double(otherRegion).intValue()+",'percent':"+df.format(otherRegionPer)+"]}}");
 
 
 		return R.data(buffer.toString());
