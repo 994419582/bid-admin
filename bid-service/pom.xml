@@ -17,14 +17,14 @@
     <description>bid 微服务集合</description>
 
     <modules>
-        <module>bid-app</module>
+        <!--<module>bid-app</module>-->
         <module>bid-desk</module>
         <module>bid-log</module>
         <module>bid-system</module>
         <module>bid-user</module>
         <module>bid-quartz</module>
         <module>bid-cms</module>
-        <module>bid-blockchain</module>
+        <!--<module>bid-blockchain</module>-->
         <module>bid-soybean</module>
     </modules>
 

@@ -34,6 +34,8 @@ import cn.teleinfo.bidadmin.soybean.vo.QuarantineVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.QuarantineWrapper;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineService;
 import org.springblade.core.boot.ctrl.BladeController;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -45,7 +47,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/quarantine")
-@Api(value = "", tags = "接口")
+@Api(value = "", tags = "用户隔离接口")
 public class QuarantineController extends BladeController {
 
 	private IQuarantineService quarantineService;
@@ -69,7 +71,18 @@ public class QuarantineController extends BladeController {
 	@ApiOperation(value = "分页", notes = "传入quarantine")
 	public R<List<Quarantine>> select(Quarantine quarantine, Query query) {
 		IPage<Quarantine> pages = quarantineService.page(Condition.getPage(query), Condition.getQueryWrapper(quarantine));
-		return R.data(pages.getRecords());
+		List<Quarantine> records = pages.getRecords();
+		for (Quarantine r : records) {
+			LocalDateTime startTime = r.getStartTime();
+			StringBuilder sb = new StringBuilder();
+			sb.append(startTime.getYear());
+			sb.append("-");
+			sb.append(startTime.getMonthValue() + 1);
+			sb.append("-");
+			sb.append(startTime.getDayOfMonth());
+			r.setStartTimeString(sb.toString());
+		}
+		return R.data(records);
 	}
 
 	/**
@@ -101,6 +114,7 @@ public class QuarantineController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入quarantine")
 	public R save(@Valid @RequestBody Quarantine quarantine) {
+		quarantine.setCreateTime(LocalDateTime.now());
 		return R.status(quarantineService.save(quarantine));
 	}
 
@@ -121,6 +135,7 @@ public class QuarantineController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入quarantine")
 	public R submit(@Valid @RequestBody Quarantine quarantine) {
+		quarantine.setCreateTime(LocalDateTime.now());
 		return R.status(quarantineService.saveOrUpdate(quarantine));
 	}
 

@@ -16,14 +16,13 @@
 package cn.teleinfo.bidadmin.soybean.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.springblade.core.mp.base.BaseEntity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -55,6 +54,9 @@ public class Quarantine implements Serializable {
     @ApiModelProperty(value = "开始观察时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime startTime;
+
+    @TableField(exist = false)
+    private String startTimeString;
     /**
      * 当前地点
      */
@@ -106,5 +108,7 @@ public class Quarantine implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remarks;
 
-
+    @ApiModelProperty(value = "打卡时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
 }
