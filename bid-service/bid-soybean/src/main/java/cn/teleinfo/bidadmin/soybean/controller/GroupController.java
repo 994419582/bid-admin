@@ -15,6 +15,8 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
+import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
+import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
@@ -50,6 +52,8 @@ public class GroupController extends BladeController {
 
 	private IGroupService groupService;
 
+	private IParentGroupService parentGroupService;
+
 	/**
 	* 详情
 	*/
@@ -58,7 +62,24 @@ public class GroupController extends BladeController {
 	@ApiOperation(value = "详情", notes = "传入group")
 	public R<GroupVO> detail(Group group) {
 		Group detail = groupService.getOne(Condition.getQueryWrapper(group));
+		ParentGroup parentGroup = new ParentGroup();
+		parentGroup.setGroupId(group.getId());
+		parentGroup = parentGroupService.getOne(Condition.getQueryWrapper(parentGroup));
+		if (parentGroup != null) {
+			detail.setParentGroup(parentGroup.getParentId());
+		}
 		return R.data(GroupWrapper.build().entityVO(detail));
+	}
+
+	/**
+	 * 所有群组
+	 */
+	@GetMapping("/select")
+	@ApiOperationSupport(order = 2)
+	@ApiOperation(value = "所有群组", notes = "传入group")
+	public R<List<Group>> select(Group group) {
+		List<Group> groups = groupService.list(Condition.getQueryWrapper(group));
+		return R.data(groups);
 	}
 
 	/**
@@ -90,7 +111,7 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入group")
 	public R save(@Valid @RequestBody Group group) {
-		return R.status(groupService.save(group));
+		return R.status(groupService.saveGroupMiddleTable(group));
 	}
 
 	/**
@@ -100,7 +121,7 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 5)
 	@ApiOperation(value = "修改", notes = "传入group")
 	public R update(@Valid @RequestBody Group group) {
-		return R.status(groupService.updateById(group));
+		return R.status(groupService.updateGroupMiddleTable(group));
 	}
 
 	/**
@@ -110,10 +131,10 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入group")
 	public R submit(@Valid @RequestBody Group group) {
-		return R.status(groupService.saveOrUpdate(group));
+		return R.status(groupService.saveOrUpdateGroupMiddleTable(group));
 	}
 
-	
+
 	/**
 	* 删除 
 	*/
@@ -121,7 +142,7 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 7)
 	@ApiOperation(value = "逻辑删除", notes = "传入ids")
 	public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids) {
-		return R.status(groupService.removeByIds(Func.toIntList(ids)));
+		return R.status(groupService.removeGroupMiddleTableById(Func.toIntList(ids)));
 	}
 
 	

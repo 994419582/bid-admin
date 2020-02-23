@@ -16,6 +16,7 @@
 package cn.teleinfo.bidadmin.soybean.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -76,6 +77,16 @@ public class Group implements Serializable {
     @ApiModelProperty(value = "群管理员")
     private String managers;
     /**
+     * 群创建人
+     */
+    @ApiModelProperty(value = "群创建人")
+    private Integer createUser;
+    /**
+     * 群状态(0:正常，1:删除，2:审核中)
+     */
+    @ApiModelProperty(value = "群状态(0:正常，1:删除，2:审核中)")
+    private Integer status;
+    /**
      * 是否需要审批(0:否，1:是)
      */
     @ApiModelProperty(value = "是否需要审批(0:否，1:是)")
@@ -101,5 +112,7 @@ public class Group implements Serializable {
     @ApiModelProperty(value = "详细地址")
     private String detailAddress;
 
-
+    @ApiModelProperty(value = "父群主")
+    @TableField(exist = false)
+    private Integer parentGroup;
 }

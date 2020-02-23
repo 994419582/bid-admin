@@ -36,6 +36,7 @@ public class RegistryConfiguration implements WebMvcConfigurer {
 		// TODO 权限暂时全部放开
 		secureRegistry.excludePathPatterns("/wx/**");
 		secureRegistry.excludePathPatterns("/user/**");
+		secureRegistry.excludePathPatterns("/group/**");
 		return secureRegistry;
 	}
 

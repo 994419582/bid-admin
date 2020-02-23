@@ -21,6 +21,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.springblade.core.mp.base.BaseService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
+import java.util.List;
+
 /**
  *  服务类
  *
@@ -38,4 +40,33 @@ public interface IGroupService extends IService<Group> {
 	 */
 	IPage<GroupVO> selectGroupPage(IPage<GroupVO> page, GroupVO group);
 
+	/**
+	 * 新增群（包含中间表）
+	 * @param group 群组
+	 * @return
+	 */
+	boolean saveGroupMiddleTable(Group group);
+
+	/**
+	 * 更新群（包含中间表）
+	 * @param group 群组
+	 * @return
+	 */
+	boolean updateGroupMiddleTable(Group group);
+
+
+
+	/**
+	 * TableId 存在更新记录，否插入一条记录（包含中间表）
+	 * @param group 群组
+	 * @return
+	 */
+	boolean saveOrUpdateGroupMiddleTable(Group group);
+
+	/**
+	 * 删除群组和中间表
+	 * @param ids 群组
+	 * @return
+	 */
+	boolean removeGroupMiddleTableById(List<Integer> ids);
 }
