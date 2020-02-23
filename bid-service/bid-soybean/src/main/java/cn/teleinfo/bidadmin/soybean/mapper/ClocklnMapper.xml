@@ -17,9 +17,53 @@
         <result column="reason" property="reason"/>
     </resultMap>
 
+    <!-- 通用查询映射结果 -->
+    <resultMap id="clocklnResultVOMap" type="cn.teleinfo.bidadmin.soybean.vo.ClocklnVO">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="user_id" property="userId"/>
+        <result column="address" property="address"/>
+        <result column="healthy" property="healthy"/>
+        <result column="hospital" property="hospital"/>
+        <result column="wuhan" property="wuhan"/>
+        <result column="gobacktime" property="gobacktime"/>
+        <result column="remarks" property="remarks"/>
+        <result column="quarantine" property="quarantine"/>
+        <result column="reason" property="reason"/>
+        <result column="name" property="userName"/>
+        <result column="avatar_url" property="avatarUrl"/>
+    </resultMap>
+
 
     <select id="selectClocklnPage" resultMap="clocklnResultMap">
-        select * from soybean_clockln where is_deleted = 0
+        select * from soybean_clockln where 1=1
     </select>
+
+    <select id="selectClocklnPageByGroup" resultMap="clocklnResultVOMap">
+        select t.* ,u.name,u.avatar_url from soybean_clockln t ,soybean_user_group g ,soybean_user u where
+        t.user_id=u.id
+        <if test="groupId !=null">
+          AND  g.group_id=#{groupId}
+        </if>
+
+        <if test="clockInTime !=null">
+          AND TO_DAYS(t.create_time) =TO_DAYS(#{clockInTime})
+        </if>
+        ORDER BY t.create_time DESC
+    </select>
+
+    <select id="selectClocklnByGroup" resultMap="clocklnResultMap">
+        select t.* from soybean_clockln t ,soybean_user_group g  where
+        1=1
+        <if test="groupId !=null">
+            AND  g.group_id=#{groupId}
+        </if>
+
+        <if test="clockInTime !=null">
+            AND TO_DAYS(t.create_time) =TO_DAYS(#{clockInTime})
+        </if>
+        ORDER BY t.create_time DESC
+    </select>
+
 
 </mapper>

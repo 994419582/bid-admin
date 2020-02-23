@@ -19,6 +19,10 @@ import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  *  服务类
@@ -36,5 +40,22 @@ public interface IClocklnService extends IService<Clockln> {
 	 * @return
 	 */
 	IPage<ClocklnVO> selectClocklnPage(IPage<ClocklnVO> page, ClocklnVO clockln);
+
+	/**
+	 *  根据组ID和时间统计当日打卡数据
+	 * @param page 分页信息
+	 * @param groupId 群组ID
+	 * @param clockInTime 统计日期
+	 * @return
+	 */
+	IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, Integer groupId, Date clockInTime);
+
+	/**
+	 *  根据群组ID和日期查询当日打卡数据 非分页
+	 * @param groupId
+	 * @param clockInTime
+	 * @return
+	 */
+	List<ClocklnVO> selectClocklnByGroup(Integer groupId, Date clockInTime);
 
 }

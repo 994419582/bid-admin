@@ -22,6 +22,10 @@ import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  *  服务实现类
@@ -37,4 +41,13 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
 		return page.setRecords(baseMapper.selectClocklnPage(page, clockln));
 	}
 
+	@Override
+	public  IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, Integer groupId, Date clockInTime){
+		return page.setRecords(baseMapper.selectClocklnPageByGroup(page, groupId,clockInTime));
+	}
+
+	@Override
+	public  List<ClocklnVO> selectClocklnByGroup(Integer groupId,  Date clockInTime){
+		return baseMapper.selectClocklnByGroup(groupId,clockInTime);
+	}
 }

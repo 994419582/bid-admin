@@ -32,4 +32,7 @@ import lombok.EqualsAndHashCode;
 public class ClocklnVO extends Clockln {
 	private static final long serialVersionUID = 1L;
 
+	private String userName;
+	private  String avatarUrl;
+
 }
