@@ -19,6 +19,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -116,5 +118,15 @@ public class OnlyTest {
 
         String s = "{'Owner':'0000000000000000000000000000000000000000', 'VoteCandidates':'[]'}";
         System.out.println(s.length());
+    }
+
+    @Test
+    public void testTime() {
+        LocalDateTime now = LocalDateTime.now();
+        //当天的零点
+        System.out.println("当天的零点:  "+ LocalDateTime.of(now.toLocalDate(), LocalTime.MIN));
+
+        //当天的最后时间
+        System.out.println("当天的最后时间:  "+LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
     }
 }

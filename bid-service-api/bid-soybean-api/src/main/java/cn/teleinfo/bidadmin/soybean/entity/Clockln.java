@@ -18,6 +18,7 @@ package cn.teleinfo.bidadmin.soybean.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,6 +26,7 @@ import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * 实体类
@@ -83,7 +85,7 @@ public class Clockln implements Serializable {
     /**
      * 是否在隔离器
      */
-    @ApiModelProperty(value = "是否在隔离器")
+    @ApiModelProperty(value = "是否在隔离期")
     private Integer quarantine;
     /**
      * 未返京原因
@@ -91,5 +93,7 @@ public class Clockln implements Serializable {
     @ApiModelProperty(value = "未返京原因")
     private String reason;
 
-
+    @ApiModelProperty(value = "打卡时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime createTime;
 }

@@ -34,6 +34,8 @@ import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.ClocklnWrapper;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import org.springblade.core.boot.ctrl.BladeController;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -45,7 +47,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/clockln")
-@Api(value = "", tags = "接口")
+@Api(value = "", tags = "用户打卡接口")
 public class ClocklnController extends BladeController {
 
 	private IClocklnService clocklnService;
@@ -90,6 +92,7 @@ public class ClocklnController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入clockln")
 	public R save(@Valid @RequestBody Clockln clockln) {
+		clockln.setCreateTime(LocalDateTime.now());
 		return R.status(clocklnService.save(clockln));
 	}
 
@@ -110,6 +113,7 @@ public class ClocklnController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入clockln")
 	public R submit(@Valid @RequestBody Clockln clockln) {
+		clockln.setCreateTime(LocalDateTime.now());
 		return R.status(clocklnService.saveOrUpdate(clockln));
 	}
 

@@ -34,6 +34,8 @@ import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.QuarantineTripWrapper;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineTripService;
 import org.springblade.core.boot.ctrl.BladeController;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -45,7 +47,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/quarantinetrip")
-@Api(value = "", tags = "接口")
+@Api(value = "", tags = "用户隔离行程接口")
 public class QuarantineTripController extends BladeController {
 
 	private IQuarantineTripService quarantineTripService;
@@ -90,6 +92,7 @@ public class QuarantineTripController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入quarantineTrip")
 	public R save(@Valid @RequestBody QuarantineTrip quarantineTrip) {
+		quarantineTrip.setCreateTime(LocalDateTime.now());
 		return R.status(quarantineTripService.save(quarantineTrip));
 	}
 
@@ -110,6 +113,7 @@ public class QuarantineTripController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入quarantineTrip")
 	public R submit(@Valid @RequestBody QuarantineTrip quarantineTrip) {
+		quarantineTrip.setCreateTime(LocalDateTime.now());
 		return R.status(quarantineTripService.saveOrUpdate(quarantineTrip));
 	}
 

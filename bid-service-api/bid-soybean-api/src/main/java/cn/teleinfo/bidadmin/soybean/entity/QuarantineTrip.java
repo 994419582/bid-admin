@@ -76,5 +76,7 @@ public class QuarantineTrip implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remarks;
 
-
+    @ApiModelProperty(value = "打卡时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime createTime;
 }
