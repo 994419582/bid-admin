@@ -28,6 +28,7 @@ import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -47,7 +48,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/group")
-@Api(value = "", tags = "接口")
+@Api(value = "群组管理接口", tags = "群组管理接口")
 public class GroupController extends BladeController {
 
 	private IGroupService groupService;
@@ -145,5 +146,4 @@ public class GroupController extends BladeController {
 		return R.status(groupService.removeGroupMiddleTableById(Func.toIntList(ids)));
 	}
 
-	
 }

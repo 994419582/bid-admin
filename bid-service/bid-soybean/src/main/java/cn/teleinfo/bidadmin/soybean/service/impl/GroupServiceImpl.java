@@ -15,13 +15,9 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
-import cn.teleinfo.bidadmin.soybean.entity.ChildrenGroup;
-import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
+import cn.teleinfo.bidadmin.soybean.entity.*;
 import cn.teleinfo.bidadmin.soybean.mapper.GroupMapper;
-import cn.teleinfo.bidadmin.soybean.service.IChildrenGroupService;
-import cn.teleinfo.bidadmin.soybean.service.IGroupService;
-import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
+import cn.teleinfo.bidadmin.soybean.service.*;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -50,6 +46,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Autowired
     private IChildrenGroupService childrenGroupService;
+
+    @Autowired
+    private IUserGroupService userGroupService;
+
+    @Autowired
+    private IGroupLogService groupLogService;
 
     @Override
     public IPage<GroupVO> selectGroupPage(IPage<GroupVO> page, GroupVO group) {
@@ -114,6 +116,40 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             //删除子群组
             childrenGroupService.remove(Wrappers.<ChildrenGroup>lambdaQuery().eq(ChildrenGroup::getChildId, id));
         }
+        return true;
+    }
+
+    @Override
+    public boolean addUser(UserGroup userGroup) {
+        if (getById(userGroup.getGroupId()) == null) {
+            return false;
+        }
+        // TODO: 2020/2/23 用户校验后期再做
+        //添加用户
+        userGroupService.save(userGroup);
+        //添加日志
+        GroupLog groupLog = new GroupLog();
+        groupLog.setUserId(userGroup.getUserId());
+        groupLog.setGroupId(userGroup.getGroupId());
+        groupLog.setEventType(GroupLog.NEW_USER);
+        groupLogService.save(groupLog);
+        return true;
+    }
+
+    @Override
+    public boolean delUser(UserGroup userGroup) {
+        if (getById(userGroup.getGroupId()) == null) {
+            return false;
+        }
+        // TODO: 2020/2/23 用户校验后期再做
+        //删除用户
+        userGroupService.remove(Condition.getQueryWrapper(userGroup));
+        //添加日志
+        GroupLog groupLog = new GroupLog();
+        groupLog.setUserId(userGroup.getUserId());
+        groupLog.setGroupId(userGroup.getGroupId());
+        groupLog.setEventType(GroupLog.DELETE_USER);
+        groupLogService.save(groupLog);
         return true;
     }
 
