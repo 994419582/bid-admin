@@ -15,10 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,6 +23,7 @@ import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 实体类
@@ -45,7 +43,7 @@ public class Group implements Serializable {
      */
     @ApiModelProperty(value = "主键")
     @TableId(value = "id", type = IdType.AUTO)
-  private Integer id;
+    private Integer id;
     /**
      * 群组名
      */
@@ -81,6 +79,24 @@ public class Group implements Serializable {
      */
     @ApiModelProperty(value = "群创建人")
     private Integer createUser;
+
+    /**
+     * 创建时间
+     */
+    @ApiModelProperty(value = "创建时间")
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+    /**
+     * 更新人
+     */
+    @ApiModelProperty(value = "更新人")
+    private Integer updateUser;
+    /**
+     * 更新时间
+     */
+    @ApiModelProperty(value = "更新时间")
+    @TableField(fill = FieldFill.UPDATE)
+    private Date updateTime;
     /**
      * 群状态(0:正常，1:删除，2:审核中)
      */
