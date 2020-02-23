@@ -22,8 +22,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.springblade.core.mp.base.BaseEntity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -77,6 +75,6 @@ public class QuarantineTrip implements Serializable {
     private String remarks;
 
     @ApiModelProperty(value = "打卡时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 }

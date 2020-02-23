@@ -71,7 +71,18 @@ public class QuarantineController extends BladeController {
 	@ApiOperation(value = "分页", notes = "传入quarantine")
 	public R<List<Quarantine>> select(Quarantine quarantine, Query query) {
 		IPage<Quarantine> pages = quarantineService.page(Condition.getPage(query), Condition.getQueryWrapper(quarantine));
-		return R.data(pages.getRecords());
+		List<Quarantine> records = pages.getRecords();
+		for (Quarantine r : records) {
+			LocalDateTime startTime = r.getStartTime();
+			StringBuilder sb = new StringBuilder();
+			sb.append(startTime.getYear());
+			sb.append("-");
+			sb.append(startTime.getMonthValue() + 1);
+			sb.append("-");
+			sb.append(startTime.getDayOfMonth());
+			r.setStartTimeString(sb.toString());
+		}
+		return R.data(records);
 	}
 
 	/**
