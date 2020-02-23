@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -85,4 +86,10 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	boolean delUser(UserGroup userGroup);
+
+	/**
+	 * 群组下拉树形图
+	 * @return
+	 */
+    List<HashMap> tree();
 }

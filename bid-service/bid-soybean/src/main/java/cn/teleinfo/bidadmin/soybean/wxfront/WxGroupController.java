@@ -15,17 +15,24 @@
  */
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
+import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
+import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
+import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
+import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.api.R;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *  控制器
@@ -36,10 +43,17 @@ import javax.validation.Valid;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/wx/group")
-@Api(value = "", tags = "群组操作用户接口")
+@Api(value = "", tags = "群组接口")
 public class WxGroupController extends BladeController {
 
 	private IGroupService groupService;
+
+	@GetMapping("/tree")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "下拉树形图", notes = "下拉树形图")
+	public R<List<HashMap>> tree() {
+		return R.data(groupService.tree());
+	}
 
 	/**
      * 群组添加用户

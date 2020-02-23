@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -43,6 +44,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Autowired
     private IParentGroupService parentGroupService;
+
+    @Autowired
+    private GroupMapper groupMapper;
 
     @Autowired
     private IChildrenGroupService childrenGroupService;
@@ -151,6 +155,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         groupLog.setEventType(GroupLog.DELETE_USER);
         groupLogService.save(groupLog);
         return true;
+    }
+
+    @Override
+    public List<HashMap> tree() {
+        return groupMapper.tree();
     }
 
     @Override

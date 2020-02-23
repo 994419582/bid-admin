@@ -19,6 +19,9 @@ import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -38,4 +41,10 @@ public interface GroupMapper extends BaseMapper<Group> {
 	 */
 	List<GroupVO> selectGroupPage(IPage page, GroupVO group);
 
+	/**
+	 * 群组下拉树
+	 * @return
+	 */
+	@Select("select s.id,s.name,p.parent_id as pId from soybean_group s, soybean_parent_group p where s.id = p.group_id order by p.parent_id")
+	List<HashMap> tree();
 }
