@@ -5,9 +5,6 @@
     <!-- 通用查询映射结果 -->
     <resultMap id="userResultMap" type="cn.teleinfo.bidadmin.soybean.entity.User">
         <id column="id" property="id"/>
-        <result column="create_time" property="createTime"/>
-        <result column="update_time" property="updateTime"/>
-        <result column="status" property="status"/>
         <result column="wechat_id" property="wechatId"/>
         <result column="nickname" property="nickname"/>
         <result column="name" property="name"/>

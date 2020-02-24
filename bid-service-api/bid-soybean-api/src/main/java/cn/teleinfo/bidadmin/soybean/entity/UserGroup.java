@@ -54,7 +54,7 @@ public class UserGroup implements Serializable {
      * 群组主键
      */
     @ApiModelProperty(value = "群组主键")
-    private String groupId;
+    private Integer groupId;
 
 
 }

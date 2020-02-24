@@ -32,4 +32,5 @@ import lombok.EqualsAndHashCode;
 public class GroupVO extends Group {
 	private static final long serialVersionUID = 1L;
 
+	private Integer userId;
 }

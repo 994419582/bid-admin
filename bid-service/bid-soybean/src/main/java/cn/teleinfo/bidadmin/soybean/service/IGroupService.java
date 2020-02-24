@@ -16,11 +16,13 @@
 package cn.teleinfo.bidadmin.soybean.service;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.springblade.core.mp.base.BaseService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.springblade.core.mp.support.Query;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -69,4 +71,47 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	boolean removeGroupMiddleTableById(List<Integer> ids);
+
+	/**
+	 * 群组添加用户
+	 * @param userGroup 用户组中间表
+	 * @return
+	 */
+
+    boolean addUser(UserGroup userGroup);
+
+	/**
+	 * 群组删除用户
+	 * @param userGroup 用户组中间表
+	 * @return
+	 */
+	boolean delUser(UserGroup userGroup);
+
+	/**
+	 * 群组下拉树形图
+	 * @return
+	 */
+    List<HashMap> tree();
+
+	/**
+	 * 群组明细
+	 * @param group
+	 * @return
+	 */
+	Group detail(Group group);
+
+	/**
+	 * 群组下拉树
+	 * @return
+	 */
+	List<HashMap> select();
+
+	/**
+	 * 根据父群组查询子群组
+	 * @param group
+	 * @param query
+	 * @return
+	 */
+	IPage<Group> children(Group group, Query query);
+
 }

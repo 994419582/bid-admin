@@ -19,6 +19,9 @@ import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,5 +40,10 @@ public interface ClocklnMapper extends BaseMapper<Clockln> {
 	 * @return
 	 */
 	List<ClocklnVO> selectClocklnPage(IPage page, ClocklnVO clockln);
+
+
+	List<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
+
+	List<ClocklnVO> selectClocklnByGroup(@RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
 
 }

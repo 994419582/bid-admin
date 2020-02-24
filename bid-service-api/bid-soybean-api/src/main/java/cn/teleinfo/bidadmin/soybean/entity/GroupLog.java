@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
@@ -38,6 +39,11 @@ import java.io.Serializable;
 public class GroupLog implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    //新增组用户
+    public static Integer NEW_USER = 0;
+    //删除组用户
+    public static Integer DELETE_USER = 1;
 
     /**
      * 主键
