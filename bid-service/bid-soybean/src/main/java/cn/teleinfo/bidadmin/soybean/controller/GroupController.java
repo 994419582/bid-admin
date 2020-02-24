@@ -85,8 +85,8 @@ public class GroupController extends BladeController {
 	@GetMapping("/children")
 	@ApiOperationSupport(order = 2)
 	@ApiOperation(value = "根据父群组查询子群组 ", notes = "传入group")
-	public R<IPage<Group>> children(Group group, Query query) {
-		IPage<Group> groups = groupService.children(group, query);
+	public R<List<Group>> children(Group group) {
+		List<Group> groups = groupService.children(group);
 		return R.data(groups);
 	}
 

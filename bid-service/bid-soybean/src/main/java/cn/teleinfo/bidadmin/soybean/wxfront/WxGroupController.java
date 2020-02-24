@@ -16,7 +16,6 @@
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
@@ -28,7 +27,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
-import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
@@ -76,8 +74,8 @@ public class WxGroupController extends BladeController {
     @GetMapping("/children")
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "根据父群组查询子群组 ", notes = "传入group")
-    public R<IPage<Group>> children(Group group, Query query) {
-        IPage<Group> groups = groupService.children(group, query);
+    public R<List<Group>> children(Group group) {
+        List<Group> groups = groupService.children(group);
         return R.data(groups);
     }
 
@@ -93,7 +91,7 @@ public class WxGroupController extends BladeController {
     }
 
     /**
-     * 树形下拉列表字典样式二
+     * 树形下拉列表字典样式
      */
     @GetMapping("/tree")
     @ApiOperationSupport(order = 1)
@@ -102,16 +100,16 @@ public class WxGroupController extends BladeController {
         return R.data(groupService.tree());
     }
 
-    /**
-     * 树形下拉列表字典样式二
-     */
-    @GetMapping("/select")
-    @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "所有群组", notes = "下拉树形图二")
-    public R<List<HashMap>> select() {
-        List<HashMap> tree = groupService.select();
-        return R.data(tree);
-    }
+//    /**
+//     * 树形下拉列表字典样式二
+//     */
+//    @GetMapping("/select")
+//    @ApiOperationSupport(order = 2)
+//    @ApiOperation(value = "所有群组", notes = "下拉树形图二")
+//    public R<List<HashMap>> select() {
+//        List<HashMap> tree = groupService.select();
+//        return R.data(tree);
+//    }
 
     /**
      * 新增群组
