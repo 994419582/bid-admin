@@ -15,8 +15,8 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
-import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
+import cn.teleinfo.bidadmin.soybean.service.impl.GroupServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
@@ -28,7 +28,6 @@ import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -37,6 +36,8 @@ import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import org.springblade.core.boot.ctrl.BladeController;
+
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -62,24 +63,30 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 1)
 	@ApiOperation(value = "详情", notes = "传入group")
 	public R<GroupVO> detail(Group group) {
-		Group detail = groupService.getOne(Condition.getQueryWrapper(group));
-		ParentGroup parentGroup = new ParentGroup();
-		parentGroup.setGroupId(group.getId());
-		parentGroup = parentGroupService.getOne(Condition.getQueryWrapper(parentGroup));
-		if (parentGroup != null) {
-			detail.setParentGroup(parentGroup.getParentId());
-		}
+		Group detail = groupService.detail(group);
 		return R.data(GroupWrapper.build().entityVO(detail));
 	}
 
 	/**
-	 * 所有群组
+	 * 树形下拉列表字典
 	 */
 	@GetMapping("/select")
 	@ApiOperationSupport(order = 2)
 	@ApiOperation(value = "所有群组", notes = "传入group")
-	public R<List<Group>> select(Group group) {
-		List<Group> groups = groupService.list(Condition.getQueryWrapper(group));
+	public R<List<HashMap>> select(Group group) {
+		List<HashMap> tree = groupService.select();
+		return R.data(tree);
+	}
+
+	/**
+	 * 树形下拉列表字典
+	 * @return
+	 */
+	@GetMapping("/children")
+	@ApiOperationSupport(order = 2)
+	@ApiOperation(value = "根据父群组查询子群组 ", notes = "传入group")
+	public R<IPage<Group>> children(Group group, Query query) {
+		IPage<Group> groups = groupService.children(group, query);
 		return R.data(groups);
 	}
 
@@ -132,6 +139,7 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入group")
 	public R submit(@Valid @RequestBody Group group) {
+		GroupServiceImpl.modifyObject(group);
 		return R.status(groupService.saveOrUpdateGroupMiddleTable(group));
 	}
 

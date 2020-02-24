@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
+import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import io.swagger.annotations.Api;
@@ -47,6 +48,19 @@ import java.util.List;
 public class WxGroupController extends BladeController {
 
 	private IGroupService groupService;
+
+	private IParentGroupService parentGroupService;
+
+	/**
+	 * 详情
+	 */
+	@GetMapping("/detail")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "详情", notes = "传入group")
+	public R<GroupVO> detail(Group group) {
+		Group detail = groupService.detail(group);
+		return R.data(GroupWrapper.build().entityVO(detail));
+	}
 
 	@GetMapping("/tree")
 	@ApiOperationSupport(order = 1)

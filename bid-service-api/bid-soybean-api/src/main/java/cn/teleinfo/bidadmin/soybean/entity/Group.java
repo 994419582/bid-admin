@@ -130,5 +130,5 @@ public class Group implements Serializable {
 
     @ApiModelProperty(value = "父群主")
     @TableField(exist = false)
-    private Integer parentGroup;
+    private String parentGroups;
 }
