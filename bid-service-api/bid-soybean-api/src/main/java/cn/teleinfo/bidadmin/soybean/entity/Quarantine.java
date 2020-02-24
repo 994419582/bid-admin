@@ -25,6 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -52,8 +53,8 @@ public class Quarantine implements Serializable {
      * 开始观察时间
      */
     @ApiModelProperty(value = "开始观察时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime startTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    private LocalDate startTime;
 
     @TableField(exist = false)
     private String startTimeString;

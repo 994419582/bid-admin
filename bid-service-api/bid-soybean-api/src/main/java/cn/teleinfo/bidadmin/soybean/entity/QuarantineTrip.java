@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -56,8 +57,8 @@ public class QuarantineTrip implements Serializable {
      * 返程时间
      */
     @ApiModelProperty(value = "返程时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    private LocalDateTime gobackTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+    private LocalDate gobackTime;
     /**
      * 交通方式
      */

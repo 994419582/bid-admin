@@ -35,6 +35,7 @@ import cn.teleinfo.bidadmin.soybean.wrapper.QuarantineWrapper;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineService;
 import org.springblade.core.boot.ctrl.BladeController;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -73,11 +74,11 @@ public class QuarantineController extends BladeController {
 		IPage<Quarantine> pages = quarantineService.page(Condition.getPage(query), Condition.getQueryWrapper(quarantine));
 		List<Quarantine> records = pages.getRecords();
 		for (Quarantine r : records) {
-			LocalDateTime startTime = r.getStartTime();
+			LocalDate startTime = r.getStartTime();
 			StringBuilder sb = new StringBuilder();
 			sb.append(startTime.getYear());
 			sb.append("-");
-			sb.append(startTime.getMonthValue() + 1);
+			sb.append(startTime.getMonthValue());
 			sb.append("-");
 			sb.append(startTime.getDayOfMonth());
 			r.setStartTimeString(sb.toString());

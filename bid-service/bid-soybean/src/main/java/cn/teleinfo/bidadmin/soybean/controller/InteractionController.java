@@ -39,6 +39,7 @@ import org.springblade.core.tool.utils.Func;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -112,7 +113,7 @@ public class InteractionController extends BladeController {
     @ApiOperationSupport(order = 3)
 	@ApiOperation(value = "打卡", notes = "传入clockln")
 	public R clock(Integer userId, String address, Integer healthy, Integer hospital, Integer wuhan, String gobacktime,
-				   String remarks, Integer quarantine, String reason, Integer otherCity, LocalDateTime startTime,
+				   String remarks, Integer quarantine, String reason, Integer otherCity, LocalDate startTime,
 				   Double temperature, Integer fever, Integer fatigue, Integer hoose, Integer dyspnea, Integer diarrhea,
 				   Integer muscle, String other, String quarantionRemarks, List<QuarantineTrip> quarantineTrips
 				   ) {
