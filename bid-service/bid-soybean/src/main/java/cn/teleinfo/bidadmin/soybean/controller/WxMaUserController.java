@@ -118,8 +118,6 @@ public class WxMaUserController extends BladeController {
      *
      * @param appid
      * @param sessionKey
-     * @param signature
-     * @param rawData
      * @param encryptedData
      * @param iv
      * @return
@@ -130,16 +128,9 @@ public class WxMaUserController extends BladeController {
             @RequestParam(name = "openid") String openid,
             @RequestParam(name = "appid") String appid,
             @RequestParam(name = "sessionKey") String sessionKey,
-            @RequestParam(name = "signature") String signature,
-            @RequestParam(name = "rawData") String rawData,
             @RequestParam(name = "encryptedData") String encryptedData,
             @RequestParam(name = "iv") String iv) {
         final WxMaService wxService = WxMaConfiguration.getMaService(appid);
-
-        // 用户信息校验
-        if (!wxService.getUserService().checkUserInfo(sessionKey, rawData, signature)) {
-            return R.fail("user check failed");
-        }
 
         // 解密
         WxMaPhoneNumberInfo phoneNoInfo = wxService.getUserService().getPhoneNoInfo(sessionKey, encryptedData, iv);
