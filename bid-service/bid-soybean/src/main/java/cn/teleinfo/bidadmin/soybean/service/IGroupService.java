@@ -20,7 +20,6 @@ import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import org.springblade.core.mp.support.Query;
 
 import java.util.HashMap;
 import java.util.List;
@@ -109,9 +108,8 @@ public interface IGroupService extends IService<Group> {
 	/**
 	 * 根据父群组查询子群组
 	 * @param group
-	 * @param query
 	 * @return
 	 */
-	IPage<Group> children(Group group, Query query);
+	List<Group> children(Group group);
 
 }
