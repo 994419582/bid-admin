@@ -113,4 +113,5 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	IPage<Group> children(Group group, Query query);
+
 }

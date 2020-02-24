@@ -79,7 +79,7 @@ public class GroupController extends BladeController {
 	}
 
 	/**
-	 * 树形下拉列表字典
+	 * 根据父群组查询子群组
 	 * @return
 	 */
 	@GetMapping("/children")
