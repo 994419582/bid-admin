@@ -95,21 +95,21 @@ public class WxGroupController extends BladeController {
      */
     @GetMapping("/tree")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "下拉树形图", notes = "下拉树形图一")
+    @ApiOperation(value = "下拉树形图", notes = "带有pId")
     public R<List<HashMap>> tree() {
         return R.data(groupService.tree());
     }
 
-//    /**
-//     * 树形下拉列表字典样式二
-//     */
-//    @GetMapping("/select")
-//    @ApiOperationSupport(order = 2)
-//    @ApiOperation(value = "所有群组", notes = "下拉树形图二")
-//    public R<List<HashMap>> select() {
-//        List<HashMap> tree = groupService.select();
-//        return R.data(tree);
-//    }
+    /**
+     * 带有children的树形下拉列表字典样式
+     */
+    @GetMapping("/tree/children")
+    @ApiOperationSupport(order = 2)
+    @ApiOperation(value = "树形下拉列表字典", notes = "带有children的下拉树")
+    public R<List<HashMap>> select() {
+        List<HashMap> tree = groupService.select();
+        return R.data(tree);
+    }
 
     /**
      * 新增群组
