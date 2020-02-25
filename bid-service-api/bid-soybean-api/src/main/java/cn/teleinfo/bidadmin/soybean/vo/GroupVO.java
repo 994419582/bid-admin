@@ -20,6 +20,8 @@ import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * 视图实体类
  *
@@ -32,5 +34,6 @@ import lombok.EqualsAndHashCode;
 public class GroupVO extends Group {
 	private static final long serialVersionUID = 1L;
 
+	@NotNull(message = "用户ID不能为null")
 	private Integer userId;
 }

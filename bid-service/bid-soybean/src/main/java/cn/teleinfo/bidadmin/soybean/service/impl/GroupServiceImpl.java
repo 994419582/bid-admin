@@ -22,7 +22,9 @@ import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.Api;
 import lombok.AllArgsConstructor;
 import org.springblade.core.mp.support.Condition;
 import org.springframework.stereotype.Service;
@@ -72,7 +74,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         } else {
             //校验parentGroupIds格式
             if (!checkParentGroups(parentGroups, groupId)) {
-                return false;
+                throw new ApiException("parentGroupIds格式错误");
             }
             //保存群组
             save(group);
@@ -90,14 +92,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         //新增群组
         if (group.getId() == null) {
-            if (!saveGroupMiddleTable(group)) {
-                return false;
-            }
+            saveGroupMiddleTable(group);
         } else {
             //更新群
-            if (!updateGroupMiddleTable(group)) {
-                return false;
-            }
+            updateGroupMiddleTable(group);
         }
         return true;
     }
@@ -106,7 +104,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Transactional
     public boolean removeGroupMiddleTableById(List<Integer> ids) {
         if (CollectionUtils.isEmpty(ids)) {
-            return false;
+            throw new ApiException("ids参数值为空");
         }
         for (Integer id : ids) {
             //删除群组
@@ -134,7 +132,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Transactional
     public boolean addUser(UserGroup userGroup) {
         if (getById(userGroup.getGroupId()) == null) {
-            return false;
+            throw new ApiException("群组不存在");
         }
         // TODO: 2020/2/23 用户校验后期再做
         //添加用户
@@ -152,7 +150,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Transactional
     public boolean delUser(UserGroup userGroup) {
         if (getById(userGroup.getGroupId()) == null) {
-            return false;
+            throw new ApiException("群组不存在");
         }
         // TODO: 2020/2/23 用户校验后期再做
         //删除用户
@@ -221,7 +219,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      * @return
      */
     public List<HashMap> buildTree(List<HashMap> groups, Integer parentId) {
-        List<HashMap> tree=new ArrayList<HashMap>();
+        List<HashMap> tree = new ArrayList<HashMap>();
 
         for (HashMap group : groups) {
             int id = (int) group.get("id");
@@ -241,7 +239,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     public boolean updateGroupMiddleTable(Group group) {
         Integer groupId = group.getId();
         if (getById(groupId) == null) {
-            return false;
+            throw new ApiException("群组不存在");
         }
         String parentGroups = group.getParentGroups();
         //父群组为空则更新群组，并删除中间表
@@ -252,9 +250,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             //删除中间表
             removeMiddleTableById(groupId);
         } else {
-            if (!checkParentGroups(parentGroups, groupId)) {
-                return false;
-            }
+            checkParentGroups(parentGroups, groupId);
             //更新群组
             updateById(group);
             //删除中间表
@@ -275,7 +271,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     public boolean checkParentGroups(String parentGroups, Integer groupId) {
         //校验parentGroupIds格式
         if (!Pattern.matches(STRING_LIST, parentGroups)) {
-            return false;
+            throw new ApiException("父群组格式错误");
         }
         //转集合类型
         List<Integer> parentGroupIds = Arrays.stream(parentGroups.split(",")).
@@ -284,11 +280,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //判断父群组是否存在
         for (Integer parentGroupId : parentGroupIds) {
             if (getById(parentGroupId) == null) {
-                return false;
+                throw new ApiException("父群组ID没有对应的群组");
             }
             //父群组ID不能等于群组ID
-            if (parentGroupId == groupId) {
-                return false;
+            if (parentGroupId.equals(groupId)) {
+                throw new ApiException("父群组ID不能等于群组ID");
             }
         }
         return true;
@@ -336,11 +332,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             if (type.equals("class java.lang.Integer")) {
                 try {
                     Object obj = field.get(model);
-                    if (obj != null && Integer.valueOf(obj.toString()) == -1) {
+                    if (obj != null && Integer.valueOf(obj.toString()).equals(-1)) {
                         field.set(model, null);
                     }
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    throw new ApiException("-1转null失败");
                 }
             }
         }
