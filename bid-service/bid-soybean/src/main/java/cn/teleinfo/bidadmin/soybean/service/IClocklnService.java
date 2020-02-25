@@ -56,6 +56,6 @@ public interface IClocklnService extends IService<Clockln> {
 	 * @param clockInTime
 	 * @return
 	 */
-	List<ClocklnVO> selectClocklnByGroup(Integer groupId, Date clockInTime);
+	List<Clockln> selectClocklnByGroup(Integer groupId, Date clockInTime);
 
 }
