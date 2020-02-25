@@ -55,14 +55,14 @@ public class Group implements Serializable {
      */
     @ApiModelProperty(value = "群组名")
     @NotBlank(message = "名称不能为空")
-    @Pattern(regexp = "^(?!null).*", message = "名称包含为字符串null")
+    @Pattern(regexp = "^(?!null).*", message = "名称不能包含字符串null")
     private String name;
     /**
      * 群组名全称
      */
     @ApiModelProperty(value = "群组名全称")
     @NotBlank(message = "全称不能为空")
-    @Pattern(regexp = "^(?!null).*", message = "全称包含为字符串null")
+    @Pattern(regexp = "^(?!null).*", message = "全称不能包含字符串null")
     private String fullName;
     /**
      * 备注
@@ -78,7 +78,7 @@ public class Group implements Serializable {
      * 群人数
      */
     @ApiModelProperty(value = "群人数")
-    @NotNull
+    @NotNull(message = "创建人ID不能为空")
     private Integer userAccount;
     /**
      * 群管理员
@@ -122,7 +122,7 @@ public class Group implements Serializable {
      * 群组类型（公司，社区，其他）
      */
     @ApiModelProperty(value = "群组类型（公司，社区，其他）")
-    @NotNull
+    @NotNull(message = "群组类型不能为空")
     private Integer groupType;
     /**
      * 公司地址ID（只有公司和社区需要）
@@ -142,5 +142,5 @@ public class Group implements Serializable {
 
     @ApiModelProperty(value = "父群主")
     @TableField(exist = false)
-    private String parentGroups = "0";
+    private String parentGroups;
 }

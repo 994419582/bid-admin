@@ -23,24 +23,22 @@ import cn.teleinfo.bidadmin.soybean.service.impl.GroupServiceImpl;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
-import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
-import org.springframework.data.annotation.Id;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 控制器
@@ -71,6 +69,7 @@ public class WxGroupController extends BladeController {
 
     /**
      * 群组列表
+     *
      * @return
      */
     @GetMapping("/select")
@@ -78,18 +77,6 @@ public class WxGroupController extends BladeController {
     @ApiOperation(value = "群组列表", notes = "查询所有群")
     public R<List<GroupVO>> select() {
         List<Group> groups = groupService.select();
-        return R.data(GroupWrapper.build().listVO(groups));
-    }
-
-    /**
-     * 根据父群组查询子群组
-     * @return
-     */
-    @GetMapping("/children")
-    @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "根据父群组查询子群组 ", notes = "传入group")
-    public R<List<GroupVO>> children(Group group) {
-        List<Group> groups = groupService.children(group);
         return R.data(GroupWrapper.build().listVO(groups));
     }
 
@@ -134,8 +121,8 @@ public class WxGroupController extends BladeController {
     public R save(@Valid @RequestBody GroupVO group) {
         Integer userId = group.getUserId();
         if (userId == null) {
-			return R.status(false);
-		}
+            return R.status(false);
+        }
         group.setCreateUser(userId);
         return R.status(groupService.saveGroupMiddleTable(group));
     }
@@ -149,11 +136,8 @@ public class WxGroupController extends BladeController {
     public R update(@Valid @RequestBody GroupVO group) {
         Integer userId = group.getUserId();
         //更新群
-		if (userId == null) {
-			return R.status(false);
-		}
-        if (userId != group.getCreateUser()) {
-            return R.status(false);
+        if (userId.equals(group.getCreateUser())) {
+            throw new ApiException("用户ID和群创建人ID不一致");
         }
         return R.status(groupService.updateGroupMiddleTable(group));
     }
@@ -167,15 +151,13 @@ public class WxGroupController extends BladeController {
     public R submit(@Valid @RequestBody GroupVO group) {
         Integer userId = group.getUserId();
         GroupServiceImpl.modifyObject(group);
-		if (userId == null) {
-			return R.status(false);
-		}
+        //新增群，设置创建人
         if (group.getId() == null) {
             group.setCreateUser(userId);
         } else {
             //更新群
-            if (userId != group.getCreateUser()) {
-                return R.status(false);
+            if (userId.equals(group.getCreateUser())) {
+                throw new ApiException("用户ID和群创建人ID不一致");
             }
         }
         return R.status(groupService.saveOrUpdateGroupMiddleTable(group));
@@ -188,25 +170,18 @@ public class WxGroupController extends BladeController {
     @ApiOperationSupport(order = 7)
     @ApiOperation(value = "逻辑删除", notes = "传入ids, 用户Id必须和所有群组创建人一致")
     public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids,
-                    @ApiParam(value = "用户ID", required = true) @RequestParam Integer userId ) {
-		//更新群
-		if (userId == null) {
-			return R.status(false);
-		}
-		//查询用户Id和创建人是否一致
-		List<Integer> idList = Func.toIntList(ids);
-		boolean match = idList.stream().anyMatch(id -> {
-			Group group = groupService.getById(id);
-			if (group != null && group.getCreateUser() != userId) {
-				return false;
-			}
-			return true;
-		});
-		if (!match) {
-			return R.status(false);
-		}
-		return R.status(groupService.removeGroupMiddleTableById(idList));
-	}
+                    @ApiParam(value = "用户ID", required = true) @RequestParam Integer userId) {
+        //更新群
+        //查询用户Id和创建人是否一致
+        List<Integer> idList = Func.toIntList(ids);
+        for (Integer id : idList) {
+            Group group = groupService.getById(id);
+            if (group != null && userId.equals(group.getCreateUser())) {
+                throw new ApiException("用户ID和群创建人ID不一致");
+            }
+        }
+        return R.status(groupService.removeGroupMiddleTableById(idList));
+    }
 
     /**
      * 群组添加用户
