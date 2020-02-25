@@ -22,6 +22,7 @@ import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineService;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineTripService;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
+import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.ClocklnWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -42,6 +43,8 @@ import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +58,7 @@ import java.util.Map;
 @AllArgsConstructor
 @RequestMapping("/wx/interaction")
 @Api(value = "用户打卡交互接口", tags = "用户打卡交互接口")
-public class InteractionController extends BladeController {
+public class WxInteractionController extends BladeController {
 
 	private IClocklnService clocklnService;
 	private IQuarantineService quarantineService;
@@ -116,10 +119,10 @@ public class InteractionController extends BladeController {
     @ApiOperationSupport(order = 3)
 	@ApiOperation(value = "打卡", notes = "传入clockln")
 	public R clock(Integer userId, String address, Integer healthy, Integer hospital, Integer wuhan, String gobacktime,
-				   String remarks, Integer quarantine, String reason, Integer otherCity, LocalDate startTime,
+				   String remarks, Integer quarantine, String reason, Integer otherCity, String startTime,
 				   Double temperature, Integer fever, Integer fatigue, Integer hoose, Integer dyspnea, Integer diarrhea,
-				   Integer muscle, String other, String quarantionRemarks, List<QuarantineTrip> quarantineTrips
-				   ) {
+				   Integer muscle, String other, String quarantionRemarks//, ArrayList<QuarantineTripVO> quarantineTripVOs
+	) {
 		Clockln c = new Clockln();
 		c.setUserId(userId);
 		c.setAddress(address);
@@ -134,7 +137,8 @@ public class InteractionController extends BladeController {
 
 		Quarantine q = new Quarantine();
 		q.setOtherCity(otherCity);
-		q.setStartTime(startTime);
+		LocalDate st = LocalDate.parse(startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		q.setStartTime(st);
 		q.setTemperature(temperature);
 		q.setFever(fever);
 		q.setFatigue(fatigue);
@@ -144,8 +148,25 @@ public class InteractionController extends BladeController {
 		q.setMuscle(muscle);
 		q.setOther(other);
 		q.setRemarks(quarantionRemarks);
-		R.status(quarantineService.saveOrUpdate(q));
+		return R.status(quarantineService.saveOrUpdate(q));
 
-		return R.status(quarantineTripService.saveOrUpdateBatch(quarantineTrips));
+//		List<QuarantineTrip> quarantineTrips = new ArrayList<>();
+//		if (quarantineTripVOs != null && !quarantineTripVOs.isEmpty()) {
+//			LocalDateTime now = LocalDateTime.now();
+//			for (QuarantineTripVO qv : quarantineTripVOs) {
+//				QuarantineTrip qq = new QuarantineTrip();
+//				qq.setCreateTime(now);
+//				qq.setFlight(qv.getFlight());
+//				qq.setGobackAddress(qv.getGobackAddress());
+//				qq.setGobackTime(qv.getGobackTime());
+//				qq.setQuarantineId(qv.getQuarantineId());
+//				qq.setRemarks(qv.getRemarks());
+//				qq.setTransport(qv.getTransport());
+//				qq.setUserId(qv.getUserId());
+//				quarantineTrips.add(qq);
+//			}
+//		}
+//
+//		return R.status(quarantineTripService.saveOrUpdateBatch(quarantineTrips));
 	}
 }
