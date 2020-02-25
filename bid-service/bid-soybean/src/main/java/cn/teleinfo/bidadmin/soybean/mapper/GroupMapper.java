@@ -45,6 +45,6 @@ public interface GroupMapper extends BaseMapper<Group> {
 	 * 群组下拉树
 	 * @return
 	 */
-	@Select("select s.id,s.name,p.parent_id as pId from soybean_group s, soybean_parent_group p where s.id = p.group_id order by p.parent_id")
+	@Select("select s.id,s.name,p.parent_id as parentId from soybean_group s, soybean_parent_group p where s.id = p.group_id order by p.parent_id")
 	List<HashMap> tree();
 }
