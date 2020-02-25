@@ -121,8 +121,11 @@ public class WxInteractionController extends BladeController {
 	public R clock(Integer userId, String address, Integer healthy, Integer hospital, Integer wuhan, String gobacktime,
 				   String remarks, Integer quarantine, String reason, Integer otherCity, String startTime,
 				   Double temperature, Integer fever, Integer fatigue, Integer hoose, Integer dyspnea, Integer diarrhea,
-				   Integer muscle, String other, String quarantionRemarks//, ArrayList<QuarantineTripVO> quarantineTripVOs
+				   Integer muscle, String other, String quarantionRemarks, Integer nobackreason, Integer comfirmed, Integer admitting
+				   //, ArrayList<QuarantineTripVO> quarantineTripVOs
 	) {
+		LocalDateTime now = LocalDateTime.now();
+
 		Clockln c = new Clockln();
 		c.setUserId(userId);
 		c.setAddress(address);
@@ -133,6 +136,11 @@ public class WxInteractionController extends BladeController {
 		c.setRemarks(remarks);
 		c.setQuarantine(quarantine);
 		c.setReason(reason);
+		c.setCreateTime(now);
+		c.setTemperature(temperature);
+		c.setNobackreason(nobackreason);
+		c.setComfirmed(comfirmed);
+		c.setAdmitting(admitting);
 		R.status(clocklnService.saveOrUpdate(c));
 
 		Quarantine q = new Quarantine();
@@ -148,11 +156,14 @@ public class WxInteractionController extends BladeController {
 		q.setMuscle(muscle);
 		q.setOther(other);
 		q.setRemarks(quarantionRemarks);
+		q.setCreateTime(now);
+		q.setAddress(address);
+		q.setUserId(userId);
 		return R.status(quarantineService.saveOrUpdate(q));
 
 //		List<QuarantineTrip> quarantineTrips = new ArrayList<>();
 //		if (quarantineTripVOs != null && !quarantineTripVOs.isEmpty()) {
-//			LocalDateTime now = LocalDateTime.now();
+//
 //			for (QuarantineTripVO qv : quarantineTripVOs) {
 //				QuarantineTrip qq = new QuarantineTrip();
 //				qq.setCreateTime(now);
