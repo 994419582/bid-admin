@@ -90,7 +90,22 @@ public class WxInteractionController extends BladeController {
 	*/
 	@GetMapping("/show/today")
     @ApiOperationSupport(order = 1)
-	@ApiOperation(value = "查看当天打卡信息", notes = "")
+	@ApiOperation(value = "查看指定用户当天打卡信息", notes = "传入用户ID")
+	public R<IPage<ClocklnVO>> clock(Integer userId, Query query) {
+		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
+		clocklnQueryWrapper.eq("user_id", userId);
+		LocalDateTime now = LocalDateTime.now();
+		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+		IPage<Clockln> pages = clocklnService.page(Condition.getPage(query), clocklnQueryWrapper);
+		return R.data(ClocklnWrapper.build().pageVO(pages));
+	}
+
+	/**￿
+	* 查看当天打卡信息
+	*/
+	@GetMapping("/all/today")
+    @ApiOperationSupport(order = 1)
+	@ApiOperation(value = "查看所有用户当天打卡信息", notes = "")
 	public R<IPage<ClocklnVO>> clock(Query query) {
 		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
 		LocalDateTime now = LocalDateTime.now();
