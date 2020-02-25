@@ -36,6 +36,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -91,6 +93,9 @@ public class WxClocklnCensusController extends BladeController {
 	})
 	public R census(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd") Date clocklnTime) {
 		DecimalFormat df = new DecimalFormat("#.00");
+
+		LocalDate today = LocalDate.now();
+
 		if (groupId == null){
 			return R.fail("群组ID不能为空");
 		}
@@ -115,10 +120,45 @@ public class WxClocklnCensusController extends BladeController {
 		double beijingPer=0.0;
 		double hubei=0.0;
 		double hubeiPer=0.0;
+		double wuhan=0.0;
+		double wuhanPer=0.0;
 		double otherRegion=0.0;
 		double otherRegionPer=0.0;
 
+		double isolator = 0.0;
+		double diagnosis = 0.0;
+		double outisolator=0.0;
+
+		double isolatorPer = 0.0;
+		double diagnosisPer = 0.0;
+		double outisolatorPer=0.0;
+		double otherIsolatorPer=0.0;
+
+		int gobackBeijing=0;
+
 		for (ClocklnVO c:list ) {
+
+			LocalDateTime date=c.getCreateTime();
+			LocalDate local = date.toLocalDate();
+
+			if (today.compareTo(local) == 0){
+				gobackBeijing++;
+			}
+
+			if (c.getComfirmed()==1){
+				diagnosis++;
+			}
+
+			if (today.compareTo(local) >= 0){
+				//返京时间+14天 出隔离器时间
+				LocalDate localDate=local.plusDays(14);
+				if (today.compareTo(localDate)>0){
+					outisolator++;
+				}else {
+					isolator++;
+				}
+			}
+
 			if (c.getHealthy() != null && c.getHealthy()==1){
 				healthy++;
 			}else if(c.getHealthy()!= null && c.getHealthy()==2){
@@ -130,20 +170,34 @@ public class WxClocklnCensusController extends BladeController {
 			if (StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("北京")){
 				beijing++;
 			}else if(StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("湖北")){
-				hubei++;
+				if (StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("武汉")){
+					wuhan++;
+				}else {
+					hubei++;
+				}
 			}else {
 				otherRegion++;
 			}
 		}
 		if (list.size()>0) {
 			healthyPer = healthy / list.size() * 100;
-			ferverPer = healthy / list.size() * 100;
-			otherPer = healthy / list.size() * 100;
-			beijing = healthy / list.size() * 100;
-			hubeiPer = healthy / list.size() * 100;
-			otherRegionPer = healthy / list.size() * 100;
+			ferverPer = ferver / list.size() * 100;
+			otherPer = other / list.size() * 100;
+			beijing = beijing / list.size() * 100;
+			hubeiPer = hubei / list.size() * 100;
+			otherRegionPer = otherRegion / list.size() * 100;
+			wuhanPer = wuhan / list.size() *100;
+			diagnosisPer = diagnosis/list.size()*100;
+			isolatorPer =isolator/list.size() *100;
+			outisolatorPer=outisolator/list.size()*100;
+			otherIsolatorPer= (list.size()-isolator-diagnosis-outisolator)/list.size()*100;
 
 		}
+
+
+		//写入总体统计数据
+		buffer.append("'totality':{'total':"+group.getUserAccount()+",'clockIn':"+list.size()+",'unClockIn':"+(group.getUserAccount()-list.size())+",'notInbeijing':"+new Double(list.size()-beijing).intValue()+
+				",'goBackBeijing':"+gobackBeijing+",'abnormalbody':"+new Double(list.size()-healthy).intValue()+",'diagnosis':"+new Double(diagnosis).intValue()+"},");
 
 
 		//计算并写入第一张饼图数据
@@ -154,7 +208,14 @@ public class WxClocklnCensusController extends BladeController {
 		//计算并写入第二张饼图数据
 		buffer.append("'region':{['name':'北京','value':"+new Double(beijing).intValue()+",'percent':"+df.format(+beijingPer)+"]," +
 				"['name':'湖北','value':"+new Double(hubei).intValue()+",'percent':"+df.format(hubeiPer)+"]," +
-				"['name':'其他地区','value':"+new Double(otherRegion).intValue()+",'percent':"+df.format(otherRegionPer)+"]}}");
+				"['name':'武汉','value':"+new Double(wuhan).intValue()+",'percent':"+df.format(wuhanPer)+"]," +
+				"['name':'其他地区','value':"+new Double(otherRegion).intValue()+",'percent':"+df.format(otherRegionPer)+"]},");
+
+		//计算并写入第三张饼图数据
+		buffer.append("'hospitalization':{['name':'确诊','value':"+new Double(diagnosis).intValue()+",'percent':"+df.format(+diagnosisPer)+"]," +
+				"['name':'隔离期','value':"+new Double(isolator).intValue()+",'percent':"+df.format(isolatorPer)+"]," +
+				"['name':'出隔离期','value':"+new Double(outisolator).intValue()+",'percent':"+df.format(outisolatorPer)+"]," +
+				"['name':'其他','value':"+new Double(list.size()-diagnosis-outisolator-isolator).intValue()+",'percent':"+df.format(otherIsolatorPer)+"]}}");
 
 
 		return R.data(buffer.toString());
