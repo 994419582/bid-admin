@@ -28,6 +28,7 @@ import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -39,6 +40,7 @@ import org.springblade.core.boot.ctrl.BladeController;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *  控制器
@@ -68,13 +70,41 @@ public class GroupController extends BladeController {
 	}
 
 	/**
+	 * 群组列表
+	 * @return
+	 */
+	@GetMapping("/select")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "群组列表", notes = "查询所有群")
+	public R<List<GroupVO>> select() {
+		List<Group> groups = groupService.select();
+		if (CollectionUtils.isEmpty(groups)) {
+			return null;
+		}
+		return R.data(GroupWrapper.build().listVO(groups));
+	}
+
+	/**
+	 * 群组列表
+	 * @return
+	 */
+	@GetMapping("/select/noOneself")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "不包含某个ID的群组列表", notes = "不包含某个ID的群组列表")
+	public R<List<GroupVO>> select(@RequestParam(name = "id") Integer id) {
+		List<Group> groups = groupService.select();
+		List<Group> filterGroupList = groups.stream().filter(group -> group.getId() != id).collect(Collectors.toList());
+		return R.data(GroupWrapper.build().listVO(filterGroupList));
+	}
+
+	/**
 	 * 树形下拉列表字典
 	 */
 	@GetMapping("/tree/children")
 	@ApiOperationSupport(order = 2)
 	@ApiOperation(value = "树形下拉列表字典", notes = "带有children的下拉树")
-	public R<List<HashMap>> select() {
-		List<HashMap> tree = groupService.select();
+	public R<List<HashMap>> treeChildren() {
+		List<HashMap> tree = groupService.treeChildren();
 		return R.data(tree);
 	}
 
@@ -85,9 +115,12 @@ public class GroupController extends BladeController {
 	@GetMapping("/children")
 	@ApiOperationSupport(order = 2)
 	@ApiOperation(value = "根据父群组查询子群组 ", notes = "传入group")
-	public R<List<Group>> children(Group group) {
+	public R<List<GroupVO>> children(Group group) {
 		List<Group> groups = groupService.children(group);
-		return R.data(groups);
+		if (CollectionUtils.isEmpty(groups)) {
+			return null;
+		}
+		return R.data(GroupWrapper.build().listVO(groups));
 	}
 
 	/**
