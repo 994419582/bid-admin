@@ -44,6 +44,6 @@ public interface ClocklnMapper extends BaseMapper<Clockln> {
 
 	List<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
 
-	List<ClocklnVO> selectClocklnByGroup(@RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
+	List<Clockln> selectClocklnByGroup(@RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
 
 }

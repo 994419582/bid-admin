@@ -40,8 +40,12 @@
     </select>
 
     <select id="selectClocklnPageByGroup" resultMap="clocklnResultVOMap">
-        select t.* ,u.name,u.avatar_url from soybean_clockln t ,soybean_user_group g ,soybean_user u where
-        t.user_id=u.id
+        select t.* ,u.name,u.avatar_url
+        FROM
+        soybean_clockln t
+        LEFT JOIN soybean_user_group g ON t.user_id = g.user_id
+        LEFT JOIN soybean_user u ON t.user_id = u.id
+        where 1=1
         <if test="groupId !=null">
           AND  g.group_id=#{groupId}
         </if>
@@ -53,8 +57,11 @@
     </select>
 
     <select id="selectClocklnByGroup" resultMap="clocklnResultMap">
-        select t.* from soybean_clockln t ,soybean_user_group g  where
-        1=1
+        select t.*
+        FROM
+        soybean_clockln t
+        LEFT JOIN soybean_user_group g ON t.user_id = g.user_id
+        where 1=1
         <if test="groupId !=null">
             AND  g.group_id=#{groupId}
         </if>
