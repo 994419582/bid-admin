@@ -94,4 +94,24 @@ public class Clockln implements Serializable {
     @ApiModelProperty(value = "打卡时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
+    /**
+     * 体温
+     */
+    @ApiModelProperty(value = "体温")
+    private Double temperature;
+    /**
+     * 是否接触过武汉人同或经过武汉午
+     */
+    @ApiModelProperty(value = "未返京原因")
+    private Integer nobackreason;
+    /**
+     * 是否接触过武汉人同或经过武汉午
+     */
+    @ApiModelProperty(value = "是否确诊")
+    private Integer comfirmed;
+    /**
+     * 是否接触过武汉人同或经过武汉午
+     */
+    @ApiModelProperty(value = "是否就诊入院")
+    private Integer admitting;
 }
