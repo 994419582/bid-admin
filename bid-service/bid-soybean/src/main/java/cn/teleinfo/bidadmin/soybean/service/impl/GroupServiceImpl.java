@@ -71,7 +71,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             save(group);
         } else {
             //校验parentGroupIds格式
-            if (!checkParentGroups(parentGroups)) {
+            if (!checkParentGroups(parentGroups, groupId)) {
                 return false;
             }
             //保存群组
@@ -85,12 +85,19 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public boolean saveOrUpdateGroupMiddleTable(Group group) {
+        if (StringUtils.isEmpty(group.getParentGroups())) {
+            group.setParentGroups(String.valueOf(Group.TOP_PARENT_ID));
+        }
         //新增群组
         if (group.getId() == null) {
-            saveGroupMiddleTable(group);
+            if (!saveGroupMiddleTable(group)) {
+                return false;
+            }
         } else {
             //更新群
-            updateGroupMiddleTable(group);
+            if (!updateGroupMiddleTable(group)) {
+                return false;
+            }
         }
         return true;
     }
@@ -183,7 +190,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public List<HashMap> select() {
+    public List<HashMap> treeChildren() {
         List<HashMap> tree = tree();
         List<HashMap> maps = buildTree(tree, 0);
         return maps;
@@ -201,6 +208,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return list;
     }
 
+    @Override
+    public List<Group> select() {
+        List<Group> groups = this.list();
+        return groups;
+    }
+
     /**
      * 递归构建树形下拉
      * @param groups
@@ -212,7 +225,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
         for (HashMap group : groups) {
             int id = (int) group.get("id");
-            int pId = (int) group.get("pId");
+            int pId = (int) group.get("parentId");
 
             if (parentId == pId) {
                 List<HashMap> treeList = buildTree(groups, id);
@@ -239,7 +252,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             //删除中间表
             removeMiddleTableById(groupId);
         } else {
-            if (!checkParentGroups(parentGroups)) {
+            if (!checkParentGroups(parentGroups, groupId)) {
                 return false;
             }
             //更新群组
@@ -256,9 +269,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      * 校验parentGroups
      *
      * @param parentGroups
+     * @param groupId
      * @return
      */
-    public boolean checkParentGroups(String parentGroups) {
+    public boolean checkParentGroups(String parentGroups, Integer groupId) {
         //校验parentGroupIds格式
         if (!Pattern.matches(STRING_LIST, parentGroups)) {
             return false;
@@ -270,6 +284,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //判断父群组是否存在
         for (Integer parentGroupId : parentGroupIds) {
             if (getById(parentGroupId) == null) {
+                return false;
+            }
+            //父群组ID不能等于群组ID
+            if (parentGroupId == groupId) {
                 return false;
             }
         }
@@ -317,7 +335,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             String type = field.getGenericType().toString();
             if (type.equals("class java.lang.Integer")) {
                 try {
-                    if (Integer.valueOf(field.get(model).toString()) == -1) {
+                    Object obj = field.get(model);
+                    if (obj != null && Integer.valueOf(obj.toString()) == -1) {
                         field.set(model, null);
                     }
                 } catch (IllegalAccessException e) {

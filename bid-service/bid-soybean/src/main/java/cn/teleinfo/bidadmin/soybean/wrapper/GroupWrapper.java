@@ -35,8 +35,10 @@ public class GroupWrapper extends BaseEntityWrapper<Group, GroupVO>  {
 
 	@Override
 	public GroupVO entityVO(Group group) {
+		if (group == null) {
+			return null;
+		}
 		GroupVO groupVO = BeanUtil.copy(group, GroupVO.class);
-
 		return groupVO;
 	}
 

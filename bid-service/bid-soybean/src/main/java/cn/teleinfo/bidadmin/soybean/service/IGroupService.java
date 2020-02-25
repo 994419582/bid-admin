@@ -103,7 +103,7 @@ public interface IGroupService extends IService<Group> {
 	 * 群组下拉树
 	 * @return
 	 */
-	List<HashMap> select();
+	List<HashMap> treeChildren();
 
 	/**
 	 * 根据父群组查询子群组
@@ -112,4 +112,9 @@ public interface IGroupService extends IService<Group> {
 	 */
 	List<Group> children(Group group);
 
+	/**
+	 * 群组列表
+	 * @return
+	 */
+    List<Group> select();
 }
