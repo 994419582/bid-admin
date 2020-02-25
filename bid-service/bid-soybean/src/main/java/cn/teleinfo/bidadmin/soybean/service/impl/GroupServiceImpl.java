@@ -25,7 +25,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springblade.core.mp.support.Condition;
-import org.springblade.core.mp.support.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -191,15 +190,15 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public IPage<Group> children(Group group, Query query) {
+    public List<Group> children(Group group) {
         Integer groupId = this.getOne(Condition.getQueryWrapper(group)).getId();
         List<ParentGroup> parentGroup = parentGroupService.list(Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getParentId, groupId));
         if (CollectionUtils.isEmpty(parentGroup)) {
             return null;
         }
         List<Integer> groupList = parentGroup.stream().map(ParentGroup::getGroupId).collect(Collectors.toList());
-        IPage<Group> page = this.page(Condition.getPage(query), Wrappers.<Group>lambdaQuery().in(Group::getId, groupList));
-        return page;
+        List<Group> list = this.list(Wrappers.<Group>lambdaQuery().in(Group::getId, groupList));
+        return list;
     }
 
     /**
