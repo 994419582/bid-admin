@@ -70,10 +70,10 @@ public class GroupController extends BladeController {
 	/**
 	 * 树形下拉列表字典
 	 */
-	@GetMapping("/select")
+	@GetMapping("/tree/children")
 	@ApiOperationSupport(order = 2)
-	@ApiOperation(value = "所有群组", notes = "传入group")
-	public R<List<HashMap>> select(Group group) {
+	@ApiOperation(value = "树形下拉列表字典", notes = "带有children的下拉树")
+	public R<List<HashMap>> select() {
 		List<HashMap> tree = groupService.select();
 		return R.data(tree);
 	}
