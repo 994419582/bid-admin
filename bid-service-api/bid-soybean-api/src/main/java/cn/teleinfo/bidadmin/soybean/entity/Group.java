@@ -22,6 +22,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -38,6 +41,9 @@ public class Group implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    //信通院ID
+    public static final Integer TOP_PARENT_ID = 1;
+
     /**
      * 主键
      */
@@ -48,11 +54,15 @@ public class Group implements Serializable {
      * 群组名
      */
     @ApiModelProperty(value = "群组名")
+    @NotBlank(message = "名称不能为空")
+    @Pattern(regexp = "^(?!null).*", message = "名称包含为字符串null")
     private String name;
     /**
      * 群组名全称
      */
     @ApiModelProperty(value = "群组名全称")
+    @NotBlank(message = "全称不能为空")
+    @Pattern(regexp = "^(?!null).*", message = "全称包含为字符串null")
     private String fullName;
     /**
      * 备注
@@ -68,6 +78,7 @@ public class Group implements Serializable {
      * 群人数
      */
     @ApiModelProperty(value = "群人数")
+    @NotNull
     private Integer userAccount;
     /**
      * 群管理员
@@ -111,6 +122,7 @@ public class Group implements Serializable {
      * 群组类型（公司，社区，其他）
      */
     @ApiModelProperty(value = "群组类型（公司，社区，其他）")
+    @NotNull
     private Integer groupType;
     /**
      * 公司地址ID（只有公司和社区需要）
@@ -130,5 +142,5 @@ public class Group implements Serializable {
 
     @ApiModelProperty(value = "父群主")
     @TableField(exist = false)
-    private String parentGroups;
+    private String parentGroups = "0";
 }

@@ -27,17 +27,20 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
+import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
+import org.springframework.data.annotation.Id;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 控制器
@@ -67,16 +70,27 @@ public class WxGroupController extends BladeController {
     }
 
     /**
-     * 根据父群组分页查询子群组
-     *
+     * 群组列表
+     * @return
+     */
+    @GetMapping("/select")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "群组列表", notes = "查询所有群")
+    public R<List<GroupVO>> select() {
+        List<Group> groups = groupService.select();
+        return R.data(GroupWrapper.build().listVO(groups));
+    }
+
+    /**
+     * 根据父群组查询子群组
      * @return
      */
     @GetMapping("/children")
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "根据父群组查询子群组 ", notes = "传入group")
-    public R<List<Group>> children(Group group) {
+    public R<List<GroupVO>> children(Group group) {
         List<Group> groups = groupService.children(group);
-        return R.data(groups);
+        return R.data(GroupWrapper.build().listVO(groups));
     }
 
     /**
@@ -95,7 +109,7 @@ public class WxGroupController extends BladeController {
      */
     @GetMapping("/tree")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "下拉树形图", notes = "带有pId")
+    @ApiOperation(value = "下拉树形图", notes = "带有parentId")
     public R<List<HashMap>> tree() {
         return R.data(groupService.tree());
     }
@@ -106,8 +120,8 @@ public class WxGroupController extends BladeController {
     @GetMapping("/tree/children")
     @ApiOperationSupport(order = 2)
     @ApiOperation(value = "树形下拉列表字典", notes = "带有children的下拉树")
-    public R<List<HashMap>> select() {
-        List<HashMap> tree = groupService.select();
+    public R<List<HashMap>> treeChildren() {
+        List<HashMap> tree = groupService.treeChildren();
         return R.data(tree);
     }
 
