@@ -103,18 +103,16 @@ public class WxClocklnCensusController extends BladeController {
 		if (group==null){
 			return R.fail("该群组不存在,请输入正确的群组ID");
 		}
-		List<ClocklnVO> list = clocklnService.selectClocklnByGroup(groupId,clocklnTime);
+		List<Clockln> list = clocklnService.selectClocklnByGroup(groupId,clocklnTime);
 
 		StringBuffer buffer=new StringBuffer("{");
-		//写入总体统计数据
-		buffer.append("'totality':{'total':"+group.getUserAccount()+",'clockIn':"+list.size()+",'unClockIn':"+(group.getUserAccount()-list.size())+"},");
 
-		double healthy=0;
-		double healthyPer=0;
-		double ferver=0;
-		double ferverPer=0;
-		double other=0;
-		double otherPer=0;
+		double healthy=0.0;
+		double healthyPer=0.0;
+		double ferver=0.0;
+		double ferverPer=0.0;
+		double other=0.0;
+		double otherPer=0.0;
 
 		double beijing=0.0;
 		double beijingPer=0.0;
@@ -136,20 +134,20 @@ public class WxClocklnCensusController extends BladeController {
 
 		int gobackBeijing=0;
 
-		for (ClocklnVO c:list ) {
+		for (Clockln c:list ) {
 
 			LocalDateTime date=c.getCreateTime();
 			LocalDate local = date.toLocalDate();
 
-			if (today.compareTo(local) == 0){
+			if (local !=null && today.compareTo(local) == 0){
 				gobackBeijing++;
 			}
 
-			if (c.getComfirmed()==1){
+			if (c.getComfirmed() !=null && c.getComfirmed()==1){
 				diagnosis++;
 			}
 
-			if (today.compareTo(local) >= 0){
+			if (local !=null && today.compareTo(local) >= 0){
 				//返京时间+14天 出隔离器时间
 				LocalDate localDate=local.plusDays(14);
 				if (today.compareTo(localDate)>0){

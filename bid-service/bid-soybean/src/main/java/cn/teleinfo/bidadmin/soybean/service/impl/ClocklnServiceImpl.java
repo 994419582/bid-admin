@@ -47,7 +47,7 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
 	}
 
 	@Override
-	public  List<ClocklnVO> selectClocklnByGroup(Integer groupId,  Date clockInTime){
+	public  List<Clockln> selectClocklnByGroup(Integer groupId,  Date clockInTime){
 		return baseMapper.selectClocklnByGroup(groupId,clockInTime);
 	}
 

@@ -25,26 +25,25 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Mapper 接口
+ *  Mapper 接口
  *
  * @author Blade
  * @since 2020-02-21
  */
 public interface ClocklnMapper extends BaseMapper<Clockln> {
 
-    /**
-     * 自定义分页
-     *
-     * @param page
-     * @param clockln
-     * @return
-     */
-    List<ClocklnVO> selectClocklnPage(IPage page, ClocklnVO clockln);
+	/**
+	 * 自定义分页
+	 *
+	 * @param page
+	 * @param clockln
+	 * @return
+	 */
+	List<ClocklnVO> selectClocklnPage(IPage page, ClocklnVO clockln);
 
 
-    List<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
+	List<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
 
-    List<ClocklnVO> selectClocklnByGroup(@RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
+	List<Clockln> selectClocklnByGroup(@RequestParam("groupId") Integer groupId, @RequestParam("clockInTime") Date clockInTime);
 
-    List<ClocklnVO> findByUserIdInAndCreatetimeBetween(@RequestParam("ids") List<Integer> ids, @RequestParam("from") Date from, @RequestParam("to") Date to);
 }
