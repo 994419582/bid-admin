@@ -43,6 +43,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  *  控制器
@@ -71,8 +72,10 @@ public class InteractionController extends BladeController {
 		clocklnQueryWrapper.eq("user_id", userId);
 		LocalDateTime now = LocalDateTime.now();
 		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
-		Clockln detail = clocklnService.getOne(clocklnQueryWrapper);
-		if (detail == null) {
+		clocklnQueryWrapper.orderByDesc("id");
+		clocklnQueryWrapper.last("limit 1");
+		Clockln one = clocklnService.getOne(clocklnQueryWrapper);
+		if (one == null) {
 			return R.data(false);
 		} else {
 			return R.data(true);
