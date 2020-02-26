@@ -26,4 +26,22 @@
         select * from soybean_quarantine where is_deleted = 0
     </select>
 
+    <select id="findByUserIdInAndCreatetimeBetween" resultMap="quarantineResultMap">
+        select * from soybean_quarantine where
+        1=1
+        <if test="ids !=null">
+            user_id in
+            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test="from !=null">
+            <![CDATA[ AND create_time >= #{from} ]]>
+            <if test="to !=null">
+                <![CDATA[ AND create_time <= #{to} ]]>
+            </if>
+        </if>
+    </select>
+
 </mapper>
