@@ -26,6 +26,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sun.org.apache.xpath.internal.axes.ChildIterator;
+import com.sun.xml.internal.fastinfoset.util.ContiguousCharArrayArray;
 import lombok.AllArgsConstructor;
 import org.springblade.core.mp.support.Condition;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public boolean saveGroupMiddleTable(Group group) {
+        if (StringUtils.isEmpty(group.getParentGroups())) {
+            group.setParentGroups(String.valueOf(Group.TOP_PARENT_ID));
+        }
         Integer groupId = group.getId();
         String parentGroups = group.getParentGroups();
         //父群组为空则更新群组，并删除中间表
@@ -134,6 +138,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     public boolean addUser(UserGroup userGroup) {
         if (getById(userGroup.getGroupId()) == null) {
             throw new ApiException("群组不存在");
+        }
+        if (userGroupService.getOne(Condition.getQueryWrapper(userGroup)) != null) {
+            throw new ApiException("用户已添加此群组");
         }
         // TODO: 2020/2/23 用户校验后期再做
         //添加用户
@@ -368,6 +375,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public boolean updateGroupMiddleTable(Group group) {
+        if (StringUtils.isEmpty(group.getParentGroups())) {
+            group.setParentGroups(String.valueOf(Group.TOP_PARENT_ID));
+        }
         Integer groupId = group.getId();
         if (getById(groupId) == null) {
             throw new ApiException("群组不存在");

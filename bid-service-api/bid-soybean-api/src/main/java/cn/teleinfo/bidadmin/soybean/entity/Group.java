@@ -89,6 +89,7 @@ public class Group implements Serializable {
      * 群创建人
      */
     @ApiModelProperty(value = "群创建人")
+    @Min(value = 1)
     private Integer createUser;
 
     /**
@@ -101,6 +102,7 @@ public class Group implements Serializable {
      * 更新人
      */
     @ApiModelProperty(value = "更新人")
+    @Min(value = 1)
     private Integer updateUser;
     /**
      * 更新时间
@@ -112,11 +114,13 @@ public class Group implements Serializable {
      * 群状态(0:正常，1:删除，2:审核中)
      */
     @ApiModelProperty(value = "群状态(0:正常，1:删除，2:审核中)")
+    @Min(value = 0)
     private Integer status;
     /**
      * 是否需要审批(0:否，1:是)
      */
     @ApiModelProperty(value = "是否需要审批(0:否，1:是)")
+    @Min(value = 0)
     private Integer approval;
     /**
      * 群组类型（公司，社区，其他）
@@ -129,6 +133,7 @@ public class Group implements Serializable {
      * 公司地址ID（只有公司和社区需要）
      */
     @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
+    @Min(value = 0)
     private Integer addressId;
     /**
      * 公司地址名称
