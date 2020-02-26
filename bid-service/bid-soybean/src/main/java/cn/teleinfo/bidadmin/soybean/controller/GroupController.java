@@ -15,29 +15,29 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
+import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.impl.GroupServiceImpl;
+import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
+import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
-import javax.validation.Valid;
-
+import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestParam;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
-import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
-import cn.teleinfo.bidadmin.soybean.service.IGroupService;
-import org.springblade.core.boot.ctrl.BladeController;
 
+import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,6 +85,21 @@ public class GroupController extends BladeController {
 	}
 
 	/**
+	 * 模糊搜索
+	 * @return
+	 */
+	@GetMapping("/search")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "模糊搜索", notes = "根据名称模糊搜索")
+	public R<List<GroupVO>> search(@RequestParam String name) {
+		List<Group> groups = groupService.list(Wrappers.<Group>lambdaQuery().like(Group::getFullName, name));
+		if (CollectionUtils.isEmpty(groups)) {
+			return R.data(null);
+		}
+		return R.data(GroupWrapper.build().listVO(groups));
+	}
+
+	/**
 	 * 群组列表
 	 * @return
 	 */
@@ -93,7 +108,7 @@ public class GroupController extends BladeController {
 	@ApiOperation(value = "不包含某个ID的群组列表", notes = "不包含某个ID的群组列表")
 	public R<List<GroupVO>> select(@RequestParam(name = "id") Integer id) {
 		List<Group> groups = groupService.select();
-		List<Group> filterGroupList = groups.stream().filter(group -> group.getId() != id).collect(Collectors.toList());
+		List<Group> filterGroupList = groups.stream().filter(group -> group.getId().equals(id)).collect(Collectors.toList());
 		return R.data(GroupWrapper.build().listVO(filterGroupList));
 	}
 
@@ -116,9 +131,19 @@ public class GroupController extends BladeController {
 	@ApiOperationSupport(order = 2)
 	@ApiOperation(value = "根据父群组查询子群组 ", notes = "传入group")
 	public R<List<GroupVO>> children(Group group) {
+		ArrayList<Group> topGroups = new ArrayList<>();
 		List<Group> groups = groupService.children(group);
+		//点击顶级节点时增加自身
+		if (Group.TOP_PARENT_ID.equals(group.getId())) {
+			Group topGroup = groupService.getById(Group.TOP_PARENT_ID);
+			topGroups.add(topGroup);
+			topGroups.addAll(groups);
+			groups = topGroups;
+		}
+		//用户不存在是返回本身
 		if (CollectionUtils.isEmpty(groups)) {
-			return null;
+			List<Group> oneSelf = groupService.list(Condition.getQueryWrapper(group));
+			return R.data(GroupWrapper.build().listVO(oneSelf));
 		}
 		return R.data(GroupWrapper.build().listVO(groups));
 	}
