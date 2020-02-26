@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.impl.GroupServiceImpl;
+import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -38,7 +39,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,7 +63,7 @@ public class GroupController extends BladeController {
 	*/
 	@GetMapping("/detail")
     @ApiOperationSupport(order = 1)
-	@ApiOperation(value = "详情", notes = "传入group")
+	@ApiOperation(value = "详情", notes = "传入groupId")
 	public R<GroupVO> detail(Group group) {
 		Group detail = groupService.detail(group);
 		return R.data(GroupWrapper.build().entityVO(detail));
@@ -118,8 +118,8 @@ public class GroupController extends BladeController {
 	@GetMapping("/tree/children")
 	@ApiOperationSupport(order = 2)
 	@ApiOperation(value = "树形下拉列表字典", notes = "带有children的下拉树")
-	public R<List<HashMap>> treeChildren() {
-		List<HashMap> tree = groupService.treeChildren();
+	public R<List<GroupTreeVo>> treeChildren() {
+		List<GroupTreeVo> tree = groupService.treeChildren();
 		return R.data(tree);
 	}
 
