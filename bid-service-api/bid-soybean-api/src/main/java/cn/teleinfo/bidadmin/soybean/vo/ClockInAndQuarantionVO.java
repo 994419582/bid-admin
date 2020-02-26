@@ -23,13 +23,13 @@ public class ClockInAndQuarantionVO {
     private Integer healthy;
     @ApiModelProperty(value = "是否有就诊入院")
     private Integer hospital;
-    @ApiModelProperty(value = "是否接触过武汉人同或经过武汉午")
+    @ApiModelProperty(value = "是否接触过武汉人或经过武汉")
     private Integer wuhan;
     @ApiModelProperty(value = "计划反京时间")
     private String gobacktime;
     @ApiModelProperty(value = "备注")
     private String remarks;
-    @ApiModelProperty(value = "是否在隔离器")
+    @ApiModelProperty(value = "是否在隔离期")
     private Integer quarantine;
     @ApiModelProperty(value = "未返京原因")
     private String reason;

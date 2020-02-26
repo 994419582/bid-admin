@@ -136,16 +136,20 @@ public class WxInteractionController extends BladeController {
 	@PostMapping("/clock")
     @ApiOperationSupport(order = 3)
 	@ApiOperation(value = "打卡", notes = "传入clockln")
-	public R clock(Integer userId, String address, Integer healthy, Integer hospital, Integer wuhan, String gobacktime,
-				   String remarks, Integer quarantine, String reason, Integer otherCity, String startTime,
-				   Double temperature, Integer fever, Integer fatigue, Integer hoose, Integer dyspnea, Integer diarrhea,
-				   Integer muscle, String other, String quarantionRemarks, Integer nobackreason, Integer comfirmed, Integer admitting
+	public R clock(
+//			       Integer userId, String address, Integer healthy, Integer hospital, Integer wuhan, String gobacktime,
+//				   String remarks, Integer quarantine, String reason, Integer otherCity, String startTime,
+//				   Double temperature, Integer fever, Integer fatigue, Integer hoose, Integer dyspnea, Integer diarrhea,
+//				   Integer muscle, String other, String quarantionRemarks, Integer nobackreason, Integer comfirmed,
+//				   Integer admitting, Integer leave, String leavetime, String backFlight
 				   //, ArrayList<QuarantineTripVO> quarantineTripVOs
+
+				   @RequestBody Clockln clockln
 	) {
-		if (userId == null || userId < 0) {
+		if (clockln.getUserId() == null || clockln.getUserId() < 0) {
 			return R.fail("用户不存在，请输入正确的用户~");
 		}
-		User user = userService.getById(userId);
+		User user = userService.getById(clockln.getUserId());
 		if (user == null) {
 			return R.fail("用户不存在，请输入正确的用户~");
 		}
@@ -153,55 +157,62 @@ public class WxInteractionController extends BladeController {
 		LocalDateTime now = LocalDateTime.now();
 
 		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
-		clocklnQueryWrapper.eq("user_id", userId);
+		clocklnQueryWrapper.eq("user_id", clockln.getUserId());
 		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
 		List<Clockln> clist = clocklnService.list(clocklnQueryWrapper);
 		if (clist != null && !clist.isEmpty()) {
 			return R.fail("今日已打卡~~正常打卡");
 		}
 
-		QueryWrapper<Quarantine> quarantineQueryWrapper = new QueryWrapper<>();
-		quarantineQueryWrapper.eq("user_id", userId);
-		quarantineQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
-		List<Quarantine> qlist = quarantineService.list(quarantineQueryWrapper);
-		if (qlist != null && !qlist.isEmpty()) {
-			return R.fail("今日已打卡~~隔离打卡");
-		}
+		clockln.setCreateTime(now);
 
-		Clockln c = new Clockln();
-		c.setUserId(userId);
-		c.setAddress(address);
-		c.setHealthy(healthy);
-		c.setHospital(hospital);
-		c.setWuhan(wuhan);
-		c.setGobacktime(gobacktime);
-		c.setRemarks(remarks);
-		c.setQuarantine(quarantine);
-		c.setReason(reason);
-		c.setCreateTime(now);
-		c.setTemperature(temperature);
-		c.setNobackreason(nobackreason);
-		c.setComfirmed(comfirmed);
-		c.setAdmitting(admitting);
-		R.status(clocklnService.saveOrUpdate(c));
+		return R.status(clocklnService.saveOrUpdate(clockln));
 
-		Quarantine q = new Quarantine();
-		q.setOtherCity(otherCity);
-		LocalDate st = LocalDate.parse(startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-		q.setStartTime(st);
-		q.setTemperature(temperature);
-		q.setFever(fever);
-		q.setFatigue(fatigue);
-		q.setHoose(hoose);
-		q.setDyspnea(dyspnea);
-		q.setDiarrhea(diarrhea);
-		q.setMuscle(muscle);
-		q.setOther(other);
-		q.setRemarks(quarantionRemarks);
-		q.setCreateTime(now);
-		q.setAddress(address);
-		q.setUserId(userId);
-		return R.status(quarantineService.saveOrUpdate(q));
+//		QueryWrapper<Quarantine> quarantineQueryWrapper = new QueryWrapper<>();
+//		quarantineQueryWrapper.eq("user_id", userId);
+//		quarantineQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+//		List<Quarantine> qlist = quarantineService.list(quarantineQueryWrapper);
+//		if (qlist != null && !qlist.isEmpty()) {
+//			return R.fail("今日已打卡~~隔离打卡");
+//		}
+
+//		Clockln c = new Clockln();
+//		c.setUserId(userId);
+//		c.setAddress(address);
+//		c.setHealthy(healthy);
+//		c.setHospital(hospital);
+//		c.setWuhan(wuhan);
+//		c.setGobacktime(gobacktime);
+//		c.setRemarks(remarks);
+//		c.setQuarantine(quarantine);
+//		c.setReason(reason);
+//		c.setCreateTime(now);
+//		c.setTemperature(temperature);
+//		c.setNobackreason(nobackreason);
+//		c.setComfirmed(comfirmed);
+//		c.setAdmitting(admitting);
+//		c.setLeave(leave);
+//		c.setLeavetime(leavetime);
+//		c.setFlight(backFlight);
+//		R.status(clocklnService.saveOrUpdate(c));
+
+//		Quarantine q = new Quarantine();
+//		q.setOtherCity(otherCity);
+//		LocalDate st = LocalDate.parse(startTime, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+//		q.setStartTime(st);
+//		q.setTemperature(temperature);
+//		q.setFever(fever);
+//		q.setFatigue(fatigue);
+//		q.setHoose(hoose);
+//		q.setDyspnea(dyspnea);
+//		q.setDiarrhea(diarrhea);
+//		q.setMuscle(muscle);
+//		q.setOther(other);
+//		q.setRemarks(quarantionRemarks);
+//		q.setCreateTime(now);
+//		q.setAddress(address);
+//		q.setUserId(userId);
+//		return R.status(quarantineService.saveOrUpdate(q));
 
 //		List<QuarantineTrip> quarantineTrips = new ArrayList<>();
 //		if (quarantineTripVOs != null && !quarantineTripVOs.isEmpty()) {

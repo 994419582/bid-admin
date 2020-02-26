@@ -16,6 +16,7 @@
 package cn.teleinfo.bidadmin.soybean.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -100,18 +101,34 @@ public class Clockln implements Serializable {
     @ApiModelProperty(value = "体温")
     private Double temperature;
     /**
-     * 是否接触过武汉人同或经过武汉午
+     * 未返京原因
      */
     @ApiModelProperty(value = "未返京原因")
     private Integer nobackreason;
     /**
-     * 是否接触过武汉人同或经过武汉午
+     * 是否确诊
      */
     @ApiModelProperty(value = "是否确诊")
     private Integer comfirmed;
     /**
-     * 是否接触过武汉人同或经过武汉午
+     * 是否就诊入院
      */
     @ApiModelProperty(value = "是否就诊入院")
     private Integer admitting;
+    /**
+     * 是否离京
+     */
+    @ApiModelProperty(value = "是否离京")
+    @TableField("`leave`")
+    private Integer leave;
+    /**
+     * 离京时间
+     */
+    @ApiModelProperty(value = "离京时间")
+    private String leavetime;
+    /**
+     * 返京航班/车次
+     */
+    @ApiModelProperty(value = "返京航班/车次")
+    private String flight;
 }
