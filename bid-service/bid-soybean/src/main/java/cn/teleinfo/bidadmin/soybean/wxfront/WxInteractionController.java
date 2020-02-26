@@ -18,9 +18,11 @@ package cn.teleinfo.bidadmin.soybean.wxfront;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Quarantine;
 import cn.teleinfo.bidadmin.soybean.entity.QuarantineTrip;
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineService;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineTripService;
+import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineVO;
@@ -63,6 +65,7 @@ public class WxInteractionController extends BladeController {
 	private IClocklnService clocklnService;
 	private IQuarantineService quarantineService;
 	private IQuarantineTripService quarantineTripService;
+	private IUserService userService;
 
 	/**￿
 	* 查看当日用户是否已打卡接口
@@ -139,7 +142,31 @@ public class WxInteractionController extends BladeController {
 				   Integer muscle, String other, String quarantionRemarks, Integer nobackreason, Integer comfirmed, Integer admitting
 				   //, ArrayList<QuarantineTripVO> quarantineTripVOs
 	) {
+		if (userId == null || userId < 0) {
+			return R.fail("用户不存在，请输入正确的用户~");
+		}
+		User user = userService.getById(userId);
+		if (user == null) {
+			return R.fail("用户不存在，请输入正确的用户~");
+		}
+
 		LocalDateTime now = LocalDateTime.now();
+
+		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
+		clocklnQueryWrapper.eq("user_id", userId);
+		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+		List<Clockln> clist = clocklnService.list(clocklnQueryWrapper);
+		if (clist != null && !clist.isEmpty()) {
+			return R.fail("今日已打卡~~正常打卡");
+		}
+
+		QueryWrapper<Quarantine> quarantineQueryWrapper = new QueryWrapper<>();
+		quarantineQueryWrapper.eq("user_id", userId);
+		quarantineQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+		List<Quarantine> qlist = quarantineService.list(quarantineQueryWrapper);
+		if (qlist != null && !qlist.isEmpty()) {
+			return R.fail("今日已打卡~~隔离打卡");
+		}
 
 		Clockln c = new Clockln();
 		c.setUserId(userId);
