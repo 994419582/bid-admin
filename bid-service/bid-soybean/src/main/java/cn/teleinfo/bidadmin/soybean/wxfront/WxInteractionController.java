@@ -135,7 +135,7 @@ public class WxInteractionController extends BladeController {
 	*/
 	@PostMapping("/clock")
     @ApiOperationSupport(order = 3)
-	@ApiOperation(value = "打卡", notes = "传入clockln")
+	@ApiOperation(value = "打卡", notes = "传入clockln，不要create_time字段和id字段")
 	public R clock(
 //			       Integer userId, String address, Integer healthy, Integer hospital, Integer wuhan, String gobacktime,
 //				   String remarks, Integer quarantine, String reason, Integer otherCity, String startTime,
