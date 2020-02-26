@@ -69,7 +69,7 @@ public class User implements Serializable {
      * 证件类型ID
      */
     @ApiModelProperty(value = "证件类型ID")
-    private String idType;
+    private Integer idType;
     /**
      * 证件号码
      */
@@ -84,7 +84,7 @@ public class User implements Serializable {
      * 性别
      */
     @ApiModelProperty(value = "性别")
-    private String gender;
+    private Integer gender;
     /**
      * 国家
      */
