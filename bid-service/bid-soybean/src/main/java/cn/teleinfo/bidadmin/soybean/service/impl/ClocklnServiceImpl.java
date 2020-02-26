@@ -50,4 +50,9 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
 	public  List<ClocklnVO> selectClocklnByGroup(Integer groupId,  Date clockInTime){
 		return baseMapper.selectClocklnByGroup(groupId,clockInTime);
 	}
+
+	@Override
+	public List<ClocklnVO> findByUserIdInAndCreatetimeBetween(List<Integer> ids, Date from, Date to) {
+		return baseMapper.findByUserIdInAndCreatetimeBetween(ids, from, to);
+	}
 }

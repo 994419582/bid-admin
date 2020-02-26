@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import cn.teleinfo.bidadmin.soybean.mapper.UserGroupMapper;
@@ -23,6 +24,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+
+import java.util.List;
 
 /**
  *  服务实现类
@@ -36,6 +39,11 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 	@Override
 	public IPage<UserGroupVO> selectUserGroupPage(IPage<UserGroupVO> page, UserGroupVO userGroup) {
 		return page.setRecords(baseMapper.selectUserGroupPage(page, userGroup));
+	}
+
+	@Override
+	public List<User> findUserByGroupId(Integer groupid) {
+		return baseMapper.findUserByGroupId(groupid);
 	}
 
 }

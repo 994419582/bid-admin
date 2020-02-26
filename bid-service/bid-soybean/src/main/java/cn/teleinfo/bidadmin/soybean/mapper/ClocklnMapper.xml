@@ -65,5 +65,22 @@
         ORDER BY t.create_time DESC
     </select>
 
+    <select id="findByUserIdInAndCreatetimeBetween" resultMap="clocklnResultVOMap">
+        select * from soybean_clockln where
+        1=1
+        <if test="ids !=null">
+            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test="from !=null">
+            <![CDATA[ AND create_date >= #{from} ]]>
+            <if test="to !=null">
+                <![CDATA[ AND create_date <= #{to} ]]>
+            </if>
+        </if>
+        ORDER BY t.create_time DESC
+    </select>
 
 </mapper>

@@ -10,9 +10,40 @@
         <result column="group_id" property="groupId"/>
     </resultMap>
 
+    <!-- 通用查询映射结果 -->
+    <resultMap id="userResultMap" type="cn.teleinfo.bidadmin.soybean.entity.User">
+        <id column="id" property="id"/>
+        <result column="wechat_id" property="wechatId"/>
+        <result column="nickname" property="nickname"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="id_type" property="idType"/>
+        <result column="id_number" property="idNumber"/>
+        <result column="remarks" property="remarks"/>
+        <result column="gender" property="gender"/>
+        <result column="country" property="country"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="home_id" property="homeId"/>
+        <result column="home_address" property="homeAddress"/>
+        <result column="detail_address" property="detailAddress"/>
+    </resultMap>
 
     <select id="selectUserGroupPage" resultMap="userGroupResultMap">
         select * from soybean_user_group where is_deleted = 0
     </select>
+
+    <select id="findUserByGroupId" resultMap="userResultMap">
+        SELECT
+            soybean_user.*
+        FROM
+            soybean_user
+            LEFT JOIN soybean_user_group ON soybean_user.id = soybean_user_group.user_id
+        WHERE soybean_user_group.group_id = #{param1}
+    </select>
+
+
+
 
 </mapper>
