@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
@@ -80,10 +81,12 @@ public class UserController extends BladeController {
 	*/
 	@GetMapping("/select")
     @ApiOperationSupport(order = 2)
-	@ApiOperation(value = "分页", notes = "传入user")
-	public R<List<User>> select(User user, Query query) {
-		IPage<User> pages = userService.page(Condition.getPage(query), Condition.getQueryWrapper(user));
-		return R.data(pages.getRecords());
+	@ApiOperation(value = "根据名字查询列表，模糊匹配", notes = "根据名字查询列表，模糊匹配，传入user")
+	public R<List<User>> select(String name) {
+		QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+		queryWrapper.like("name", name);
+		List<User> list = userService.list(queryWrapper);
+		return R.data(list);
 	}
 
 	/**
