@@ -135,8 +135,11 @@ public class WxClocklnCensusController extends BladeController {
 		for (Clockln c:list ) {
 			if (!StringUtil.isEmpty(c.getGobacktime())){
 				try {
-					LocalDateTime date=LocalDateTime.parse(c.getGobacktime());
-					LocalDate local = date.toLocalDate();
+					String str=c.getGobacktime();
+					if (str.contains("T")){
+						str=str.substring(0,str.indexOf("T"));
+					}
+					LocalDate local = LocalDate.parse(str);
 
 					if (local !=null && today.compareTo(local) == 0){
 						gobackBeijing++;
@@ -169,10 +172,10 @@ public class WxClocklnCensusController extends BladeController {
 				other++;
 			}
 
-			if (StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("北京")){
+			if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("北京")){
 				beijing++;
-			}else if(StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("湖北")){
-				if (StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("武汉")){
+			}else if(!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("湖北")){
+				if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("武汉")){
 					wuhan++;
 				}else {
 					hubei++;
