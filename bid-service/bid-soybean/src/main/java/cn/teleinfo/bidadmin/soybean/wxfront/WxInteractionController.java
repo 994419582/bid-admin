@@ -166,6 +166,30 @@ public class WxInteractionController extends BladeController {
 
 		clockln.setCreateTime(now);
 
+		if (clockln.getAddress().contains("湖北")) {
+			clockln.setHubei(1);
+		} else {
+			clockln.setHubei(0);
+		}
+
+		QueryWrapper<Clockln> clocklnLastQueryWrapper = new QueryWrapper<>();
+		clocklnLastQueryWrapper.eq("user_id", clockln.getUserId());
+		clocklnLastQueryWrapper.between("create_time", LocalDateTime.of(now.plusDays(-1).toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MIN));
+		List<Clockln> lastlist = clocklnService.list(clocklnLastQueryWrapper);
+
+		for (Clockln c : lastlist) {
+			if (c.getHubei() == 1) {
+				clockln.setHubei(1);
+				break;
+			}
+		}
+
+		if (clockln.getAddress().contains("北京")) {
+			clockln.setBeijing(1);
+		} else {
+			clockln.setBeijing(0);
+		}
+
 		return R.status(clocklnService.saveOrUpdate(clockln));
 
 //		QueryWrapper<Quarantine> quarantineQueryWrapper = new QueryWrapper<>();
