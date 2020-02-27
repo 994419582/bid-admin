@@ -16,11 +16,14 @@ import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.boot.ctrl.BladeController;
+import org.springblade.core.secure.AuthInfo;
 import org.springblade.core.tool.api.R;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import static cn.teleinfo.bidadmin.soybean.utils.TokenUtil.createAuthInfo;
 
 /**
  * 微信小程序用户接口
@@ -111,6 +114,25 @@ public class WxMaUserController extends BladeController {
 
         userService.saveOrUpdate(user);
         return R.data(UserWrapper.build().entityVO(user));
+    }
+
+    /**
+     * 各位大哥，这个方法，请不要删除，需要作为参考使用
+     * @param appid
+     * @return
+     */
+    @GetMapping("/test")
+    public R test(@RequestParam(name = "appid") String appid) {
+        // 根据openid绑定并更新用户信息
+        // test01asdfasdf
+        User user = userService.findByWechatId(appid);
+        if (user == null) {
+            user = new User();
+        }
+
+        AuthInfo authInfo = createAuthInfo(user);
+
+        return R.data(authInfo);
     }
 
     /**
