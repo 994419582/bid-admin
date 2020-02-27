@@ -135,7 +135,7 @@ public class WxInteractionController extends BladeController {
 	*/
 	@PostMapping("/clock")
     @ApiOperationSupport(order = 3)
-	@ApiOperation(value = "打卡", notes = "传入clockln，不要create_time字段和id字段")
+	@ApiOperation(value = "打卡", notes = "传入clockln，不要create_time字段和id字段和quarantine字段")
 	public R clock(
 //			       Integer userId, String address, Integer healthy, Integer hospital, Integer wuhan, String gobacktime,
 //				   String remarks, Integer quarantine, String reason, Integer otherCity, String startTime,
@@ -186,6 +186,18 @@ public class WxInteractionController extends BladeController {
 
 		if (clockln.getAddress().contains("北京")) {
 			clockln.setBeijing(1);
+
+			// 是否在隔离期
+			QueryWrapper<Clockln> clockln14QueryWrapper = new QueryWrapper<>();
+			clockln14QueryWrapper.eq("user_id", clockln.getUserId());
+			clockln14QueryWrapper.between("create_time", LocalDateTime.of(now.plusDays(-14).toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MIN));
+			int count = clocklnService.count(clockln14QueryWrapper);
+			if(count < 14) {
+				clockln.setQuarantine(1);
+			} else {
+				clockln.setQuarantine(0);
+			}
+
 		} else {
 			clockln.setBeijing(0);
 		}
