@@ -206,25 +206,53 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public List<GroupTreeVo> treeUser(Integer userId) {
         List<GroupTreeVo> tree = this.treeChildren();
-        //遍历顶级用户是否有权限
-        ArrayList<GroupTreeVo> groupTreeVos = new ArrayList<>();
 
-        for (GroupTreeVo groupTreeVo : tree.get(0).getChildren()) {
+        ArrayList<GroupTreeVo> groupTreeVos = new ArrayList<>();
+        //一级树
+        for (GroupTreeVo groupTreeVo : tree) {
             List<Integer> groupAllManager = getGroupAllManager(groupTreeVo);
             if (groupAllManager.contains(userId)) {
                 groupTreeVos.add(groupTreeVo);
             }
         }
-
-        for (GroupTreeVo groupTreeVo : tree.get(0).getChildren()) {
+        //二级树
+        for (GroupTreeVo groupTreeVo : tree) {
             for (GroupTreeVo child : groupTreeVo.getChildren()) {
                 List<Integer> childAllManager = getGroupAllManager(child);
                 if (childAllManager.contains(userId)) {
+                    //遍历顶级用户是否有权限
                     boolean b = groupTreeVos.stream().anyMatch(groupTreeVo1 -> {
-                        return groupTreeVo1.getId().equals(child.getParentId());
+                        return groupTreeVo1.getId().equals(child.getParentId()) || groupTreeVo1.getId().equals(child.getId());
                     });
                     if (!b) {
                         groupTreeVos.add(child);
+                    }
+                }
+            }
+        }
+        //三级树
+        for (GroupTreeVo groupTreeVo : tree) {
+            for (GroupTreeVo child : groupTreeVo.getChildren()) {
+                for (GroupTreeVo childChild : child.getChildren()) {
+                    List<Integer> childAllManager = getGroupAllManager(child);
+                    if (childAllManager.contains(userId)) {
+                        //遍历顶级用户是否有权限
+                        boolean flag = false;
+                        for (GroupTreeVo treeVo : groupTreeVos) {
+                            //顶级是否有父ID
+                            if (child.getParentId().equals(treeVo.getId()) || child.getId().equals(treeVo.getId())) {
+                                flag = true;
+                            }
+                            //二级是否有父ID
+                            for (GroupTreeVo treeVoChild : treeVo.getChildren()) {
+                                if (child.getId().equals(treeVoChild.getId()) || child.getParentId().equals(treeVoChild.getId())) {
+                                    flag = true;
+                                }
+                            }
+                        }
+                        if (!flag) {
+                            groupTreeVos.add(child);
+                        }
                     }
                 }
             }
@@ -362,7 +390,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         Integer createUser = groupTreeVo.getCreateUser();
         List<Integer> managerList = new ArrayList<>();
 
-        if (!StringUtils.isEmpty(managers.trim())) {
+        if (!StringUtils.isEmpty(managers)) {
             List<Integer> collect = Arrays.stream(managers.split(","))
                     .map(s -> Integer.valueOf(s)).
                             collect(Collectors.toList());
