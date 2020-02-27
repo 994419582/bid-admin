@@ -20,6 +20,8 @@ import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -35,5 +37,7 @@ public class GroupVO extends Group {
 	private static final long serialVersionUID = 1L;
 
 	@NotNull(message = "用户ID不能为null")
+	@Min(value = 1, message = "用户ID不能小于1")
+	@Max(value = Integer.MAX_VALUE, message = "用户ID不能超出Integer范围")
 	private Integer userId;
 }
