@@ -27,6 +27,8 @@ import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springblade.core.mp.support.Condition;
+import org.springblade.core.tool.utils.Func;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -46,13 +48,17 @@ import java.util.stream.Collectors;
  * @since 2020-02-21
  */
 @Service
-@AllArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements IGroupService {
 
+    @Autowired
     private IParentGroupService parentGroupService;
+    @Autowired
     private GroupMapper groupMapper;
+    @Autowired
     private IChildrenGroupService childrenGroupService;
+    @Autowired
     private IUserGroupService userGroupService;
+    @Autowired
     private IGroupLogService groupLogService;
 
     //逗号分隔类型校验
@@ -131,52 +137,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         parentGroupService.remove(Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getGroupId, id));
         //删除子群组
         childrenGroupService.remove(Wrappers.<ChildrenGroup>lambdaQuery().eq(ChildrenGroup::getChildId, id));
-    }
-
-    @Override
-    @Transactional
-    public boolean addUser(UserGroup userGroup) {
-        Group group = getById(userGroup.getGroupId());
-        if (group == null) {
-            throw new ApiException("群组不存在");
-        }
-        List<UserGroup> userGroups = userGroupService.list(Wrappers.<UserGroup>lambdaQuery().eq(UserGroup::getGroupId, userGroup.getGroupId()).eq(UserGroup::getUserId, userGroup.getUserId()));
-        if (CollectionUtils.isEmpty(userGroups)) {
-            throw new ApiException("用户已添加此群组");
-        }
-        //获取此群组当前用户数
-        int count = userGroupService.count(Wrappers.<UserGroup>lambdaQuery().eq(UserGroup::getGroupId, userGroup.getGroupId()));
-        if (count >= group.getUserAccount()) {
-            throw new ApiException("群组已满");
-        }
-        // TODO: 2020/2/23 用户校验后期再做
-        //添加用户
-        userGroupService.save(userGroup);
-        //添加日志
-        GroupLog groupLog = new GroupLog();
-        groupLog.setUserId(userGroup.getUserId());
-        groupLog.setGroupId(userGroup.getGroupId());
-        groupLog.setEventType(GroupLog.NEW_USER);
-        groupLogService.save(groupLog);
-        return true;
-    }
-
-    @Override
-    @Transactional
-    public boolean delUser(UserGroup userGroup) {
-        if (getById(userGroup.getGroupId()) == null) {
-            throw new ApiException("群组不存在");
-        }
-        // TODO: 2020/2/23 用户校验后期再做
-        //删除用户
-        userGroupService.remove(Condition.getQueryWrapper(userGroup));
-        //添加日志
-        GroupLog groupLog = new GroupLog();
-        groupLog.setUserId(userGroup.getUserId());
-        groupLog.setGroupId(userGroup.getGroupId());
-        groupLog.setEventType(GroupLog.DELETE_USER);
-        groupLogService.save(groupLog);
-        return true;
     }
 
     @Override
@@ -268,6 +228,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
         return groupTreeVos;
     }
+
+    @Override
+    public boolean isGroupManger(Integer groupId, Integer userId) {
+        Group group = this.getById(groupId);
+        Func.toIntList(group.getManagers());
+        return false;
+    }
+
     @Override
     public List<Group> children(Group group) {
         Integer groupId = this.getOne(Condition.getQueryWrapper(group)).getId();
@@ -296,10 +264,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
 
         for (GroupTreeVo group : groups) {
+            //获取群组ID
             Integer id = group.getId();
+            //获取群组父ID
             Integer pId = group.getParentId();
 
-            if (parentId == pId) {
+            if (pId.equals(parentId)) {
                 List<GroupTreeVo> treeList = buildTree(groups, id);
                 group.setChildren(treeList);
                 tree.add(group);

@@ -15,15 +15,21 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
+import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
+import cn.teleinfo.bidadmin.soybean.service.IGroupLogService;
+import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import cn.teleinfo.bidadmin.soybean.mapper.UserGroupMapper;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springblade.core.mp.base.BaseServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -36,6 +42,12 @@ import java.util.List;
 @Service
 public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup> implements IUserGroupService {
 
+	@Autowired
+	private IGroupService groupService;
+
+	@Autowired
+	private IGroupLogService groupLogService;
+
 	@Override
 	public IPage<UserGroupVO> selectUserGroupPage(IPage<UserGroupVO> page, UserGroupVO userGroup) {
 		return page.setRecords(baseMapper.selectUserGroupPage(page, userGroup));
@@ -45,5 +57,33 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 	public List<User> findUserByGroupId(Integer groupid) {
 		return baseMapper.findUserByGroupId(groupid);
 	}
+
+    @Override
+    public void checkUserGroup(UserGroup userGroup) {
+		Group group = groupService.getById(userGroup.getGroupId());
+		if (group == null) {
+			throw new ApiException("群组不存在");
+		}
+		List<UserGroup> userGroups = this.list(Wrappers.<UserGroup>lambdaQuery().eq(UserGroup::getGroupId, userGroup.getGroupId()).eq(UserGroup::getUserId, userGroup.getUserId()));
+		if (!CollectionUtils.isEmpty(userGroups)) {
+			throw new ApiException("用户已添加此群组");
+		}
+    }
+
+    @Override
+    public boolean managerRemoveUser(UserGroupVO userGroup) {
+		Integer managerId = userGroup.getManagerId();
+		if (managerId == null) {
+			new ApiException("管理员ID不能为空");
+		}
+		//查询管操作人是否有权限
+		Integer groupId = userGroup.getGroupId();
+		Group group = groupService.getById(groupId);
+		Integer userId = userGroup.getUserId();
+		if (groupService.isGroupManger(groupId, userId)) {
+
+		}
+		return false;
+    }
 
 }

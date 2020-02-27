@@ -16,7 +16,9 @@
 package cn.teleinfo.bidadmin.soybean.vo;
 
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -32,4 +34,7 @@ import lombok.EqualsAndHashCode;
 public class UserGroupVO extends UserGroup {
 	private static final long serialVersionUID = 1L;
 
+	@JsonIgnore
+	@ApiModelProperty(value = "管理员ID或者群创建人ID")
+	private Integer managerId;
 }

@@ -47,4 +47,17 @@ public interface IUserGroupService extends IService<UserGroup> {
      * @return
      */
     List<User> findUserByGroupId(Integer groupid);
+
+    /**
+     * 校验用户组
+     * @param userGroup
+     */
+    void checkUserGroup(UserGroup userGroup);
+
+    /**
+     * 管理员删除用户
+     * @param userGroup
+     * @return
+     */
+    boolean managerRemoveUser(UserGroupVO userGroup);
 }

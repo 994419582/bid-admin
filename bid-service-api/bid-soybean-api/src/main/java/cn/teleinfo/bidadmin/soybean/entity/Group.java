@@ -90,8 +90,6 @@ public class Group implements Serializable {
      * 群创建人
      */
     @ApiModelProperty(value = "群创建人")
-    @Min(value = 1,message = "创建人ID不能小于1")
-    @Max(value = Integer.MAX_VALUE,message = "创建人ID超出Integer范围")
     private Integer createUser;
 
     /**
@@ -104,8 +102,6 @@ public class Group implements Serializable {
      * 更新人
      */
     @ApiModelProperty(value = "更新人")
-    @Min(value = 1,message = "更新人ID不能小于1")
-    @Max(value = Integer.MAX_VALUE,message = "变更人ID超出Integer范围")
     private Integer updateUser;
     /**
      * 更新时间
@@ -117,29 +113,22 @@ public class Group implements Serializable {
      * 群状态(0:正常，1:删除，2:审核中)
      */
     @ApiModelProperty(value = "群状态(0:正常，1:删除，2:审核中)")
-    @Min(value = 0)
-    @Max(value = 2,message = "群状态不能大于2")
     private Integer status;
     /**
      * 是否需要审批(0:否，1:是)
      */
     @ApiModelProperty(value = "是否需要审批(0:否，1:是)")
-    @Min(value = 0)
-    @Max(value = 1,message = "审批状态不能大于1")
     private Integer approval;
     /**
      * 群组类型（公司，社区，其他）
      */
     @ApiModelProperty(value = "群组类型（公司，社区，其他）",required = true)
     @NotNull(message = "群组类型不能为空")
-    @Range(min = 0,max = 2, message = "群组类型必须为公司(0),社区(1),其他(2)中的一项")
     private Integer groupType;
     /**
      * 公司地址ID（只有公司和社区需要）
      */
     @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
-    @Min(value = 0,message = "地址ID不能小于1")
-    @Max(value = Integer.MAX_VALUE,message = "地址ID超出Integer范围")
     private Integer addressId;
     /**
      * 公司地址名称

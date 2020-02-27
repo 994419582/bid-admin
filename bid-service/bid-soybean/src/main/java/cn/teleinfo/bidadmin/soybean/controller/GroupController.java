@@ -133,9 +133,9 @@ public class GroupController extends BladeController {
 	public R<List<GroupVO>> children(Group group) {
 		ArrayList<Group> topGroups = new ArrayList<>();
 		List<Group> groups = groupService.children(group);
-		//点击顶级节点时增加自身
+		//点击一级节点时增加自身
 		if (Group.TOP_PARENT_ID.equals(group.getId())) {
-			Group topGroup = groupService.getById(Group.TOP_PARENT_ID);
+			Group topGroup = groupService.getById(group.getId());
 			topGroups.add(topGroup);
 			topGroups.addAll(groups);
 			groups = topGroups;

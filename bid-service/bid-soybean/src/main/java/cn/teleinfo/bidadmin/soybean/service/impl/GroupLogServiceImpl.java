@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.GroupLog;
 import cn.teleinfo.bidadmin.soybean.vo.GroupLogVO;
 import cn.teleinfo.bidadmin.soybean.mapper.GroupLogMapper;
 import cn.teleinfo.bidadmin.soybean.service.IGroupLogService;
+import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
@@ -37,5 +38,20 @@ public class GroupLogServiceImpl extends ServiceImpl<GroupLogMapper, GroupLog> i
 	public IPage<GroupLogVO> selectGroupLogPage(IPage<GroupLogVO> page, GroupLogVO groupLog) {
 		return page.setRecords(baseMapper.selectGroupLogPage(page, groupLog));
 	}
+
+    @Override
+    public void addLog(Integer groupId, Integer userId, Integer eventType) {
+		if (groupId == null) {
+			throw new ApiException("用户ID不能为空");
+		}
+		if (userId == null) {
+			throw new ApiException("群组ID不能为空");
+		}
+		GroupLog groupLog = new GroupLog();
+		groupLog.setUserId(groupId);
+		groupLog.setGroupId(userId);
+		groupLog.setEventType(eventType);
+		save(groupLog);
+    }
 
 }

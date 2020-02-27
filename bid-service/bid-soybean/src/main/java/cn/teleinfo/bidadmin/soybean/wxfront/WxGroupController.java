@@ -70,6 +70,22 @@ public class WxGroupController extends BladeController {
         return R.data(GroupWrapper.build().entityVO(detail));
     }
 
+
+    /**
+     * 群组是否存在
+     * @return
+     */
+    @GetMapping("/exist")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "群组是否存在", notes = "传入groupId")
+    public R<Boolean> detail(@RequestParam(name = "groupId") Integer groupId) {
+        Group detail = groupService.getById(groupId);
+        if (detail == null) {
+            return R.data(false);
+        }
+        return R.data(true);
+    }
+
     /**
      * 群组列表
      *
@@ -193,29 +209,4 @@ public class WxGroupController extends BladeController {
         }
         return R.status(groupService.removeGroupMiddleTableById(idList));
     }
-
-    /**
-     * 群组添加用户
-     *
-     * @return
-     */
-    @PostMapping("/user")
-    @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "群组添加用户", notes = "传入groupId和userId")
-    public R addUser(@Valid @RequestBody UserGroup userGroup) {
-        return R.status(groupService.addUser(userGroup));
-    }
-
-    /**
-     * 群组删除用户
-     *
-     * @return
-     */
-    @DeleteMapping("/user")
-    @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "群组删除用户", notes = "传入groupId和userId")
-    public R delUser(@Valid @RequestBody UserGroup userGroup) {
-        return R.status(groupService.delUser(userGroup));
-    }
-
 }

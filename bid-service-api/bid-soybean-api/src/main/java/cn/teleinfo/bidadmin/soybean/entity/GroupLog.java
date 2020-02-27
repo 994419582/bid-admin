@@ -41,12 +41,11 @@ public class GroupLog implements Serializable {
     private static final long serialVersionUID = 1L;
 
     //新增组用户
-    public static Integer NEW_USER = 0;
+    public static Integer NEW_USER = 10;
     //删除组用户
-    public static Integer DELETE_USER = 1;
+    public static Integer DELETE_USER = 11;
     //修改组用户
-    public static Integer DELETE_UPDATE = 2;
-
+    public static Integer UPDATE_USER = 12;
     /**
      * 主键
      */

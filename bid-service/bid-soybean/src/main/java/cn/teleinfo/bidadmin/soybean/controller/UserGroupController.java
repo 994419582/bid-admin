@@ -15,6 +15,10 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
+import cn.teleinfo.bidadmin.soybean.entity.GroupLog;
+import cn.teleinfo.bidadmin.soybean.service.IGroupLogService;
+import cn.teleinfo.bidadmin.soybean.service.IGroupService;
+import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
@@ -34,7 +38,6 @@ import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserGroupWrapper;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import org.springblade.core.boot.ctrl.BladeController;
-import java.util.List;
 
 /**
  *  控制器
@@ -45,11 +48,14 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/usergroup")
-@Api(value = "", tags = "接口")
+@Api(value = "", tags = "用户群组接口")
 public class UserGroupController extends BladeController {
 
 	private IUserGroupService userGroupService;
 
+	private IGroupService groupService;
+
+	private IGroupLogService groupLogService;
 	/**
 	* 详情
 	*/
@@ -90,16 +96,23 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入userGroup")
 	public R save(@Valid @RequestBody UserGroup userGroup) {
+		//校验用户和群组
+		userGroupService.checkUserGroup(userGroup);
+		//添加日志
+		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.NEW_USER);
 		return R.status(userGroupService.save(userGroup));
 	}
 
 	/**
-	* 修改 
+	* 修改
 	*/
 	@PostMapping("/update")
     @ApiOperationSupport(order = 5)
 	@ApiOperation(value = "修改", notes = "传入userGroup")
 	public R update(@Valid @RequestBody UserGroup userGroup) {
+		//校验用户和群组
+		userGroupService.checkUserGroup(userGroup);
+		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.UPDATE_USER);
 		return R.status(userGroupService.updateById(userGroup));
 	}
 
@@ -110,12 +123,20 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入userGroup")
 	public R submit(@Valid @RequestBody UserGroup userGroup) {
+		//校验用户和群组
+		userGroupService.checkUserGroup(userGroup);
+		//添加日志
+		if (userGroup.getId() == null) {
+			groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.NEW_USER);
+		} else {
+			throw new ApiException("群组不允许修改");
+		}
 		return R.status(userGroupService.saveOrUpdate(userGroup));
 	}
 
 	
 	/**
-	* 删除 
+	* 删除
 	*/
 	@PostMapping("/remove")
     @ApiOperationSupport(order = 7)

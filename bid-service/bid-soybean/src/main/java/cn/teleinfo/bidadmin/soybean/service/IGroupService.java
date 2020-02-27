@@ -72,21 +72,6 @@ public interface IGroupService extends IService<Group> {
 	boolean removeGroupMiddleTableById(List<Integer> ids);
 
 	/**
-	 * 群组添加用户
-	 * @param userGroup 用户组中间表
-	 * @return
-	 */
-
-    boolean addUser(UserGroup userGroup);
-
-	/**
-	 * 群组删除用户
-	 * @param userGroup 用户组中间表
-	 * @return
-	 */
-	boolean delUser(UserGroup userGroup);
-
-	/**
 	 * 群组下拉树形图
 	 * @return
 	 */
@@ -124,4 +109,12 @@ public interface IGroupService extends IService<Group> {
      * @param userId
      */
 	List<GroupTreeVo> treeUser(Integer userId);
+
+	/**
+	 * 校验用户是否有管理权限（管理员和创建人有权限）
+	 * @param groupId
+	 * @param userId
+	 * @return
+	 */
+    boolean isGroupManger(Integer groupId, Integer userId);
 }

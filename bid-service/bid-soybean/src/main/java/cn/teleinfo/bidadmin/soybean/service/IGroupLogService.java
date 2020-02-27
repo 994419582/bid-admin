@@ -38,4 +38,11 @@ public interface IGroupLogService extends IService<GroupLog> {
 	 */
 	IPage<GroupLogVO> selectGroupLogPage(IPage<GroupLogVO> page, GroupLogVO groupLog);
 
+	/**
+	 * 添加日志
+	 * @param groupId
+	 * @param userId
+	 * @param eventType
+	 */
+    void addLog(Integer groupId, Integer userId, Integer eventType);
 }
