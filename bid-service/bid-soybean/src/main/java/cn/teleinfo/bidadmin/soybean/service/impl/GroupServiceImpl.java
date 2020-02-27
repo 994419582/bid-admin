@@ -136,11 +136,18 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public boolean addUser(UserGroup userGroup) {
-        if (getById(userGroup.getGroupId()) == null) {
+        Group group = getById(userGroup.getGroupId());
+        if (group == null) {
             throw new ApiException("群组不存在");
         }
-        if (userGroupService.getOne(Condition.getQueryWrapper(userGroup)) != null) {
+        List<UserGroup> userGroups = userGroupService.list(Wrappers.<UserGroup>lambdaQuery().eq(UserGroup::getGroupId, userGroup.getGroupId()).eq(UserGroup::getUserId, userGroup.getUserId()));
+        if (CollectionUtils.isEmpty(userGroups)) {
             throw new ApiException("用户已添加此群组");
+        }
+        //获取此群组当前用户数
+        int count = userGroupService.count(Wrappers.<UserGroup>lambdaQuery().eq(UserGroup::getGroupId, userGroup.getGroupId()));
+        if (count >= group.getUserAccount()) {
+            throw new ApiException("群组已满");
         }
         // TODO: 2020/2/23 用户校验后期再做
         //添加用户
