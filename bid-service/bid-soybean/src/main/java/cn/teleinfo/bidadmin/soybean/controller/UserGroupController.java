@@ -97,7 +97,7 @@ public class UserGroupController extends BladeController {
 	@ApiOperation(value = "新增", notes = "传入userGroup")
 	public R save(@Valid @RequestBody UserGroup userGroup) {
 		//校验用户和群组
-		userGroupService.checkUserGroup(userGroup);
+		userGroupService.checkAddUserGroup(userGroup);
 		//添加日志
 		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.NEW_USER);
 		return R.status(userGroupService.save(userGroup));
@@ -111,7 +111,7 @@ public class UserGroupController extends BladeController {
 	@ApiOperation(value = "修改", notes = "传入userGroup")
 	public R update(@Valid @RequestBody UserGroup userGroup) {
 		//校验用户和群组
-		userGroupService.checkUserGroup(userGroup);
+		userGroupService.checkAddUserGroup(userGroup);
 		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.UPDATE_USER);
 		return R.status(userGroupService.updateById(userGroup));
 	}
@@ -124,7 +124,7 @@ public class UserGroupController extends BladeController {
 	@ApiOperation(value = "新增或修改", notes = "传入userGroup")
 	public R submit(@Valid @RequestBody UserGroup userGroup) {
 		//校验用户和群组
-		userGroupService.checkUserGroup(userGroup);
+		userGroupService.checkAddUserGroup(userGroup);
 		//添加日志
 		if (userGroup.getId() == null) {
 			groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.NEW_USER);

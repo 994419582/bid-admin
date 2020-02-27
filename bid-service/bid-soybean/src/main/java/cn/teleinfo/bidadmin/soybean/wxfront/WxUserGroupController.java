@@ -56,16 +56,6 @@ public class WxUserGroupController extends BladeController {
 	private IGroupService groupService;
 
 	private IGroupLogService groupLogService;
-	/**
-	* 详情
-	*/
-	@GetMapping("/detail")
-    @ApiOperationSupport(order = 1)
-	@ApiOperation(value = "详情", notes = "传入userGroup")
-	public R<UserGroupVO> detail(UserGroup userGroup) {
-		UserGroup detail = userGroupService.getOne(Condition.getQueryWrapper(userGroup));
-		return R.data(UserGroupWrapper.build().entityVO(detail));
-	}
 
 	/**
 	* 用户加群
@@ -74,39 +64,28 @@ public class WxUserGroupController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入userGroup")
 	public R save(@Valid @RequestBody UserGroup userGroup) {
-		//校验用户和群组
-		userGroupService.checkUserGroup(userGroup);
-		//添加日志
-		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.NEW_USER);
-		return R.status(userGroupService.save(userGroup));
+		return R.status(userGroupService.saveUserGroup(userGroup));
 	}
 
 	/**
 	 * 用户退群
 	 */
-	@PostMapping("/remove")
+	@PostMapping("/quit")
 	@ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入用户ID和群ID")
 	public R remove(@Valid @RequestBody UserGroup userGroup) {
-		//校验用户和群组
-		//添加日志
-		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.DELETE_USER);
-		//删除条件
-		LambdaQueryWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
-				eq(UserGroup::getUserId, userGroup.getUserId()).
-				eq(UserGroup::getGroupId, userGroup.getGroupId());
-		return R.status(userGroupService.remove(userGroupLambdaQueryWrapper));
+		return R.status(userGroupService.quitGroup(userGroup));
 	}
 
 
-//	/**
-//	 * 管理员删除群用户
-//	 */
-//	@PostMapping("/manager/remove")
-//	@ApiOperationSupport(order = 4)
-//	@ApiOperation(value = "新增", notes = "传入用户ID，群组ID，操作人ID")
-//	public R save(@Valid @RequestBody UserGroupVO userGroup) {
-//		return R.status(userGroupService.managerRemoveUser(userGroup));
-//	}
+	/**
+	 * 管理员删除群用户
+	 */
+	@PostMapping("/manager/remove")
+	@ApiOperationSupport(order = 4)
+	@ApiOperation(value = "新增", notes = "传入用户ID，群组ID，操作人ID")
+	public R save(@Valid @RequestBody UserGroupVO userGroup) {
+		return R.status(userGroupService.managerRemoveUser(userGroup));
+	}
 
 }

@@ -46,6 +46,9 @@ public class GroupLog implements Serializable {
     public static Integer DELETE_USER = 11;
     //修改组用户
     public static Integer UPDATE_USER = 12;
+    //管理员删除
+    public static Integer MANAGER_DELETE_USER = 13;
+
     /**
      * 主键
      */

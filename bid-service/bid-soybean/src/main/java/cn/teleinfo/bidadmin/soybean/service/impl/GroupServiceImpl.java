@@ -25,7 +25,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import lombok.AllArgsConstructor;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +59,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     private IUserGroupService userGroupService;
     @Autowired
     private IGroupLogService groupLogService;
+    @Autowired
+    private IUserService userService;
 
     //逗号分隔类型校验
     public static final String STRING_LIST = "\\d+(,\\d+)*";
@@ -140,7 +141,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public List<GroupTreeVo> tree() {
+    public List<GroupTreeVo> selectAllGroupAndParent() {
         return groupMapper.tree();
     }
 
@@ -165,75 +166,137 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Override
     public List<GroupTreeVo> treeChildren() {
-        List<GroupTreeVo> tree = tree();
+        List<GroupTreeVo> tree = selectAllGroupAndParent();
         List<GroupTreeVo> maps = buildTree(tree, 0);
         return maps;
     }
 
     @Override
     public List<GroupTreeVo> treeUser(Integer userId) {
-        List<GroupTreeVo> tree = this.treeChildren();
-
-        ArrayList<GroupTreeVo> groupTreeVos = new ArrayList<>();
-        //一级树
-        for (GroupTreeVo groupTreeVo : tree) {
-            List<Integer> groupAllManager = getGroupAllManager(groupTreeVo);
-            if (groupAllManager.contains(userId)) {
-                groupTreeVos.add(groupTreeVo);
-            }
+        if (!existUser(userId)) {
+            throw new ApiException("用户不存在");
         }
-        //二级树
-        for (GroupTreeVo groupTreeVo : tree) {
-            for (GroupTreeVo child : groupTreeVo.getChildren()) {
-                List<Integer> childAllManager = getGroupAllManager(child);
-                if (childAllManager.contains(userId)) {
-                    //遍历顶级用户是否有权限
-                    boolean b = groupTreeVos.stream().anyMatch(groupTreeVo1 -> {
-                        return groupTreeVo1.getId().equals(child.getParentId()) || groupTreeVo1.getId().equals(child.getId());
-                    });
-                    if (!b) {
-                        groupTreeVos.add(child);
-                    }
-                }
-            }
-        }
-        //三级树
-        for (GroupTreeVo groupTreeVo : tree) {
-            for (GroupTreeVo child : groupTreeVo.getChildren()) {
-                for (GroupTreeVo childChild : child.getChildren()) {
-                    List<Integer> childAllManager = getGroupAllManager(child);
-                    if (childAllManager.contains(userId)) {
-                        //遍历顶级用户是否有权限
-                        boolean flag = false;
-                        for (GroupTreeVo treeVo : groupTreeVos) {
-                            //顶级是否有父ID
-                            if (child.getParentId().equals(treeVo.getId()) || child.getId().equals(treeVo.getId())) {
-                                flag = true;
-                            }
-                            //二级是否有父ID
-                            for (GroupTreeVo treeVoChild : treeVo.getChildren()) {
-                                if (child.getId().equals(treeVoChild.getId()) || child.getParentId().equals(treeVoChild.getId())) {
-                                    flag = true;
-                                }
-                            }
-                        }
-                        if (!flag) {
-                            groupTreeVos.add(child);
-                        }
-                    }
-                }
-            }
-        }
+        ArrayList<GroupTreeVo> treeRootList = new ArrayList<>();
+        //查询所有群
+        List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
 
+        //遍历获取用户管理的所有群
+        List<GroupTreeVo> userGroupTreeList = groupAndParentList.stream().filter(groupTreeVo -> {
+            List<Integer> managerList = Func.toIntList(groupTreeVo.getManagers());
+            Integer createUser = groupTreeVo.getCreateUser();
+            if (managerList.contains(userId)) {
+                return true;
+            }
+            if (createUser != null && createUser.equals(userId)) {
+                return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
+        //递归获取群下所有子群添加到groupTreeVos
+        for (GroupTreeVo groupTreeVo : userGroupTreeList) {
+            List<GroupTreeVo> childTree = buildTree(groupAndParentList, groupTreeVo.getId());
+            if (!CollectionUtils.isEmpty(childTree)) {
+                groupTreeVo.setChildren(childTree);
+            }
+            treeRootList.add(groupTreeVo);
+        }
+        return treeRootList;
+    }
 
-        return groupTreeVos;
+    private boolean isGroupMangerOrCreater(Integer groupId, Integer userId) {
+        if (groupId == null) {
+            throw new ApiException("群ID不能为null");
+        }
+        if (userId == null) {
+            throw new ApiException("用户ID不能为null");
+        }
+        Group group = this.getById(groupId);
+        if (group == null) {
+            throw new ApiException("群组不存在");
+        }
+        User user = userService.getById(userId);
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+        List<Integer> managerList = Func.toIntList(group.getManagers());
+        Integer createUser = group.getCreateUser();
+        if (managerList.contains(userId)) {
+            return true;
+        }
+        if (createUser != null && createUser.equals(userId)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     public boolean isGroupManger(Integer groupId, Integer userId) {
+        if (groupId == null) {
+            throw new ApiException("群ID不能为null");
+        }
+        if (userId == null) {
+            throw new ApiException("用户ID不能为null");
+        }
         Group group = this.getById(groupId);
-        Func.toIntList(group.getManagers());
+        if (group == null) {
+            throw new ApiException("群组不存在");
+        }
+        User user = userService.getById(userId);
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+        List<Integer> managerList = Func.toIntList(group.getManagers());
+        if (managerList.contains(userId)) {
+            return true;
+        }
         return false;
+    }
+
+    @Override
+    public boolean isGroupCreater(Integer groupId, Integer userId) {
+        if (groupId == null) {
+            throw new ApiException("群ID不能为null");
+        }
+        if (userId == null) {
+            throw new ApiException("用户ID不能为null");
+        }
+        Group group = this.getById(groupId);
+        if (group == null) {
+            throw new ApiException("群组不存在");
+        }
+        User user = userService.getById(userId);
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+        Integer createUser = group.getCreateUser();
+        if (createUser != null && createUser.equals(userId)) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean existGroup(Integer groupId) {
+        if (groupId == null) {
+            throw new ApiException("群组ID不能为空");
+        }
+        Group group = getById(groupId);
+        if (group == null) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean existUser(Integer userId) {
+        if (userId == null) {
+            throw new ApiException("用户ID不存在");
+        }
+        User user = userService.getById(userId);
+        if (user == null) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -276,105 +339,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
         }
         return tree;
-    }
-
-    /**
-     * 根据用户递归构建树形下拉
-     * @param groups
-     * @param parentId
-     * @return
-     */
-    public List<GroupTreeVo> buildTreeUser(List<GroupTreeVo> groups, Integer parentId,Integer userId) {
-        List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
-
-        for (GroupTreeVo groupTreeVo : groups) {
-            Integer id = groupTreeVo.getId();
-            Integer pId = groupTreeVo.getParentId();
-
-            if (parentId == pId) {
-                List<GroupTreeVo> treeList = buildTreeUser(groups, id, userId);
-                //校验用户对此群组是否有权限
-                List<Integer> managerList = getGroupAllManager(groupTreeVo);
-                if (managerList.contains(userId)) {
-                    groupTreeVo.setChildren(treeList);
-                    groupTreeVo.setPermission(true);
-                    tree.add(groupTreeVo);
-                } else
-                    //递归查看该群组对应的父群主是否有权限
-                    if (checkParentGroupPermission(groups, id, userId) > 0) {
-                        groupTreeVo.setChildren(treeList);
-                        groupTreeVo.setPermission(true);
-                        tree.add(groupTreeVo);
-                    } else {
-                        //递归校验该群组所有子群是否有管理权限
-                        if (checkParentChildrenPermission(groups, id, userId) > 0) {
-                            groupTreeVo.setChildren(treeList);
-                            groupTreeVo.setPermission(false);
-                            tree.add(groupTreeVo);
-                        }
-                    }
-            }
-        }
-        return tree;
-    }
-
-    private Integer checkParentChildrenPermission(List<GroupTreeVo> groups, Integer id, Integer userId) {
-        //有权限的子群组个数
-        Integer count = 0;
-        List<GroupTreeVo> childrenList = groups.stream().filter(groupTreeVo -> groupTreeVo.getParentId().equals(id)).collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(childrenList)) {
-            List<GroupTreeVo> groupTreeVos = groups.stream().filter(groupTreeVo -> groupTreeVo.getId().equals(id)).collect(Collectors.toList());
-            for (GroupTreeVo groupTreeVo : groupTreeVos) {
-                List<Integer> managers = getGroupAllManager(groupTreeVo);
-                List<GroupTreeVo> childrens = groupTreeVo.getChildren();
-                for (GroupTreeVo children : childrens) {
-                    count = count + checkParentGroupPermission(groups, children.getId(), userId);
-                    if (managers.contains(userId)) {
-                        count = count + 1;
-                    }
-                }
-            }
-            return count;
-        } else {
-            return 0;
-        }
-    }
-
-    private Integer checkParentGroupPermission(List<GroupTreeVo> groups, Integer id, Integer userId) {
-        //有权限的父群组个数
-        Integer count = 0;
-        if (!Group.TOP_PARENT_ID.equals(id)) {
-            List<GroupTreeVo> groupTreeVos = groups.stream().filter(groupTreeVo -> groupTreeVo.getId().equals(id)).collect(Collectors.toList());
-            for (GroupTreeVo groupTreeVo : groupTreeVos) {
-                List<Integer> managers = getGroupAllManager(groupTreeVo);
-                count = count + checkParentGroupPermission(groups, groupTreeVo.getParentId(), userId);
-                if (managers.contains(userId)) {
-                    count = count + 1;
-                }
-            }
-            return count;
-        } else {
-            return 0;
-        }
-    }
-
-    /**
-     * 获取群组所有管理者
-     */
-    private List<Integer> getGroupAllManager(GroupTreeVo groupTreeVo) {
-        //校验用户对此群组是否有权限
-        String managers = groupTreeVo.getManagers();
-        Integer createUser = groupTreeVo.getCreateUser();
-        List<Integer> managerList = new ArrayList<>();
-
-        if (!StringUtils.isEmpty(managers)) {
-            List<Integer> collect = Arrays.stream(managers.split(","))
-                    .map(s -> Integer.valueOf(s)).
-                            collect(Collectors.toList());
-            managerList.addAll(collect);
-        }
-        managerList.add(createUser);
-        return managerList;
     }
 
     @Override
@@ -469,6 +433,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      * 临时解决Integer为null时, 返回前台为-1的问题
      */
     public static void modifyObject(Object model) {
+        // TODO: 2020/2/27
         //获取实体类的所有属性，返回Field数组
         Field[] fields = model.getClass().getDeclaredFields();
         for (Field field : fields) {

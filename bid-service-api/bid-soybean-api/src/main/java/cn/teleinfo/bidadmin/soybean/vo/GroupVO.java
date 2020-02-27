@@ -16,12 +16,12 @@
 package cn.teleinfo.bidadmin.soybean.vo;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiParam;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -36,8 +36,8 @@ import javax.validation.constraints.NotNull;
 public class GroupVO extends Group {
 	private static final long serialVersionUID = 1L;
 
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	@NotNull(message = "用户ID不能为null")
-	@Min(value = 1, message = "用户ID不能小于1")
-	@Max(value = Integer.MAX_VALUE, message = "用户ID不能超出Integer范围")
+	@ApiParam(value = "用户ID", required = true)
 	private Integer userId;
 }

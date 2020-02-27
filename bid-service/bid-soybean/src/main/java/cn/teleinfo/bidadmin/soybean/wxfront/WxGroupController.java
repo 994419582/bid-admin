@@ -16,7 +16,6 @@
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.impl.GroupServiceImpl;
@@ -25,10 +24,8 @@ import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiOperationSupport;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
+import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
@@ -77,11 +74,11 @@ public class WxGroupController extends BladeController {
      */
     @GetMapping("/exist")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "群组是否存在", notes = "传入groupId")
+    @ApiOperation(value = "群组是否存在", notes = "传入群主键ID")
     public R<Boolean> detail(@RequestParam(name = "groupId") Integer groupId) {
         Group detail = groupService.getById(groupId);
         if (detail == null) {
-            return R.data(false);
+            throw new ApiException("群组不存在");
         }
         return R.data(true);
     }
@@ -93,49 +90,38 @@ public class WxGroupController extends BladeController {
      */
     @GetMapping("/select")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "群组列表", notes = "查询所有群")
+    @ApiOperation(value = "群组列表", notes = "群查看接口，普通的列表（群广场使用）")
     public R<List<GroupVO>> select() {
         List<Group> groups = groupService.select();
         return R.data(GroupWrapper.build().listVO(groups));
     }
 
-    /**
-     * 分页查询
-     */
-    @GetMapping("/list")
-    @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "分页查询", notes = "传入group")
-    public R<IPage<GroupVO>> list(Group group, Query query) {
-        IPage<Group> pages = groupService.page(Condition.getPage(query), Condition.getQueryWrapper(group));
-        return R.data(GroupWrapper.build().pageVO(pages));
-    }
-
 //    /**
-//     * 树形下拉列表字典样式
-//     * @return
+//     * 分页查询
 //     */
-//    @GetMapping("/tree")
-//    @ApiOperationSupport(order = 1)
-//    @ApiOperation(value = "下拉树形图", notes = "返回所有群组，字段含有parentId")
-//    public R<List<GroupTreeVo>> tree() {
-//        return R.data(groupService.tree());
-//    }
-
-//    /**
-//     * 带有children的树形下拉列表字典样式
-//     * @return
-//     */
-//    @GetMapping("/tree/children")
+//    @GetMapping("/list")
 //    @ApiOperationSupport(order = 2)
-//    @ApiOperation(value = "树形下拉列表字典", notes = "返回所有群组，字段含有children")
-//    public R<List<GroupTreeVo>> treeChildren() {
-//        List<GroupTreeVo> tree = groupService.treeChildren();
-//        return R.data(tree);
+//    @ApiOperation(value = "分页查询", notes = "传入group和分页参数")
+//    public R<IPage<GroupVO>> list(Group group, Query query) {
+//        IPage<Group> pages = groupService.page(Condition.getPage(query), Condition.getQueryWrapper(group));
+//        return R.data(GroupWrapper.build().pageVO(pages));
 //    }
+
+    /**
+     * 带有children的树形下拉列表字典样式
+     * @return
+     */
+    @GetMapping("/tree")
+    @ApiOperationSupport(order = 2)
+    @ApiOperation(value = "树形下拉列表字典", notes = "群查看接口（下拉树形图）")
+    public R<List<GroupTreeVo>> treeChildren() {
+        List<GroupTreeVo> tree = groupService.treeChildren();
+        return R.data(tree);
+    }
 
     @GetMapping("/tree/user")
     @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "树形下拉列表字典", notes = "返回用户所有群组，带有children字段，目前只支持到三级菜单，需跟产品沟通确定最终方案")
+    @ApiOperation(value = "用户群组树形下拉列表字典", notes = "根据用户ID查询其相关的群信息,使用树形表格接口（递归查询，查出子群的子群）")
     public R<List<GroupTreeVo>> treeChildren(@ApiParam(value = "用户ID", required = true)@RequestParam Integer userId) {
         List<GroupTreeVo> tree = groupService.treeUser(userId);
         return R.data(tree);
@@ -208,5 +194,32 @@ public class WxGroupController extends BladeController {
             }
         }
         return R.status(groupService.removeGroupMiddleTableById(idList));
+    }
+
+    /**
+     * 群转让
+     */
+    @PostMapping("/transfer")
+    @ApiOperationSupport(order = 3)
+    @ApiOperation(value = "群转让", notes = "传入group，群转让接口（只有群组拥有者有权限可以将群转让给其他人）")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "userId", value = "用户ID", paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "transferId", value = "转让人", paramType = "query", dataType = "int")
+    })
+    public R transfer(@RequestParam(name = "groupId", required = true) Integer groupId,
+                      @RequestParam(name = "userId", required = true) Integer userId,
+                      @RequestParam(name = "transferId", required = true) Integer transferId) {
+        if (!groupService.isGroupCreater(groupId, userId)) {
+            throw new ApiException("用户不是群组创建人");
+        }
+        if (!groupService.existUser(userId)) {
+            throw new ApiException("用户不存在");
+        }
+        Group group = new Group();
+        group.setId(groupId);
+        group.setCreateUser(transferId);
+
+        return R.status( groupService.updateById(group));
     }
 }

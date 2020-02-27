@@ -75,7 +75,7 @@ public interface IGroupService extends IService<Group> {
 	 * 群组下拉树形图
 	 * @return
 	 */
-    List<GroupTreeVo> tree();
+    List<GroupTreeVo> selectAllGroupAndParent();
 
 	/**
 	 * 群组明细
@@ -117,4 +117,26 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
     boolean isGroupManger(Integer groupId, Integer userId);
+
+	/**
+	 * 校验是否为群创建人
+	 * @param groupId
+	 * @param userId
+	 * @return
+	 */
+	boolean isGroupCreater(Integer groupId, Integer userId);
+
+	/**
+	 * 群组是否存在
+	 * @param groupId
+	 * @return
+	 */
+    boolean existGroup(Integer groupId);
+
+	/**
+	 * 用户是否存在
+	 * @param userId
+	 * @return
+	 */
+	boolean existUser(Integer userId);
 }

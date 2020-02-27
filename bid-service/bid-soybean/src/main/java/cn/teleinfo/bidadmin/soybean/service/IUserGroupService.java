@@ -21,6 +21,7 @@ import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -52,7 +53,7 @@ public interface IUserGroupService extends IService<UserGroup> {
      * 校验用户组
      * @param userGroup
      */
-    void checkUserGroup(UserGroup userGroup);
+    void checkAddUserGroup(UserGroup userGroup);
 
     /**
      * 管理员删除用户
@@ -60,4 +61,19 @@ public interface IUserGroupService extends IService<UserGroup> {
      * @return
      */
     boolean managerRemoveUser(UserGroupVO userGroup);
+
+    /**
+     * 退群
+     * @return
+     * @param userGroup
+     */
+    boolean quitGroup(UserGroup userGroup);
+
+    /**
+     * 用户加群
+     * @param userGroup
+     * @return
+     */
+    boolean saveUserGroup(UserGroup userGroup);
+
 }
