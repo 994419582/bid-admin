@@ -15,27 +15,36 @@
  */
 package cn.teleinfo.bidadmin.soybean.service;
 
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
-import com.baomidou.mybatisplus.extension.service.IService;
-import org.springblade.core.mp.base.BaseService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
- *  服务类
+ * 服务类
  *
  * @author Blade
  * @since 2020-02-21
  */
 public interface IUserGroupService extends IService<UserGroup> {
 
-	/**
-	 * 自定义分页
-	 *
-	 * @param page
-	 * @param userGroup
-	 * @return
-	 */
-	IPage<UserGroupVO> selectUserGroupPage(IPage<UserGroupVO> page, UserGroupVO userGroup);
+    /**
+     * 自定义分页
+     *
+     * @param page
+     * @param userGroup
+     * @return
+     */
+    IPage<UserGroupVO> selectUserGroupPage(IPage<UserGroupVO> page, UserGroupVO userGroup);
 
+    /**
+     * 查询某群组下的所有用户
+     *
+     * @param groupid
+     * @return
+     */
+    List<User> findUserByGroupId(Integer groupid);
 }

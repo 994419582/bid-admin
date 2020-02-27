@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.mapper.ClocklnMapper;
@@ -49,5 +50,10 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
 	@Override
 	public  List<Clockln> selectClocklnByGroup(Integer groupId,  Date clockInTime){
 		return baseMapper.selectClocklnByGroup(groupId,clockInTime);
+	}
+
+	@Override
+	public List<ClocklnVO> findByUserIdInAndCreatetimeBetween(List<Integer> ids, Date from, Date to) {
+		return baseMapper.findByUserIdInAndCreatetimeBetween(ids, from, to);
 	}
 }

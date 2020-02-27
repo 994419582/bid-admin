@@ -104,7 +104,7 @@ public class WxMaUserController extends BladeController {
             user = new User();
         }
         user.setNickname(userInfo.getNickName());
-        user.setGender(userInfo.getGender());
+//        user.setGender(userInfo.getGender());
 //        user.setCountry(userInfo.getCountry());
 //        user.setProvince(userInfo.getProvince());
 //        user.setCity(userInfo.getCity());

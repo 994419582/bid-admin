@@ -16,6 +16,7 @@
 package cn.teleinfo.bidadmin.soybean.mapper;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -45,6 +46,6 @@ public interface GroupMapper extends BaseMapper<Group> {
 	 * 群组下拉树
 	 * @return
 	 */
-	@Select("select s.id,s.name,p.parent_id as parentId from soybean_group s, soybean_parent_group p where s.id = p.group_id order by p.parent_id")
-	List<HashMap> tree();
+	@Select("select s.id,s.name,p.parent_id as parentId,s.logo, s.managers, s.create_user createUser from soybean_group s, soybean_parent_group p where s.id = p.group_id order by p.parent_id")
+	List<GroupTreeVo> tree();
 }

@@ -20,6 +20,7 @@ import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.impl.GroupServiceImpl;
+import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -37,7 +38,6 @@ import org.springblade.core.tool.utils.Func;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -57,12 +57,15 @@ public class WxGroupController extends BladeController {
     private IParentGroupService parentGroupService;
 
     /**
-     * 详情
+     * 根据ID查看群组详情
      */
     @GetMapping("/detail")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "群组详情", notes = "传入group")
+    @ApiOperation(value = "群组详情", notes = "传入groupId")
     public R<GroupVO> detail(Group group) {
+        if (group.getId() == null) {
+            throw new ApiException("群组id不能为空");
+        }
         Group detail = groupService.detail(group);
         return R.data(GroupWrapper.build().entityVO(detail));
     }
@@ -93,24 +96,35 @@ public class WxGroupController extends BladeController {
 
     /**
      * 树形下拉列表字典样式
+     * @return
      */
     @GetMapping("/tree")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "下拉树形图", notes = "带有parentId")
-    public R<List<HashMap>> tree() {
+    @ApiOperation(value = "下拉树形图", notes = "返回所有群组，字段含有parentId")
+    public R<List<GroupTreeVo>> tree() {
         return R.data(groupService.tree());
     }
 
     /**
      * 带有children的树形下拉列表字典样式
+     * @return
      */
     @GetMapping("/tree/children")
     @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "树形下拉列表字典", notes = "带有children的下拉树")
-    public R<List<HashMap>> treeChildren() {
-        List<HashMap> tree = groupService.treeChildren();
+    @ApiOperation(value = "树形下拉列表字典", notes = "返回所有群组，字段含有children")
+    public R<List<GroupTreeVo>> treeChildren() {
+        List<GroupTreeVo> tree = groupService.treeChildren();
         return R.data(tree);
     }
+
+    @GetMapping("/tree/user")
+    @ApiOperationSupport(order = 2)
+    @ApiOperation(value = "树形下拉列表字典", notes = "返回用户所有群组，带有children字段")
+    public R<List<GroupTreeVo>> treeChildren(@ApiParam(value = "用户ID", required = true)@RequestParam Integer userId) {
+        List<GroupTreeVo> tree = groupService.treeUser(userId);
+        return R.data(tree);
+    }
+
 
     /**
      * 新增群组

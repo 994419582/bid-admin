@@ -24,6 +24,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -44,16 +46,20 @@ public class UserGroup implements Serializable {
      */
     @ApiModelProperty(value = "主键")
     @TableId(value = "id", type = IdType.AUTO)
-  private Integer id;
+    private Integer id;
     /**
      * 用户主键
      */
+    @Min(value = 0)
     @ApiModelProperty(value = "用户主键")
+    @NotNull
     private Integer userId;
     /**
      * 群组主键
      */
     @ApiModelProperty(value = "群组主键")
+    @Min(value = 0)
+    @NotNull
     private Integer groupId;
 
 

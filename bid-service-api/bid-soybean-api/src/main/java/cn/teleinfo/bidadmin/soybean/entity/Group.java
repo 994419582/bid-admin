@@ -20,11 +20,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.validator.constraints.Range;
 import org.springblade.core.mp.base.BaseEntity;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -41,8 +40,8 @@ public class Group implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //信通院ID
-    public static final Integer TOP_PARENT_ID = 1;
+    //顶级ID
+    public static final Integer TOP_PARENT_ID = 0;
 
     /**
      * 主键
@@ -53,14 +52,14 @@ public class Group implements Serializable {
     /**
      * 群组名
      */
-    @ApiModelProperty(value = "群组名")
+    @ApiModelProperty(value = "群组名", required = true)
     @NotBlank(message = "名称不能为空")
     @Pattern(regexp = "^(?!null).*", message = "名称不能包含字符串null")
     private String name;
     /**
      * 群组名全称
      */
-    @ApiModelProperty(value = "群组名全称")
+    @ApiModelProperty(value = "群组名全称", required = true)
     @NotBlank(message = "全称不能为空")
     @Pattern(regexp = "^(?!null).*", message = "全称不能包含字符串null")
     private String fullName;
@@ -77,8 +76,9 @@ public class Group implements Serializable {
     /**
      * 群人数
      */
-    @ApiModelProperty(value = "群人数")
+    @ApiModelProperty(value = "群人数", required = true)
     @NotNull(message = "创建人ID不能为空")
+    @Min(value = 1,message = "群人数不能小于1")
     private Integer userAccount;
     /**
      * 群管理员
@@ -89,6 +89,7 @@ public class Group implements Serializable {
      * 群创建人
      */
     @ApiModelProperty(value = "群创建人")
+    @Min(value = 1)
     private Integer createUser;
 
     /**
@@ -101,6 +102,7 @@ public class Group implements Serializable {
      * 更新人
      */
     @ApiModelProperty(value = "更新人")
+    @Min(value = 1)
     private Integer updateUser;
     /**
      * 更新时间
@@ -112,22 +114,26 @@ public class Group implements Serializable {
      * 群状态(0:正常，1:删除，2:审核中)
      */
     @ApiModelProperty(value = "群状态(0:正常，1:删除，2:审核中)")
+    @Min(value = 0)
     private Integer status;
     /**
      * 是否需要审批(0:否，1:是)
      */
     @ApiModelProperty(value = "是否需要审批(0:否，1:是)")
+    @Min(value = 0)
     private Integer approval;
     /**
      * 群组类型（公司，社区，其他）
      */
-    @ApiModelProperty(value = "群组类型（公司，社区，其他）")
+    @ApiModelProperty(value = "群组类型（公司，社区，其他）",required = true)
     @NotNull(message = "群组类型不能为空")
+    @Range(min = 0,max = 2, message = "群组类型必须为公司(0),社区(1),其他(2)中的一项")
     private Integer groupType;
     /**
      * 公司地址ID（只有公司和社区需要）
      */
     @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
+    @Min(value = 0)
     private Integer addressId;
     /**
      * 公司地址名称

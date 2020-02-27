@@ -17,11 +17,11 @@ package cn.teleinfo.bidadmin.soybean.service;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
+import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -90,7 +90,7 @@ public interface IGroupService extends IService<Group> {
 	 * 群组下拉树形图
 	 * @return
 	 */
-    List<HashMap> tree();
+    List<GroupTreeVo> tree();
 
 	/**
 	 * 群组明细
@@ -103,7 +103,7 @@ public interface IGroupService extends IService<Group> {
 	 * 群组下拉树
 	 * @return
 	 */
-	List<HashMap> treeChildren();
+	List<GroupTreeVo> treeChildren();
 
 	/**
 	 * 根据父群组查询子群组
@@ -117,4 +117,11 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
     List<Group> select();
+
+	/**
+	 * 用户管理的所有群组
+	 * @return
+     * @param userId
+     */
+	List<GroupTreeVo> treeUser(Integer userId);
 }

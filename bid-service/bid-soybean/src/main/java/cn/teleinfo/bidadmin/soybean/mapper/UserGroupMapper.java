@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.mapper;
 
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -38,4 +39,5 @@ public interface UserGroupMapper extends BaseMapper<UserGroup> {
 	 */
 	List<UserGroupVO> selectUserGroupPage(IPage page, UserGroupVO userGroup);
 
+	List<User> findUserByGroupId(Integer groupid);
 }

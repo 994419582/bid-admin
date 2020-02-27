@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  *  服务类
@@ -58,4 +59,5 @@ public interface IClocklnService extends IService<Clockln> {
 	 */
 	List<Clockln> selectClocklnByGroup(Integer groupId, Date clockInTime);
 
+	List<ClocklnVO> findByUserIdInAndCreatetimeBetween(List<Integer> collect, Date from, Date to);
 }
