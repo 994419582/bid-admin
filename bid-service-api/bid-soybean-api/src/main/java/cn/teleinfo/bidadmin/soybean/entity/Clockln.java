@@ -136,4 +136,14 @@ public class Clockln implements Serializable {
      */
     @ApiModelProperty(value = "健康状况其他情况")
     private String otherhealthy;
+    /**
+     * 是否到过湖北或途经湖北
+     */
+    @ApiModelProperty(value = "是否到过湖北或途经湖北")
+    private Integer hubei;
+    /**
+     * 现在是否在北京
+     */
+    @ApiModelProperty(value = "现在是否在北京")
+    private Integer beijing;
 }
