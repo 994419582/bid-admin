@@ -16,7 +16,6 @@
     <description>bidadmin 微服务API集合</description>
 
     <modules>
-        <module>bid-soybean-api</module>
         <module>bid-desk-api</module>
         <module>bid-dict-api</module>
         <module>bid-system-api</module>
@@ -24,8 +23,7 @@
         <module>bid-log-api</module>
         <module>bid-quartz-api</module>
         <module>bid-cms-api</module>
-        <!--<module>bid-blockchain-api</module>-->
-        <!--<module>bid-app-api</module>-->
+        <module>bid-soybean-api</module>
     </modules>
 
     <dependencies>

@@ -20,6 +20,9 @@ import cn.teleinfo.bidadmin.soybean.vo.QuarantineVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
+import java.util.Date;
+import java.util.List;
+
 /**
  *  服务类
  *
@@ -37,4 +40,5 @@ public interface IQuarantineService extends IService<Quarantine> {
 	 */
 	IPage<QuarantineVO> selectQuarantinePage(IPage<QuarantineVO> page, QuarantineVO quarantine);
 
+    List<Quarantine> findByUserIdInAndCreatetimeBetween(List<Integer> collect, Date from, Date to);
 }

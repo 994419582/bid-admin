@@ -23,6 +23,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
+import java.util.Date;
+import java.util.List;
+
 /**
  *  服务实现类
  *
@@ -35,6 +38,11 @@ public class QuarantineServiceImpl extends ServiceImpl<QuarantineMapper, Quarant
 	@Override
 	public IPage<QuarantineVO> selectQuarantinePage(IPage<QuarantineVO> page, QuarantineVO quarantine) {
 		return page.setRecords(baseMapper.selectQuarantinePage(page, quarantine));
+	}
+
+	@Override
+	public List<Quarantine> findByUserIdInAndCreatetimeBetween(List<Integer> ids, Date from, Date to) {
+		return baseMapper.findByUserIdInAndCreatetimeBetween(ids, from, to);
 	}
 
 }

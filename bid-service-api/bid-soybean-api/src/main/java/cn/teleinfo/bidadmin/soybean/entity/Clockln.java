@@ -131,4 +131,9 @@ public class Clockln implements Serializable {
      */
     @ApiModelProperty(value = "返京航班/车次")
     private String flight;
+    /**
+     * 健康状况其他情况
+     */
+    @ApiModelProperty(value = "健康状况其他情况")
+    private String otherhealthy;
 }

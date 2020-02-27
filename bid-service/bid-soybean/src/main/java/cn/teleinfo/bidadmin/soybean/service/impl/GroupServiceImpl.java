@@ -18,13 +18,15 @@ package cn.teleinfo.bidadmin.soybean.service.impl;
 import cn.teleinfo.bidadmin.soybean.entity.*;
 import cn.teleinfo.bidadmin.soybean.mapper.GroupMapper;
 import cn.teleinfo.bidadmin.soybean.service.*;
+import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.Api;
+import com.sun.org.apache.xpath.internal.axes.ChildIterator;
+import com.sun.xml.internal.fastinfoset.util.ContiguousCharArrayArray;
 import lombok.AllArgsConstructor;
 import org.springblade.core.mp.support.Condition;
 import org.springframework.stereotype.Service;
@@ -64,6 +66,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public boolean saveGroupMiddleTable(Group group) {
+        if (StringUtils.isEmpty(group.getParentGroups())) {
+            group.setParentGroups(String.valueOf(Group.TOP_PARENT_ID));
+        }
         Integer groupId = group.getId();
         String parentGroups = group.getParentGroups();
         //父群组为空则更新群组，并删除中间表
@@ -134,6 +139,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (getById(userGroup.getGroupId()) == null) {
             throw new ApiException("群组不存在");
         }
+        if (userGroupService.getOne(Condition.getQueryWrapper(userGroup)) != null) {
+            throw new ApiException("用户已添加此群组");
+        }
         // TODO: 2020/2/23 用户校验后期再做
         //添加用户
         userGroupService.save(userGroup);
@@ -165,18 +173,19 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public List<HashMap> tree() {
+    public List<GroupTreeVo> tree() {
         return groupMapper.tree();
     }
 
     @Override
     public Group detail(Group group) {
-        Group detail = this.getOne(Condition.getQueryWrapper(group));
+        Integer groupId = group.getId();
+        Group detail = this.getById(groupId);
         if (detail == null) {
             return null;
         }
         LambdaQueryWrapper<ParentGroup> parentGroupLambdaQueryWrapper = Wrappers.<ParentGroup>lambdaQuery().
-                eq(ParentGroup::getGroupId, group.getId());
+                eq(ParentGroup::getGroupId, groupId);
         List<ParentGroup> parentGroups = parentGroupService.list(parentGroupLambdaQueryWrapper);
         if (!CollectionUtils.isEmpty(parentGroups)) {
             String parentGroupIds = parentGroups.stream().map(parentGroup -> {
@@ -188,12 +197,70 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public List<HashMap> treeChildren() {
-        List<HashMap> tree = tree();
-        List<HashMap> maps = buildTree(tree, 0);
+    public List<GroupTreeVo> treeChildren() {
+        List<GroupTreeVo> tree = tree();
+        List<GroupTreeVo> maps = buildTree(tree, 0);
         return maps;
     }
 
+    @Override
+    public List<GroupTreeVo> treeUser(Integer userId) {
+        List<GroupTreeVo> tree = this.treeChildren();
+
+        ArrayList<GroupTreeVo> groupTreeVos = new ArrayList<>();
+        //一级树
+        for (GroupTreeVo groupTreeVo : tree) {
+            List<Integer> groupAllManager = getGroupAllManager(groupTreeVo);
+            if (groupAllManager.contains(userId)) {
+                groupTreeVos.add(groupTreeVo);
+            }
+        }
+        //二级树
+        for (GroupTreeVo groupTreeVo : tree) {
+            for (GroupTreeVo child : groupTreeVo.getChildren()) {
+                List<Integer> childAllManager = getGroupAllManager(child);
+                if (childAllManager.contains(userId)) {
+                    //遍历顶级用户是否有权限
+                    boolean b = groupTreeVos.stream().anyMatch(groupTreeVo1 -> {
+                        return groupTreeVo1.getId().equals(child.getParentId()) || groupTreeVo1.getId().equals(child.getId());
+                    });
+                    if (!b) {
+                        groupTreeVos.add(child);
+                    }
+                }
+            }
+        }
+        //三级树
+        for (GroupTreeVo groupTreeVo : tree) {
+            for (GroupTreeVo child : groupTreeVo.getChildren()) {
+                for (GroupTreeVo childChild : child.getChildren()) {
+                    List<Integer> childAllManager = getGroupAllManager(child);
+                    if (childAllManager.contains(userId)) {
+                        //遍历顶级用户是否有权限
+                        boolean flag = false;
+                        for (GroupTreeVo treeVo : groupTreeVos) {
+                            //顶级是否有父ID
+                            if (child.getParentId().equals(treeVo.getId()) || child.getId().equals(treeVo.getId())) {
+                                flag = true;
+                            }
+                            //二级是否有父ID
+                            for (GroupTreeVo treeVoChild : treeVo.getChildren()) {
+                                if (child.getId().equals(treeVoChild.getId()) || child.getParentId().equals(treeVoChild.getId())) {
+                                    flag = true;
+                                }
+                            }
+                        }
+                        if (!flag) {
+                            groupTreeVos.add(child);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return groupTreeVos;
+    }
     @Override
     public List<Group> children(Group group) {
         Integer groupId = this.getOne(Condition.getQueryWrapper(group)).getId();
@@ -218,25 +285,127 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      * @param parentId
      * @return
      */
-    public List<HashMap> buildTree(List<HashMap> groups, Integer parentId) {
-        List<HashMap> tree = new ArrayList<HashMap>();
+    public List<GroupTreeVo> buildTree(List<GroupTreeVo> groups, Integer parentId) {
+        List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
 
-        for (HashMap group : groups) {
-            int id = (int) group.get("id");
-            int pId = (int) group.get("parentId");
+        for (GroupTreeVo group : groups) {
+            Integer id = group.getId();
+            Integer pId = group.getParentId();
 
             if (parentId == pId) {
-                List<HashMap> treeList = buildTree(groups, id);
-                group.put("children", treeList);
+                List<GroupTreeVo> treeList = buildTree(groups, id);
+                group.setChildren(treeList);
                 tree.add(group);
             }
         }
-            return tree;
+        return tree;
+    }
+
+    /**
+     * 根据用户递归构建树形下拉
+     * @param groups
+     * @param parentId
+     * @return
+     */
+    public List<GroupTreeVo> buildTreeUser(List<GroupTreeVo> groups, Integer parentId,Integer userId) {
+        List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
+
+        for (GroupTreeVo groupTreeVo : groups) {
+            Integer id = groupTreeVo.getId();
+            Integer pId = groupTreeVo.getParentId();
+
+            if (parentId == pId) {
+                List<GroupTreeVo> treeList = buildTreeUser(groups, id, userId);
+                //校验用户对此群组是否有权限
+                List<Integer> managerList = getGroupAllManager(groupTreeVo);
+                if (managerList.contains(userId)) {
+                    groupTreeVo.setChildren(treeList);
+                    groupTreeVo.setPermission(true);
+                    tree.add(groupTreeVo);
+                } else
+                    //递归查看该群组对应的父群主是否有权限
+                    if (checkParentGroupPermission(groups, id, userId) > 0) {
+                        groupTreeVo.setChildren(treeList);
+                        groupTreeVo.setPermission(true);
+                        tree.add(groupTreeVo);
+                    } else {
+                        //递归校验该群组所有子群是否有管理权限
+                        if (checkParentChildrenPermission(groups, id, userId) > 0) {
+                            groupTreeVo.setChildren(treeList);
+                            groupTreeVo.setPermission(false);
+                            tree.add(groupTreeVo);
+                        }
+                    }
+            }
+        }
+        return tree;
+    }
+
+    private Integer checkParentChildrenPermission(List<GroupTreeVo> groups, Integer id, Integer userId) {
+        //有权限的子群组个数
+        Integer count = 0;
+        List<GroupTreeVo> childrenList = groups.stream().filter(groupTreeVo -> groupTreeVo.getParentId().equals(id)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(childrenList)) {
+            List<GroupTreeVo> groupTreeVos = groups.stream().filter(groupTreeVo -> groupTreeVo.getId().equals(id)).collect(Collectors.toList());
+            for (GroupTreeVo groupTreeVo : groupTreeVos) {
+                List<Integer> managers = getGroupAllManager(groupTreeVo);
+                List<GroupTreeVo> childrens = groupTreeVo.getChildren();
+                for (GroupTreeVo children : childrens) {
+                    count = count + checkParentGroupPermission(groups, children.getId(), userId);
+                    if (managers.contains(userId)) {
+                        count = count + 1;
+                    }
+                }
+            }
+            return count;
+        } else {
+            return 0;
+        }
+    }
+
+    private Integer checkParentGroupPermission(List<GroupTreeVo> groups, Integer id, Integer userId) {
+        //有权限的父群组个数
+        Integer count = 0;
+        if (!Group.TOP_PARENT_ID.equals(id)) {
+            List<GroupTreeVo> groupTreeVos = groups.stream().filter(groupTreeVo -> groupTreeVo.getId().equals(id)).collect(Collectors.toList());
+            for (GroupTreeVo groupTreeVo : groupTreeVos) {
+                List<Integer> managers = getGroupAllManager(groupTreeVo);
+                count = count + checkParentGroupPermission(groups, groupTreeVo.getParentId(), userId);
+                if (managers.contains(userId)) {
+                    count = count + 1;
+                }
+            }
+            return count;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * 获取群组所有管理者
+     */
+    private List<Integer> getGroupAllManager(GroupTreeVo groupTreeVo) {
+        //校验用户对此群组是否有权限
+        String managers = groupTreeVo.getManagers();
+        Integer createUser = groupTreeVo.getCreateUser();
+        List<Integer> managerList = new ArrayList<>();
+
+        if (!StringUtils.isEmpty(managers)) {
+            List<Integer> collect = Arrays.stream(managers.split(","))
+                    .map(s -> Integer.valueOf(s)).
+                            collect(Collectors.toList());
+            managerList.addAll(collect);
+        }
+        managerList.add(createUser);
+        return managerList;
     }
 
     @Override
     @Transactional
     public boolean updateGroupMiddleTable(Group group) {
+        if (StringUtils.isEmpty(group.getParentGroups())) {
+            group.setParentGroups(String.valueOf(Group.TOP_PARENT_ID));
+        }
         Integer groupId = group.getId();
         if (getById(groupId) == null) {
             throw new ApiException("群组不存在");
