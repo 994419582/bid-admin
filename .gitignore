@@ -29,3 +29,4 @@ Thumbs.db
 bid-service/bid-app/src/test/resources/pic
 bid-service/bid-blockchain/src/test/resources/pic
 bid-service/bid-blockchain/src/main/java/cn/teleinfo/bidadmin/blockchain/bifj/create/
+bid-service/bid-soybean/src/main/java/cn/teleinfo/bidadmin/soybean/wxfront/test.java

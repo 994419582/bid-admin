@@ -20,21 +20,21 @@ import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
-import cn.teleinfo.bidadmin.soybean.wrapper.ClocklnWrapper;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.*;
-import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
-import org.springblade.core.tool.utils.Func;
 import org.springblade.core.tool.utils.StringUtil;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -92,7 +92,6 @@ public class WxClocklnCensusController extends BladeController {
 			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query")
 	})
 	public R census(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd") Date clocklnTime) {
-		DecimalFormat df = new DecimalFormat("#.00");
 
 		LocalDate today = LocalDate.now();
 
@@ -105,7 +104,6 @@ public class WxClocklnCensusController extends BladeController {
 		}
 		List<Clockln> list = clocklnService.selectClocklnByGroup(groupId,clocklnTime);
 
-		StringBuffer buffer=new StringBuffer("{");
 
 		double healthy=0.0;
 		double healthyPer=0.0;
@@ -143,7 +141,7 @@ public class WxClocklnCensusController extends BladeController {
 				gobackBeijing++;
 			}
 
-			if (c.getComfirmed() !=null && c.getComfirmed()==1){
+			if (c.getComfirmed() !=null && c.getComfirmed()==2){
 				diagnosis++;
 			}
 
@@ -191,33 +189,42 @@ public class WxClocklnCensusController extends BladeController {
 			otherIsolatorPer= (list.size()-isolator-diagnosis-outisolator)/list.size()*100;
 
 		}
-
-
+		StringBuffer buffer=new StringBuffer("{");
 		//写入总体统计数据
-		buffer.append("'totality':{'total':"+group.getUserAccount()+",'clockIn':"+list.size()+",'unClockIn':"+(group.getUserAccount()-list.size())+",'notInbeijing':"+new Double(list.size()-beijing).intValue()+
-				",'goBackBeijing':"+gobackBeijing+",'abnormalbody':"+new Double(list.size()-healthy).intValue()+",'diagnosis':"+new Double(diagnosis).intValue()+"},");
+		buffer.append("\"totality\":{\"total\":"+group.getUserAccount()+",\"clockIn\":"+list.size()+",\"unClockIn\":"+(group.getUserAccount()-list.size())+",\"notInbeijing\":"+new Double(list.size()-beijing).intValue()+
+				",\"goBackBeijing\":"+gobackBeijing+",\"abnormalbody\":"+new Double(list.size()-healthy).intValue()+",\"diagnosis\":"+new Double(diagnosis).intValue()+"},");
 
 
 		//计算并写入第一张饼图数据
-		buffer.append("'healthy':{['name':'健康','value':"+ new Double(healthy).intValue()+",'percent':"+df.format(healthyPer)+"]," +
-				"['name':'发烧，咳嗽','value':"+new Double(ferver).intValue()+",'percent':"+df.format(ferverPer)+"]," +
-				"['name':'其他症状','value':"+new Double(other).intValue()+",'percent':"+df.format(otherPer)+"]},");
+		buffer.append("\"healthy\":[{\"name\":\"健康\",\"value\":"+ new Double(healthy).intValue()+",\"percent\":"+format(healthyPer)+"}," +
+				"{\"name\":\"发烧，咳嗽\",\"value\":"+new Double(ferver).intValue()+",\"percent\":"+format(ferverPer)+"}," +
+				"{\"name\":\"其他症状\",\"value\":"+new Double(other).intValue()+",\"percent\":"+format(otherPer)+"}],");
 
 		//计算并写入第二张饼图数据
-		buffer.append("'region':{['name':'北京','value':"+new Double(beijing).intValue()+",'percent':"+df.format(+beijingPer)+"]," +
-				"['name':'湖北','value':"+new Double(hubei).intValue()+",'percent':"+df.format(hubeiPer)+"]," +
-				"['name':'武汉','value':"+new Double(wuhan).intValue()+",'percent':"+df.format(wuhanPer)+"]," +
-				"['name':'其他地区','value':"+new Double(otherRegion).intValue()+",'percent':"+df.format(otherRegionPer)+"]},");
+		buffer.append("\"region\":[{\"name\":\"北京\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}," +
+				"{\"name\":\"湖北\",\"value\":"+new Double(hubei).intValue()+",\"percent\":"+format(hubeiPer)+"}," +
+				"{\"name\":\"武汉\",\"value\":"+new Double(wuhan).intValue()+",\"percent\":"+format(wuhanPer)+"}," +
+				"{\"name\":\"其他地区\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}],");
 
 		//计算并写入第三张饼图数据
-		buffer.append("'hospitalization':{['name':'确诊','value':"+new Double(diagnosis).intValue()+",'percent':"+df.format(+diagnosisPer)+"]," +
-				"['name':'隔离期','value':"+new Double(isolator).intValue()+",'percent':"+df.format(isolatorPer)+"]," +
-				"['name':'出隔离期','value':"+new Double(outisolator).intValue()+",'percent':"+df.format(outisolatorPer)+"]," +
-				"['name':'其他','value':"+new Double(list.size()-diagnosis-outisolator-isolator).intValue()+",'percent':"+df.format(otherIsolatorPer)+"]}}");
+		buffer.append("\"hospitalization\":[{\"name\":\"确诊\",\"value\":"+new Double(diagnosis).intValue()+",\"percent\":"+format(+diagnosisPer)+"}," +
+				"{\"name\":\"隔离期\",\"value\":"+new Double(isolator).intValue()+",\"percent\":"+format(isolatorPer)+"}," +
+				"{\"name\":\"出隔离期\",\"value\":"+new Double(outisolator).intValue()+",\"percent\":"+format(outisolatorPer)+"}," +
+				"{\"name\":\"其他\",\"value\":"+new Double(list.size()-diagnosis-outisolator-isolator).intValue()+",\"percent\":"+format(otherIsolatorPer)+"}]}");
 
-
-		return R.data(buffer.toString());
+		String str =buffer.toString();
+//		System.out.println(str);
+//		str=str.replace("\"","");
+		return R.data(str);
 	}
 
+
+	private String format(double in){
+		DecimalFormat df = new DecimalFormat("#.00");
+		if (in==0){
+			return "0";
+		}
+		return df.format(in);
+	}
 	
 }
