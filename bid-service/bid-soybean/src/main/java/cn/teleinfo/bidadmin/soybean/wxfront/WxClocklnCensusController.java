@@ -91,16 +91,16 @@ public class WxClocklnCensusController extends BladeController {
 			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
 			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query")
 	})
-	public R census(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd") Date clocklnTime) {
+	public String  census(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd") Date clocklnTime) {
 
 		LocalDate today = LocalDate.now();
 
 		if (groupId == null){
-			return R.fail("群组ID不能为空");
+			return ("群组ID不能为空");
 		}
 		Group group= groupService.getById(groupId);
 		if (group==null){
-			return R.fail("该群组不存在,请输入正确的群组ID");
+			return ("该群组不存在,请输入正确的群组ID");
 		}
 		List<Clockln> list = clocklnService.selectClocklnByGroup(groupId,clocklnTime);
 
@@ -133,26 +133,32 @@ public class WxClocklnCensusController extends BladeController {
 		int gobackBeijing=0;
 
 		for (Clockln c:list ) {
+			if (!StringUtil.isEmpty(c.getGobacktime())){
+				try {
+					LocalDateTime date=LocalDateTime.parse(c.getGobacktime());
+					LocalDate local = date.toLocalDate();
 
-			LocalDateTime date=c.getCreateTime();
-			LocalDate local = date.toLocalDate();
+					if (local !=null && today.compareTo(local) == 0){
+						gobackBeijing++;
+					}
 
-			if (local !=null && today.compareTo(local) == 0){
-				gobackBeijing++;
-			}
+					if (c.getComfirmed() !=null && c.getComfirmed()==2){
+						diagnosis++;
+					}
 
-			if (c.getComfirmed() !=null && c.getComfirmed()==2){
-				diagnosis++;
-			}
-
-			if (local !=null && today.compareTo(local) >= 0){
-				//返京时间+14天 出隔离器时间
-				LocalDate localDate=local.plusDays(14);
-				if (today.compareTo(localDate)>0){
-					outisolator++;
-				}else {
-					isolator++;
+					if (local !=null && today.compareTo(local) >= 0){
+						//返京时间+14天 出隔离器时间
+						LocalDate localDate=local.plusDays(14);
+						if (today.compareTo(localDate)>0){
+							outisolator++;
+						}else {
+							isolator++;
+						}
+					}
+				}catch (Exception e){
+					e.printStackTrace();
 				}
+
 			}
 
 			if (c.getHealthy() != null && c.getHealthy()==1){
@@ -213,9 +219,10 @@ public class WxClocklnCensusController extends BladeController {
 				"{\"name\":\"其他\",\"value\":"+new Double(list.size()-diagnosis-outisolator-isolator).intValue()+",\"percent\":"+format(otherIsolatorPer)+"}]}");
 
 		String str =buffer.toString();
+		JSONObject object=JSONObject.parseObject(str);
 //		System.out.println(str);
 //		str=str.replace("\"","");
-		return R.data(str);
+		return object.toJSONString();
 	}
 
 
