@@ -119,7 +119,7 @@ public class WxGroupController extends BladeController {
 
     @GetMapping("/tree/user")
     @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "树形下拉列表字典", notes = "返回用户所有群组，带有children字段")
+    @ApiOperation(value = "树形下拉列表字典", notes = "返回用户所有群组，带有children字段，目前只支持到三级菜单，需跟产品沟通确定最终方案")
     public R<List<GroupTreeVo>> treeChildren(@ApiParam(value = "用户ID", required = true)@RequestParam Integer userId) {
         List<GroupTreeVo> tree = groupService.treeUser(userId);
         return R.data(tree);
