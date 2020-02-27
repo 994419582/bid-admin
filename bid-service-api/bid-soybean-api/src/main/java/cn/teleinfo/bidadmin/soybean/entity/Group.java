@@ -89,7 +89,7 @@ public class Group implements Serializable {
      * 群创建人
      */
     @ApiModelProperty(value = "群创建人")
-    @Min(value = 1)
+    @Min(value = 1,message = "创建人ID不能小于1")
     private Integer createUser;
 
     /**
@@ -102,7 +102,7 @@ public class Group implements Serializable {
      * 更新人
      */
     @ApiModelProperty(value = "更新人")
-    @Min(value = 1)
+    @Min(value = 1,message = "更新人ID不能小于1")
     private Integer updateUser;
     /**
      * 更新时间
@@ -133,7 +133,7 @@ public class Group implements Serializable {
      * 公司地址ID（只有公司和社区需要）
      */
     @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
-    @Min(value = 0)
+    @Min(value = 0,message = "地址ID不能小于1")
     private Integer addressId;
     /**
      * 公司地址名称
@@ -148,5 +148,6 @@ public class Group implements Serializable {
 
     @ApiModelProperty(value = "父群主")
     @TableField(exist = false)
+    @NotBlank(message = "父群组不能为空")
     private String parentGroups;
 }
