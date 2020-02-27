@@ -188,7 +188,7 @@ public class WxClocklnCensusController extends BladeController {
 			healthyPer = healthy / list.size() * 100;
 			ferverPer = ferver / list.size() * 100;
 			otherPer = other / list.size() * 100;
-			beijing = beijing / list.size() * 100;
+			beijingPer = beijing / list.size() * 100;
 			hubeiPer = hubei / list.size() * 100;
 			otherRegionPer = otherRegion / list.size() * 100;
 			wuhanPer = wuhan / list.size() *100;
