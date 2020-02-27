@@ -161,7 +161,7 @@ public class WxMaUserController extends BladeController {
         if (user == null) {
             return R.fail("user not found");
         }
-        user.setNickname(phoneNoInfo.getPhoneNumber());
+        user.setPhone(phoneNoInfo.getPhoneNumber());
         userService.saveOrUpdate(user);
         return R.data(phoneNoInfo);
     }
