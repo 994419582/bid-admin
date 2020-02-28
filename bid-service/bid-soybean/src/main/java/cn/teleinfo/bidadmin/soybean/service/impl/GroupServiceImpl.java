@@ -130,7 +130,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public Group detail(Group group) {
         Integer groupId = group.getId();
-        Group detail = this.getById(groupId);
+        Group detail = this.getGroupById(groupId);
         if (detail == null) {
             return null;
         }
@@ -192,7 +192,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (userId == null) {
             throw new ApiException("用户ID不能为null");
         }
-        Group group = this.getById(groupId);
+        Group group = this.getGroupById(groupId);
         if (group == null) {
             throw new ApiException("群组不存在");
         }
@@ -219,7 +219,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (userId == null) {
             throw new ApiException("用户ID不能为null");
         }
-        Group group = this.getById(groupId);
+        Group group = this.getGroupById(groupId);
         if (group == null) {
             throw new ApiException("群组不存在");
         }
@@ -242,7 +242,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (userId == null) {
             throw new ApiException("用户ID不能为null");
         }
-        Group group = this.getById(groupId);
+        Group group = this.getGroupById(groupId);
         if (group == null) {
             throw new ApiException("群组不存在");
         }
@@ -262,7 +262,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (groupId == null) {
             throw new ApiException("群组ID不能为空");
         }
-        Group group = getById(groupId);
+        Group group = getGroupById(groupId);
         if (group == null) {
             return false;
         }
@@ -281,6 +281,16 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return true;
     }
 
+    public Group getGroupById(Integer groupId) {
+        if (groupId == null) {
+            throw new ApiException("群ID不能为Null");
+        }
+        Group group = new Group();
+        group.setId(groupId);
+        group.setStatus(Group.NORMAL);
+        return getOne(Condition.getQueryWrapper(group));
+    }
+
     @Override
     @Transactional
     public boolean saveGroup(Group group) {
@@ -294,6 +304,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //新增群
         group.setStatus(Group.NORMAL);
         save(group);
+        //设置为群第一个用户
+        UserGroup userGroup = new UserGroup();
+        userGroup.setGroupId(group.getId());
+        userGroup.setUserId(group.getCreateUser());
+        userGroup.setStatus(UserGroup.NORMAL);
+        userGroupService.save(userGroup);
         //保存中间表
         String parentGroups = group.getParentGroups();
         for (Integer parentId : Func.toIntList(parentGroups)) {
@@ -319,17 +335,19 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 if (!existGroup(parentId)) {
                     throw new ApiException("父群组不存在");
                 }
-                if (groupId != null && groupId.equals(parentId)) {
-                    throw new ApiException("不能指定自己为父群组");
+                if (groupId != null) {
+                    if (groupId != null && groupId.equals(parentId)) {
+                        throw new ApiException("不能指定自己为父群组");
+                    }
+                    List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
+                    //校验是否为子群组
+                    isChildrenGroup(groupAndParentList, groupId, parentId);
                 }
-                List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
-                //校验是否为子群组
-                isChildrenGroup(groupAndParentList, groupId, parentId);
             }
         }
         //校验管理员是否存在
         String managers = group.getManagers();
-        if (!StringUtils.isEmpty(managers) || Pattern.matches(Group.PATTERN_STRING_LIST, managers)) {
+        if (!StringUtils.isEmpty(managers) && !Pattern.matches(Group.PATTERN_STRING_LIST, managers)) {
             throw new ApiException("管理员ids格式不正确，格式为: 1,2,3");
         }
         for (Integer id : Func.toIntList(managers)) {

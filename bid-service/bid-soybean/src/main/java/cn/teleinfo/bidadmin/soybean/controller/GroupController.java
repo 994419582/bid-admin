@@ -137,7 +137,7 @@ public class GroupController extends BladeController {
 		List<Group> groups = groupService.children(group);
 		//点击一级节点时增加自身
 		if (Group.TOP_PARENT_ID.equals(group.getId())) {
-			Group topGroup = groupService.getById(group.getId());
+			Group topGroup = groupService.getGroupById(group.getId());
 			topGroups.add(topGroup);
 			topGroups.addAll(groups);
 			groups = topGroups;

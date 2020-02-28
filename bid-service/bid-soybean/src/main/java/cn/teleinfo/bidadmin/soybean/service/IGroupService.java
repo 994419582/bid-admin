@@ -137,4 +137,9 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	boolean close(Integer groupId, Integer creatorId);
+
+	/**
+	 * 获取状态正常用户
+	 */
+	Group getGroupById(Integer groupId);
 }
