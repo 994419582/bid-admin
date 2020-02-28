@@ -24,6 +24,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springblade.core.mp.base.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *  服务实现类
@@ -42,5 +43,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	@Override
 	public User findByWechatId(String openid) {
 		return baseMapper.selectOne(Wrappers.<User>query().eq("wechat_id", openid));
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public boolean submit(User user) {
+		if (user != null) {
+			User userStore = findByWechatId(user.getWechatId());
+			// 新增
+			if (userStore == null) {
+				this.saveOrUpdate(user);
+			} else if (userStore != null && userStore.getId().equals(user.getId())) {
+				this.updateById(user);
+			} else if (userStore != null && !userStore.getId().equals(user.getId())) {
+				// 疑似重复数据
+				this.removeById(userStore);
+				this.saveOrUpdate(user);
+			}
+			return true;
+		}
+		return false;
 	}
 }

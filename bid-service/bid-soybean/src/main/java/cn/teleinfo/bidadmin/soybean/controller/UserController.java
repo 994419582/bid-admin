@@ -141,6 +141,16 @@ public class UserController extends BladeController {
 		return R.status(userService.saveOrUpdate(user));
 	}
 
+	/**
+	 * 新增或修改
+	 */
+	@PostMapping("/saveOrUpdate")
+	@ApiOperationSupport(order = 6)
+	@ApiOperation(value = "新增或修改", notes = "传入user")
+	public R saveOrUpdate(@Valid @RequestBody User user) {
+		return R.status(userService.submit(user));
+	}
+
 	
 	/**
 	* 删除 
