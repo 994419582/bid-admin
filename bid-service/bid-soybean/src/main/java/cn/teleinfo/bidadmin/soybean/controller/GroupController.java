@@ -24,6 +24,7 @@ import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
@@ -35,6 +36,7 @@ import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -177,7 +179,10 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入group")
 	public R save(@Valid @RequestBody Group group) {
-		return R.status(groupService.saveGroupMiddleTable(group));
+		if (StringUtils.isEmpty(group.getParentGroups())) {
+			throw new ApiException("父群组不能为空");
+		}
+		return R.status(groupService.saveGroup(group));
 	}
 
 	/**
@@ -187,7 +192,17 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 5)
 	@ApiOperation(value = "修改", notes = "传入group")
 	public R update(@Valid @RequestBody Group group) {
-		return R.status(groupService.updateGroupMiddleTable(group));
+		if (group.getId() == null) {
+			throw new ApiException("主键Id不能为空");
+		}
+		if (!groupService.existGroup(group.getId())) {
+			throw new ApiException("群组不存在");
+		}
+		//不提供人数修改功能
+		if (group.getUserAccount() != null) {
+			throw new ApiException("群人数不能更新");
+		}
+		return R.status(groupService.updateGroup(group));
 	}
 
 	/**
@@ -198,7 +213,7 @@ public class GroupController extends BladeController {
 	@ApiOperation(value = "新增或修改", notes = "传入group")
 	public R submit(@Valid @RequestBody Group group) {
 		GroupServiceImpl.modifyObject(group);
-		return R.status(groupService.saveOrUpdateGroupMiddleTable(group));
+		return R.status(groupService.saveOrUpdateGroup(group));
 	}
 
 
@@ -209,7 +224,18 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 7)
 	@ApiOperation(value = "逻辑删除", notes = "传入ids")
 	public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids) {
-		return R.status(groupService.removeGroupMiddleTableById(Func.toIntList(ids)));
+		//查询用户Id和创建人是否一致
+		ArrayList<Group> groups = new ArrayList<>();
+		for (Integer id : Func.toIntList(ids)) {
+			if (!groupService.existGroup(id)) {
+				throw new ApiException("群不存在");
+			}
+			Group group = new Group();
+			group.setId(id);
+			group.setStatus(Group.DELETE);
+			groups.add(group);
+		}
+		return R.status(groupService.updateBatchById(groups));
 	}
 
 }

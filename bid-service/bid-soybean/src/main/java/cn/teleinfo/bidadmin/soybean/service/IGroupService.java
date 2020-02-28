@@ -16,7 +16,6 @@
 package cn.teleinfo.bidadmin.soybean.service;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -40,36 +39,6 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	IPage<GroupVO> selectGroupPage(IPage<GroupVO> page, GroupVO group);
-
-	/**
-	 * 新增群（包含中间表）
-	 * @param group 群组
-	 * @return
-	 */
-	boolean saveGroupMiddleTable(Group group);
-
-	/**
-	 * 更新群（包含中间表）
-	 * @param group 群组
-	 * @return
-	 */
-	boolean updateGroupMiddleTable(Group group);
-
-
-
-	/**
-	 * TableId 存在更新记录，否插入一条记录（包含中间表）
-	 * @param group 群组
-	 * @return
-	 */
-	boolean saveOrUpdateGroupMiddleTable(Group group);
-
-	/**
-	 * 删除群组和中间表
-	 * @param ids 群组
-	 * @return
-	 */
-	boolean removeGroupMiddleTableById(List<Integer> ids);
 
 	/**
 	 * 群组下拉树形图
@@ -139,4 +108,33 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	boolean existUser(Integer userId);
+
+	/**
+	 * 新增群
+	 * @param group
+	 * @return
+	 */
+	boolean saveGroup(Group group);
+
+	/**
+	 * 更新群组
+	 * @param group
+	 * @return
+	 */
+	boolean updateGroup(Group group);
+
+	/**
+	 * 保存或者更新群
+	 * @param group
+	 * @return
+	 */
+	boolean saveOrUpdateGroup(Group group);
+
+	/**
+	 * 关闭群
+	 * @param groupId
+	 * @param creatorId
+	 * @return
+	 */
+	boolean close(Integer groupId, Integer creatorId);
 }

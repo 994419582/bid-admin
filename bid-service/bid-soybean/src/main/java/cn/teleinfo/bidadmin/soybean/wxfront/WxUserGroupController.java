@@ -15,27 +15,21 @@
  */
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
-import cn.teleinfo.bidadmin.soybean.entity.GroupLog;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupLogService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
-import cn.teleinfo.bidadmin.soybean.wrapper.UserGroupWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
-import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
-import org.springblade.core.mp.support.Condition;
-import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
-import org.springblade.core.tool.utils.Func;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -62,7 +56,7 @@ public class WxUserGroupController extends BladeController {
 	*/
 	@PostMapping("/save")
     @ApiOperationSupport(order = 4)
-	@ApiOperation(value = "新增", notes = "传入userGroup")
+	@ApiOperation(value = "用户加群", notes = "传入userGroup")
 	public R save(@Valid @RequestBody UserGroup userGroup) {
 		return R.status(userGroupService.saveUserGroup(userGroup));
 	}
@@ -72,7 +66,7 @@ public class WxUserGroupController extends BladeController {
 	 */
 	@PostMapping("/quit")
 	@ApiOperationSupport(order = 4)
-	@ApiOperation(value = "新增", notes = "传入用户ID和群ID")
+	@ApiOperation(value = "用户退群", notes = "传入用户ID和群ID")
 	public R remove(@Valid @RequestBody UserGroup userGroup) {
 		return R.status(userGroupService.quitGroup(userGroup));
 	}
@@ -83,7 +77,7 @@ public class WxUserGroupController extends BladeController {
 	 */
 	@PostMapping("/manager/remove")
 	@ApiOperationSupport(order = 4)
-	@ApiOperation(value = "新增", notes = "传入用户ID，群组ID，操作人ID")
+	@ApiOperation(value = "群管理员踢除用户", notes = "传入用户ID，群组ID，操作人ID")
 	public R save(@Valid @RequestBody UserGroupVO userGroup) {
 		return R.status(userGroupService.managerRemoveUser(userGroup));
 	}

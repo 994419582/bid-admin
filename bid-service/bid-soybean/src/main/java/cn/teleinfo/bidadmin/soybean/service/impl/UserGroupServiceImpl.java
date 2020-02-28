@@ -25,9 +25,14 @@ import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import cn.teleinfo.bidadmin.soybean.mapper.UserGroupMapper;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.injector.methods.SelectOne;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
+import com.baomidou.mybatisplus.extension.service.additional.update.impl.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.Api;
+import org.springblade.core.mp.support.Condition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -83,9 +88,24 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 		//查询管操作人是否有权限
 		Integer groupId = userGroup.getGroupId();
 		Integer userId = userGroup.getUserId();
+		if (!groupService.existGroup(groupId)) {
+			throw new ApiException("群组不存在");
+		}
+		if (!groupService.existUser(userId)) {
+			throw new ApiException("用户不存在");
+		}
+		if (getUserGroupStatus(groupId,userId).equals(UserGroup.DELETE)) {
+			throw new ApiException("用户已退群");
+		}
 		if (groupService.isGroupManger(groupId, managerId) || groupService.isGroupCreater(groupId, managerId)) {
-			LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().eq(UserGroup::getUserId, userId).eq(UserGroup::getGroupId, groupId);
-			this.remove(queryWrapper);
+			LambdaUpdateWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaUpdate().
+					eq(UserGroup::getUserId, userId).
+					eq(UserGroup::getGroupId, groupId)
+					.set(UserGroup::getStatus, UserGroup.DELETE);
+			//更改群状态
+			this.update(queryWrapper);
+			//减少群人数
+			motifyUserAccount(groupId, -1);
 			groupLogService.addLog(groupId, managerId, GroupLog.MANAGER_DELETE_USER);
 		} else {
 			throw new ApiException("操作人无权限");
@@ -93,26 +113,48 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 		return true;
     }
 
-    @Override
+	private void motifyUserAccount(Integer groupId, Integer addAccount) {
+		Group group = groupService.getById(groupId);
+		group.setUserAccount(group.getUserAccount() + addAccount);
+		groupService.updateById(group);
+	}
+
+	@Override
 	@Transactional
     public boolean quitGroup(UserGroup userGroup) {
-		if (!groupService.existGroup(userGroup.getGroupId())) {
+		Integer groupId = userGroup.getGroupId();
+		if (!groupService.existGroup(groupId)) {
 			throw new ApiException("群组不存在");
 		}
-		if (!groupService.existUser(userGroup.getUserId())) {
+		Integer userId = userGroup.getUserId();
+		if (!groupService.existUser(userId)) {
 			throw new ApiException("用户不存在");
 		}
-		//删除条件
-		LambdaQueryWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
-				eq(UserGroup::getUserId, userGroup.getUserId()).
-				eq(UserGroup::getGroupId, userGroup.getGroupId());
-		this.remove(userGroupLambdaQueryWrapper);
+		if (getUserGroupStatus(groupId,userId).equals(UserGroup.DELETE)) {
+			throw new ApiException("用户已退群");
+		}
+		//更新状态为已删除
+		LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
+				eq(UserGroup::getUserId, userId).
+				eq(UserGroup::getGroupId, groupId).
+				set(UserGroup::getStatus, UserGroup.DELETE);
+		this.update(userGroupLambdaQueryWrapper);
+		//减少群人数
+		motifyUserAccount(groupId, -1);
 		//添加日志
-		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.DELETE_USER);
+		groupLogService.addLog(groupId, userId, GroupLog.DELETE_USER);
 		return true;
     }
 
+	private Integer getUserGroupStatus(Integer groupId, Integer userId) {
+		UserGroup userGroup = new UserGroup();
+		userGroup.setGroupId(groupId);
+		userGroup.setUserId(userId);
+		return getOne(Condition.getQueryWrapper(userGroup)).getStatus();
+	}
+
 	@Override
+	@Transactional
 	public boolean saveUserGroup(UserGroup userGroup) {
 		Integer groupId = userGroup.getGroupId();
 		Integer userId = userGroup.getUserId();
@@ -122,17 +164,62 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 		if (!groupService.existUser(userId)) {
 			throw new ApiException("用户不存在");
 		}
-		List<UserGroup> userGroups = this.list(Wrappers.<UserGroup>lambdaQuery().eq(UserGroup::getGroupId, groupId).eq(UserGroup::getUserId, userId));
-		if (!CollectionUtils.isEmpty(userGroups)) {
-			throw new ApiException("用户已添加此群组");
+		//检查用此群是否存在此用户,不存在则新增
+		if (!existUserGroup(groupId, userId)) {
+			//添加群组
+			UserGroup newUserGroup = new UserGroup();
+			newUserGroup.setUserId(userId);
+			newUserGroup.setGroupId(groupId);
+			newUserGroup.setStatus(UserGroup.NORMAL);
+			this.save(newUserGroup);
+			//增加群人数
+			motifyUserAccount(groupId, 1);
+			//添加日志
+			groupLogService.addLog(groupId, userId, GroupLog.NEW_USER);
+			return true;
 		}
-		//添加群组
-		UserGroup group = new UserGroup();
-		group.setUserId(userId);
-		group.setGroupId(groupId);
-		this.save(group);
-		//添加日志
-		groupLogService.addLog(groupId, userId, GroupLog.NEW_USER);
+		Integer userGroupStatus = getUserGroupStatus(groupId, userId);
+		if (userGroupStatus.equals(UserGroup.NORMAL)) {
+			throw new ApiException("用户已加群,状态为正常");
+		} else if (userGroupStatus.equals(UserGroup.APPROVAL_PENDING)) {
+			throw new ApiException("用户已加群，状态待审核");
+		} else {
+			//更新状态为正常
+			LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
+					eq(UserGroup::getUserId, userId).
+					eq(UserGroup::getGroupId, groupId).
+					set(UserGroup::getStatus, UserGroup.NORMAL);
+			this.update(userGroupLambdaQueryWrapper);
+		}
+		return true;
+	}
+
+	@Override
+	@Transactional
+	public boolean removeUserGroupByIds(List<Integer> toIntList) {
+		for (Integer id : toIntList) {
+			UserGroup userGroup = getById(id);
+			if (userGroup == null) {
+				throw new ApiException("群组ID不存在");
+			}
+			//修改状态
+			userGroup.setStatus(UserGroup.DELETE);
+			updateById(userGroup);
+			//修改群人数
+			motifyUserAccount(userGroup.getGroupId(),-1);
+			//添加日志
+			groupLogService.addLog(userGroup.getGroupId(),userGroup.getUserId(),GroupLog.DELETE_USER);
+		}
+		return false;
+	}
+
+	private boolean existUserGroup(Integer groupId, Integer userId) {
+		LambdaQueryWrapper<UserGroup> lambdaQuery = Wrappers.<UserGroup>lambdaQuery()
+				.eq(UserGroup::getGroupId, groupId).
+						eq(UserGroup::getUserId, userId);
+		if (getOne(lambdaQuery) == null) {
+			return false;
+		}
 		return true;
 	}
 

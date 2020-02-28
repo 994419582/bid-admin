@@ -76,4 +76,10 @@ public interface IUserGroupService extends IService<UserGroup> {
      */
     boolean saveUserGroup(UserGroup userGroup);
 
+    /**
+     * 用户退群
+     * @param toIntList
+     * @return
+     */
+    boolean removeUserGroupByIds(List<Integer> toIntList);
 }
