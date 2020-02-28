@@ -6,12 +6,13 @@ server:
 wx:
   miniapp:
     configs:
-      - appid: wx5236affef117da53
-        secret: 515a54fb09b7b2f55166089ebab28b7c
-        msgDataFormat: JSON
       - appid: wxd69df881f0c947dc
         secret: 1b13f6d4d5bae3a536291457497584eb
         msgDataFormat: JSON
+      - appid: wx5236affef117da53
+        secret: 515a54fb09b7b2f55166089ebab28b7c
+        msgDataFormat: JSON
+
 
 #数据源配置
 spring:
