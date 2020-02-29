@@ -82,4 +82,9 @@ public interface IUserGroupService extends IService<UserGroup> {
      * @return
      */
     boolean removeUserGroupByIds(List<Integer> toIntList);
+
+    /**
+     * 根据ID获取状态正常的群组关系
+     */
+    UserGroup getUserGroupById(Integer id);
 }

@@ -70,7 +70,7 @@ public class WxGroupController extends BladeController {
         if (group.getId() == null) {
             throw new ApiException("群组id不能为空");
         }
-        Group detail = groupService.detail(group);
+        Group detail = groupService.getGroupById(group.getId());
         return R.data(GroupWrapper.build().entityVO(detail));
     }
 
@@ -84,7 +84,7 @@ public class WxGroupController extends BladeController {
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "群组是否存在", notes = "传入群主键ID")
     public R<Boolean> exist(@RequestParam(name = "groupId") Integer groupId) {
-        Group detail = groupService.getById(groupId);
+        Group detail = groupService.getGroupById(groupId);
         if (detail == null) {
             throw new ApiException("群组不存在");
         }
@@ -150,14 +150,15 @@ public class WxGroupController extends BladeController {
     @ApiOperation(value = "修改群组", notes = "不支持修改父群组和管理员以及群人数")
     public R update(@Valid @RequestBody GroupVO group) {
         Integer userId = group.getUserId();
-        if (group.getId() == null) {
+        Integer groupId = group.getId();
+        if (groupId == null) {
             throw new ApiException("主键Id不能为空");
         }
-        if (!groupService.existGroup(group.getId())) {
+        if (!groupService.existGroup(groupId)) {
             throw new ApiException("群组不存在");
         }
         //权限校验
-        if (!userId.equals(group.getCreateUser())) {
+        if (!groupService.isGroupCreater(groupId, userId)) {
             throw new ApiException("用户ID和群创建人ID不一致");
         }
         //不提供管理员修改功能
@@ -261,9 +262,13 @@ public class WxGroupController extends BladeController {
         ParentGroup parentGroup = new ParentGroup();
         parentGroup.setParentId(parentGroupId);
         parentGroup.setGroupId(groupId);
-        if (parentGroupService.getOne(Condition.getQueryWrapper(parentGroup)) == null) {
+        // TODO: 2020/2/29 中间表
+//        parentGroup.setStatus(ParentGroup.DELETE);
+        ParentGroup parent = parentGroupService.getOne(Condition.getQueryWrapper(parentGroup));
+        if (parent == null) {
             throw new ApiException("子群不存在");
         }
+        parentGroup.setId(parent.getId());
         parentGroup.setSort(sort);
         return R.status(parentGroupService.updateById(parentGroup));
     }
@@ -286,7 +291,7 @@ public class WxGroupController extends BladeController {
         if (!groupService.isGroupCreater(groupId, creatorId)) {
             throw new ApiException("不是群创建人");
         }
-        Group group = groupService.getById(groupId);
+        Group group = groupService.getGroupById(groupId);
         String managers = group.getManagers();
         ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
         if (managerList.contains(managerId)) {

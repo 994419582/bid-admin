@@ -114,11 +114,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 eq(UserGroup::getGroupId, groupId).
                 set(UserGroup::getStatus, UserGroup.DELETE);
         userGroupService.update(updateWrapper);
-        //逻辑删除父子
-        LambdaUpdateWrapper<ParentGroup> parentGroupLambdaUpdateWrapper = Wrappers.<ParentGroup>lambdaUpdate().
-                eq(ParentGroup::getParentId, 1).
-                set(ParentGroup::getStatus, ParentGroup.DELETE);
-        parentGroupService.update(parentGroupLambdaUpdateWrapper);
+        // TODO: 2020/2/29 下次升级逻辑删除
+//        //逻辑删除父子
+//        LambdaUpdateWrapper<ParentGroup> parentGroupLambdaUpdateWrapper = Wrappers.<ParentGroup>lambdaUpdate().
+//                eq(ParentGroup::getParentId, 1).
+//                set(ParentGroup::getStatus, ParentGroup.DELETE);
+//        parentGroupService.update(parentGroupLambdaUpdateWrapper);
         return true;
     }
 
@@ -393,7 +394,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Override
     public List<Group> select() {
-        List<Group> groups = this.list();
+        Group group = new Group();
+        group.setStatus(Group.NORMAL);
+        List<Group> groups = this.list(Condition.getQueryWrapper(group));
         return groups;
     }
 

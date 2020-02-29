@@ -63,6 +63,7 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 1)
 	@ApiOperation(value = "详情", notes = "传入userGroup")
 	public R<UserGroupVO> detail(UserGroup userGroup) {
+		userGroup.setStatus(UserGroup.NORMAL);
 		UserGroup detail = userGroupService.getOne(Condition.getQueryWrapper(userGroup));
 		return R.data(UserGroupWrapper.build().entityVO(detail));
 	}
@@ -74,6 +75,7 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 2)
 	@ApiOperation(value = "分页", notes = "传入userGroup")
 	public R<IPage<UserGroupVO>> list(UserGroup userGroup, Query query) {
+		userGroup.setStatus(UserGroup.NORMAL);
 		IPage<UserGroup> pages = userGroupService.page(Condition.getPage(query), Condition.getQueryWrapper(userGroup));
 		return R.data(UserGroupWrapper.build().pageVO(pages));
 	}
@@ -85,6 +87,7 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 3)
 	@ApiOperation(value = "分页", notes = "传入userGroup")
 	public R<IPage<UserGroupVO>> page(UserGroupVO userGroup, Query query) {
+		userGroup.setStatus(UserGroup.NORMAL);
 		IPage<UserGroupVO> pages = userGroupService.selectUserGroupPage(Condition.getPage(query), userGroup);
 		return R.data(pages);
 	}

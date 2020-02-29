@@ -86,8 +86,6 @@ public class Group implements Serializable {
      * 群人数
      */
     @ApiModelProperty(value = "群人数", required = true)
-    @Min(value = 1,message = "群人数不能小于1")
-    @Max(value = Integer.MAX_VALUE,message = "群人数超出Integer范围")
     private Integer userAccount;
     /**
      * 群管理员
