@@ -131,9 +131,9 @@ public class DatabaseUtils {
                 ps.setDouble(11, 0.0);
             }
             ps.setInt(12, 1+Integer.parseInt((c.getNoGoBackFlag()==null||"".equals(c.getNoGoBackFlag()))?"-2":c.getNoGoBackFlag()));// nobackreason
-            ps.setInt(13, Integer.parseInt("1".equals(c.getIsQueZhenFlag())?"0":"1"));// comfirmed
-            ps.setInt(14, Integer.parseInt("1".equals(c.getGoHospitalFlag())?"0":"1"));// admitting
-            ps.setInt(15, Integer.parseInt((c.getIsLeaveBjFlag()==null||"".equals(c.getIsLeaveBjFlag()))?"-1":"1".equals(c.getIsLeaveBjFlag())?"0":"1"));// leave
+            ps.setInt(13, Integer.parseInt("1".equals(c.getIsQueZhenFlag())?"1":"2"));// comfirmed
+            ps.setInt(14, Integer.parseInt("1".equals(c.getGoHospitalFlag())?"1":"2"));// admitting
+            ps.setInt(15, 1+Integer.parseInt((c.getIsLeaveBjFlag()==null||"".equals(c.getIsLeaveBjFlag()))?"0":c.getIsLeaveBjFlag()));// leave
             ps.setString(16, c.getLeavedate());// leavetime
             ps.setString(17, c.getTrainnumber());// flight
             ps.setString(18, c.getBodystatusotherremark());//otherhealthy
