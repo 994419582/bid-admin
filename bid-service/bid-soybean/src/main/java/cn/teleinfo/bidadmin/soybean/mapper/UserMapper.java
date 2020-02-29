@@ -39,6 +39,6 @@ public interface UserMapper extends BaseMapper<User> {
 	 * @return
 	 */
 	List<UserVO> selectUserPage(IPage page, UserVO user);
-	List<UserVO> selectUserPage(IPage page, @RequestParam("group") int group);
+	List<UserVO> selectUserVOPage(IPage page, Integer group);
 
 }

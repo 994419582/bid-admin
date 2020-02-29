@@ -82,12 +82,15 @@ public class WxClocklnCensusController extends BladeController {
 		if (group==null){
 			return R.fail("该群组不存在,请输入正确的群组ID");
 		}
-		IPage<UserVO> users=userService.selectUserPage(Condition.getPage(query),groupId);
+		IPage<UserVO> users=userService.selectUserVOPage(Condition.getPage(query),groupId);
 		users.getRecords().forEach(x ->{
 			Clockln clockln=clocklnService.selectClocklnByUserID(x.getId(),clocklnTime);
 			if (clockln !=null) {
 				x.setClockInId(clockln.getId());
 				x.setHealthy(clockln.getHealthy());
+			}else {
+				x.setClockInId(0);
+				x.setHealthy(0);
 			}
 		});
 		return R.data(users);

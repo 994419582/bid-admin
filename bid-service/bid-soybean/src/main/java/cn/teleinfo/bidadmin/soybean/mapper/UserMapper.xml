@@ -46,16 +46,16 @@
         select * from soybean_user where is_deleted = 0
     </select>
 
-    <select id="selectUserPage" resultMap="userVOResultMap">
+    <select id="selectUserVOPage" resultMap="userVOResultMap">
         SELECT
 			u.*
 		FROM
 			soybean_user u
 		JOIN soybean_user_group g ON u.id = g.user_id
 		WHERE
-			g.`status` = 0
-        <if test="group !=null">
-            AND  g.group_id=#{group}
+         1=1
+        <if test=" param2 !=null">
+            AND  g.group_id= #{ param2 }
         </if>
 
 		  </select>

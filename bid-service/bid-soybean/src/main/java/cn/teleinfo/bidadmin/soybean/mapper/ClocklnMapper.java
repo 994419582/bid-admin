@@ -48,4 +48,5 @@ public interface ClocklnMapper extends BaseMapper<Clockln> {
 	Clockln selectClocklnByUserID(@RequestParam("userId") Integer userId, @RequestParam("clockInTime") Date clockInTime);
 
 	List<ClocklnVO> findByUserIdInAndCreatetimeBetween(@RequestParam("ids") List<Integer> ids, @RequestParam("from") Date from, @RequestParam("to") Date to);
+	List<ClocklnVO> findByUserIdInAndCreateTime(@RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date from);
 }

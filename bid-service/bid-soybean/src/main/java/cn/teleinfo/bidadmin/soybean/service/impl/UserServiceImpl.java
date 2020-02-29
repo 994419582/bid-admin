@@ -40,8 +40,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 		return page.setRecords(baseMapper.selectUserPage(page, user));
 	}
 	@Override
-	public IPage<UserVO> selectUserPage(IPage<UserVO> page, int group) {
-		return page.setRecords(baseMapper.selectUserPage(page, group));
+	public IPage<UserVO> selectUserVOPage(IPage<UserVO> page, Integer group) {
+		return page.setRecords(baseMapper.selectUserVOPage(page, group));
 	}
 
 	@Override

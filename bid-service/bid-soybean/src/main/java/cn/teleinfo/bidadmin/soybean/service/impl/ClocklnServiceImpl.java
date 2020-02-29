@@ -67,4 +67,7 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
 	public List<ClocklnVO> findByUserIdInAndCreatetimeBetween(List<Integer> ids, Date from, Date to) {
 		return baseMapper.findByUserIdInAndCreatetimeBetween(ids, from, to);
 	}
+	public List<ClocklnVO> findByUserIdInAndCreateTime(@RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date from){
+		return baseMapper.findByUserIdInAndCreateTime(ids,from);
+	}
 }
