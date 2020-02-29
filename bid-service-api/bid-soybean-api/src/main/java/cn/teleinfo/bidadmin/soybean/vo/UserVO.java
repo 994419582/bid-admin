@@ -32,4 +32,7 @@ import lombok.EqualsAndHashCode;
 public class UserVO extends User {
 	private static final long serialVersionUID = 1L;
 
+	private Integer clockInId;
+	private Integer healthy;
+
 }

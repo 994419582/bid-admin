@@ -52,6 +52,17 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
 		return baseMapper.selectClocklnByGroup(groupId,clockInTime);
 	}
 
+	/**
+	 *  根据群组ID和日期查询当日打卡数据 非分页
+	 * @param userId
+	 * @param clockInTime
+	 * @return
+	 */
+	@Override
+	public Clockln selectClocklnByUserID(Integer userId, Date clockInTime){
+		return baseMapper.selectClocklnByUserID(userId,clockInTime);
+	}
+
 	@Override
 	public List<ClocklnVO> findByUserIdInAndCreatetimeBetween(List<Integer> ids, Date from, Date to) {
 		return baseMapper.findByUserIdInAndCreatetimeBetween(ids, from, to);

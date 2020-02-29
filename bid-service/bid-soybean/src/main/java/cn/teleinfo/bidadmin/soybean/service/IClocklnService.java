@@ -59,5 +59,14 @@ public interface IClocklnService extends IService<Clockln> {
 	 */
 	List<Clockln> selectClocklnByGroup(Integer groupId, Date clockInTime);
 
+	/**
+	 *  根据群组ID和日期查询当日打卡数据 非分页
+	 * @param userId
+	 * @param clockInTime
+	 * @return
+	 */
+	Clockln selectClocklnByUserID(Integer userId, Date clockInTime);
+
+
 	List<ClocklnVO> findByUserIdInAndCreatetimeBetween(List<Integer> collect, Date from, Date to);
 }

@@ -17,9 +17,13 @@ package cn.teleinfo.bidadmin.soybean.wxfront;
 
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
+import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
+import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
+import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.*;
@@ -57,6 +61,7 @@ public class WxClocklnCensusController extends BladeController {
 
 	private IGroupService groupService;
 
+	private IUserService userService;
 
 
 	/**
@@ -69,7 +74,7 @@ public class WxClocklnCensusController extends BladeController {
 			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
 			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query")
 	})
-	public R<IPage<ClocklnVO>> list(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime, Query query) {
+	public R<IPage<UserVO>> list(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime, Query query) {
 		if (groupId == null){
 			return R.fail("群组ID不能为空");
 		}
@@ -77,8 +82,15 @@ public class WxClocklnCensusController extends BladeController {
 		if (group==null){
 			return R.fail("该群组不存在,请输入正确的群组ID");
 		}
-		IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query),groupId,clocklnTime);
-		return R.data(pages);
+		IPage<UserVO> users=userService.selectUserPage(Condition.getPage(query),groupId);
+		users.getRecords().forEach(x ->{
+			Clockln clockln=clocklnService.selectClocklnByUserID(x.getId(),clocklnTime);
+			if (clockln !=null) {
+				x.setClockInId(clockln.getId());
+				x.setHealthy(clockln.getHealthy());
+			}
+		});
+		return R.data(users);
 	}
 
 	/**

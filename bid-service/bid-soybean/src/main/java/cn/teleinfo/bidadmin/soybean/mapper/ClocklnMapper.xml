@@ -45,7 +45,7 @@
         soybean_clockln t
         LEFT JOIN soybean_user_group g ON t.user_id = g.user_id
         LEFT JOIN soybean_user u ON t.user_id = u.id
-        where 1=1
+        where g.status=0
         <if test="groupId !=null">
           AND  g.group_id=#{groupId}
         </if>
@@ -56,12 +56,25 @@
         ORDER BY t.create_time DESC
     </select>
 
+    <select id="selectClocklnPageByGroup" resultMap="clocklnResultMap">
+        select *
+        FROM
+        soybean_clockln t
+        <if test="userId !=null">
+            AND  t.user_id=#{userId}
+        </if>
+
+        <if test="clockInTime !=null">
+            AND TO_DAYS(t.create_time) =TO_DAYS(#{clockInTime})
+        </if>
+    </select>
+
     <select id="selectClocklnByGroup" resultMap="clocklnResultMap">
         select t.*
         FROM
         soybean_clockln t
         LEFT JOIN soybean_user_group g ON t.user_id = g.user_id
-        where 1=1
+        where g.status=0
         <if test="groupId !=null">
             AND  g.group_id=#{groupId}
         </if>

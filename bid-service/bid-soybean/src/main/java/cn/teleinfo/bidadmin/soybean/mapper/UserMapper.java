@@ -19,6 +19,8 @@ import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.util.List;
 
 /**
@@ -37,5 +39,6 @@ public interface UserMapper extends BaseMapper<User> {
 	 * @return
 	 */
 	List<UserVO> selectUserPage(IPage page, UserVO user);
+	List<UserVO> selectUserPage(IPage page, @RequestParam("group") int group);
 
 }

@@ -39,6 +39,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	public IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user) {
 		return page.setRecords(baseMapper.selectUserPage(page, user));
 	}
+	@Override
+	public IPage<UserVO> selectUserPage(IPage<UserVO> page, int group) {
+		return page.setRecords(baseMapper.selectUserPage(page, group));
+	}
 
 	@Override
 	public User findByWechatId(String openid) {
