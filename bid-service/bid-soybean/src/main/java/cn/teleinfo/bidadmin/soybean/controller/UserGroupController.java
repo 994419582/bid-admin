@@ -63,6 +63,7 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 1)
 	@ApiOperation(value = "详情", notes = "传入userGroup")
 	public R<UserGroupVO> detail(UserGroup userGroup) {
+		userGroup.setStatus(UserGroup.NORMAL);
 		UserGroup detail = userGroupService.getOne(Condition.getQueryWrapper(userGroup));
 		return R.data(UserGroupWrapper.build().entityVO(detail));
 	}
@@ -74,6 +75,7 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 2)
 	@ApiOperation(value = "分页", notes = "传入userGroup")
 	public R<IPage<UserGroupVO>> list(UserGroup userGroup, Query query) {
+		userGroup.setStatus(UserGroup.NORMAL);
 		IPage<UserGroup> pages = userGroupService.page(Condition.getPage(query), Condition.getQueryWrapper(userGroup));
 		return R.data(UserGroupWrapper.build().pageVO(pages));
 	}
@@ -85,6 +87,7 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 3)
 	@ApiOperation(value = "分页", notes = "传入userGroup")
 	public R<IPage<UserGroupVO>> page(UserGroupVO userGroup, Query query) {
+		userGroup.setStatus(UserGroup.NORMAL);
 		IPage<UserGroupVO> pages = userGroupService.selectUserGroupPage(Condition.getPage(query), userGroup);
 		return R.data(pages);
 	}
@@ -96,25 +99,21 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入userGroup")
 	public R save(@Valid @RequestBody UserGroup userGroup) {
-		//校验用户和群组
-		userGroupService.checkAddUserGroup(userGroup);
-		//添加日志
-		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.NEW_USER);
-		return R.status(userGroupService.save(userGroup));
+		return R.status(userGroupService.saveUserGroup(userGroup));
 	}
 
-	/**
-	* 修改
-	*/
-	@PostMapping("/update")
-    @ApiOperationSupport(order = 5)
-	@ApiOperation(value = "修改", notes = "传入userGroup")
-	public R update(@Valid @RequestBody UserGroup userGroup) {
-		//校验用户和群组
-		userGroupService.checkAddUserGroup(userGroup);
-		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.UPDATE_USER);
-		return R.status(userGroupService.updateById(userGroup));
-	}
+//	/**
+//	* 修改
+//	*/
+//	@PostMapping("/update")
+//    @ApiOperationSupport(order = 5)
+//	@ApiOperation(value = "修改", notes = "传入userGroup")
+//	public R update(@Valid @RequestBody UserGroup userGroup) {
+//		//校验用户和群组
+//		userGroupService.checkAddUserGroup(userGroup);
+//		groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.UPDATE_USER);
+//		return R.status(userGroupService.updateById(userGroup));
+//	}
 
 	/**
 	* 新增或修改 
@@ -123,15 +122,10 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入userGroup")
 	public R submit(@Valid @RequestBody UserGroup userGroup) {
-		//校验用户和群组
-		userGroupService.checkAddUserGroup(userGroup);
-		//添加日志
-		if (userGroup.getId() == null) {
-			groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.NEW_USER);
-		} else {
-			throw new ApiException("群组不允许修改");
+		if (userGroup.getId() != null) {
+			throw new ApiException("群组不允许修改, 请把ID设置为空");
 		}
-		return R.status(userGroupService.saveOrUpdate(userGroup));
+		return R.status(userGroupService.saveUserGroup(userGroup));
 	}
 
 	
@@ -142,7 +136,7 @@ public class UserGroupController extends BladeController {
     @ApiOperationSupport(order = 7)
 	@ApiOperation(value = "逻辑删除", notes = "传入ids")
 	public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids) {
-		return R.status(userGroupService.removeByIds(Func.toIntList(ids)));
+		return R.status(userGroupService.removeUserGroupByIds(Func.toIntList(ids)));
 	}
 
 	

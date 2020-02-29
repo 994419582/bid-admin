@@ -45,4 +45,6 @@ public interface IUserService extends IService<User> {
 	 * @return
 	 */
 	User findByWechatId(String openid);
+
+    boolean submit(User user);
 }

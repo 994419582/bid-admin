@@ -16,6 +16,7 @@
 package cn.teleinfo.bidadmin.soybean.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -42,6 +43,14 @@ public class Group implements Serializable {
 
     //顶级ID
     public static final Integer TOP_PARENT_ID = 0;
+
+    //逗号分隔数字类型正则
+    public static final String PATTERN_STRING_LIST = "\\d+(,\\d+)*";
+
+    //群状态(0:正常，1:删除，2:审核中)
+    public static final Integer NORMAL = 0;
+    public static final Integer DELETE = 1;
+    public static final Integer APPROVAL_PENDING = 2;
 
     /**
      * 主键
@@ -77,9 +86,6 @@ public class Group implements Serializable {
      * 群人数
      */
     @ApiModelProperty(value = "群人数", required = true)
-    @NotNull(message = "创建人ID不能为空")
-    @Min(value = 1,message = "群人数不能小于1")
-    @Max(value = Integer.MAX_VALUE,message = "群人数超出Integer范围")
     private Integer userAccount;
     /**
      * 群管理员
@@ -97,6 +103,7 @@ public class Group implements Serializable {
      */
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
     /**
      * 更新人
@@ -108,41 +115,41 @@ public class Group implements Serializable {
      */
     @ApiModelProperty(value = "更新时间")
     @TableField(fill = FieldFill.UPDATE)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
     /**
      * 群状态(0:正常，1:删除，2:审核中)
      */
     @ApiModelProperty(value = "群状态(0:正常，1:删除，2:审核中)")
     private Integer status;
-    /**
-     * 是否需要审批(0:否，1:是)
-     */
-    @ApiModelProperty(value = "是否需要审批(0:否，1:是)")
-    private Integer approval;
+//    /**
+//     * 是否需要审批(0:否，1:是)
+//     */
+//    @ApiModelProperty(value = "是否需要审批(0:否，1:是)")
+//    private Integer approval;
     /**
      * 群组类型（公司，社区，其他）
      */
     @ApiModelProperty(value = "群组类型（公司，社区，其他）",required = true)
     @NotNull(message = "群组类型不能为空")
     private Integer groupType;
-    /**
-     * 公司地址ID（只有公司和社区需要）
-     */
-    @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
-    private Integer addressId;
-    /**
-     * 公司地址名称
-     */
-    @ApiModelProperty(value = "公司地址名称")
-    private String addressName;
-    /**
-     * 详细地址
-     */
-    @ApiModelProperty(value = "详细地址")
-    private String detailAddress;
+//    /**
+//     * 公司地址ID（只有公司和社区需要）
+//     */
+//    @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
+//    private Integer addressId;
+//    /**
+//     * 公司地址名称
+//     */
+//    @ApiModelProperty(value = "公司地址名称")
+//    private String addressName;
+//    /**
+//     * 详细地址
+//     */
+//    @ApiModelProperty(value = "详细地址")
+//    private String detailAddress;
 
     @ApiModelProperty(value = "父群主")
     @TableField(exist = false)
-    @NotBlank(message = "父群组不能为空")
     private String parentGroups;
 }

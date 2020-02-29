@@ -76,7 +76,7 @@
         select * from soybean_clockln where
         1=1
         <if test="ids !=null">
-            user_id in
+            and user_id in
             <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>

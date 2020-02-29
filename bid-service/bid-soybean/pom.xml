@@ -43,11 +43,6 @@
             <version>${blade.tool.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.github.binarywang</groupId>
-            <artifactId>weixin-java-miniapp</artifactId>
-            <version>3.6.9.B</version>
-        </dependency>
         <!-- 微信小程序 -->
         <dependency>
             <groupId>com.github.binarywang</groupId>

@@ -24,6 +24,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -49,6 +51,7 @@ public class User implements Serializable {
      * 微信ID
      */
     @ApiModelProperty(value = "微信ID")
+    @NotBlank(message = "微信ID不能为空")
     private String wechatId;
     /**
      * 微信昵称
@@ -59,6 +62,7 @@ public class User implements Serializable {
      * 姓名
      */
     @ApiModelProperty(value = "姓名")
+    @NotBlank(message = "姓名不能为空")
     private String name;
     /**
      * 联系电话

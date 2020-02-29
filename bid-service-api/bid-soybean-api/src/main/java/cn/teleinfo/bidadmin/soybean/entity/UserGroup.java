@@ -42,6 +42,13 @@ public class UserGroup implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    //正常
+    public static final Integer NORMAL = 0;
+    //待审批
+    public static final Integer APPROVAL_PENDING = 1;
+    //删除
+    public static final Integer DELETE = 2;
+
     /**
      * 主键
      */
@@ -61,4 +68,9 @@ public class UserGroup implements Serializable {
     @NotNull
     private Integer groupId;
 
+    /**
+     * 群用户状态
+     */
+    @ApiModelProperty(value = "群用户状态")
+    private Integer status;
 }

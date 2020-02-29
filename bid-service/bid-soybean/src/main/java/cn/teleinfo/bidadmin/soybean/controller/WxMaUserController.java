@@ -147,7 +147,6 @@ public class WxMaUserController extends BladeController {
     @ApiOperation(value = "绑定手机号", notes = "绑定手机号")
     @GetMapping("/phone")
     public R phone(
-            @RequestParam(name = "openid") String openid,
             @RequestParam(name = "appid") String appid,
             @RequestParam(name = "sessionKey") String sessionKey,
             @RequestParam(name = "encryptedData") String encryptedData,
@@ -157,12 +156,12 @@ public class WxMaUserController extends BladeController {
         // 解密
         WxMaPhoneNumberInfo phoneNoInfo = wxService.getUserService().getPhoneNoInfo(sessionKey, encryptedData, iv);
         // 根据openid绑定并更新用户信息
-        User user = userService.findByWechatId(openid);
-        if (user == null) {
-            return R.fail("user not found");
-        }
-        user.setPhone(phoneNoInfo.getPhoneNumber());
-        userService.saveOrUpdate(user);
+//        User user = userService.findByWechatId(openid);
+//        if (user == null) {
+//            return R.fail("user not found");
+//        }
+//        user.setPhone(phoneNoInfo.getPhoneNumber());
+//        userService.saveOrUpdate(user);
         return R.data(phoneNoInfo);
     }
 
