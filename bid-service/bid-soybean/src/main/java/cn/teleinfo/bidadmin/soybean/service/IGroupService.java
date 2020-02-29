@@ -16,8 +16,10 @@
 package cn.teleinfo.bidadmin.soybean.service;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
+import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -142,4 +144,16 @@ public interface IGroupService extends IService<Group> {
 	 * 获取状态正常用户
 	 */
 	Group getGroupById(Integer groupId);
+
+	/**
+	 * 分页获取当前群和子群下所有用户
+	 * @return
+	 */
+	IPage<UserVO> selectUserPageByParentId(Integer parentId, IPage<User> page);
+
+	/**
+	 * 获取当前群和子群的所有用户列表
+     * @return
+     */
+	List<Integer> selectUserIdByParentId(Integer parentId);
 }

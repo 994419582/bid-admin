@@ -317,4 +317,9 @@ public class WxGroupController extends BladeController {
                      @RequestParam(name = "creatorId", required = true) Integer creatorId) {
         return R.status(groupService.close(groupId,creatorId));
     }
+
+    @GetMapping("/test")
+    public R test(@RequestParam Integer id) {
+        return R.data(groupService.selectUserIdByParentId(id));
+    }
 }

@@ -20,9 +20,12 @@ import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.mapper.GroupMapper;
+import cn.teleinfo.bidadmin.soybean.mapper.UserMapper;
 import cn.teleinfo.bidadmin.soybean.service.*;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
+import cn.teleinfo.bidadmin.soybean.vo.UserVO;
+import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -56,6 +59,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     private IParentGroupService parentGroupService;
     @Autowired
     private GroupMapper groupMapper;
+    @Autowired
+    private UserMapper userMapper;
     @Autowired
     private IChildrenGroupService childrenGroupService;
     @Autowired
@@ -290,6 +295,73 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setId(groupId);
         group.setStatus(Group.NORMAL);
         return getOne(Condition.getQueryWrapper(group));
+    }
+
+    public List<GroupTreeVo> getAllGroupIdByParentId(List<GroupTreeVo> groups, Integer parentId, List groupList) {
+        List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
+        for (GroupTreeVo group : groups) {
+            //获取群组ID
+            Integer id = group.getId();
+            //获取群组父ID
+            Integer pId = group.getParentId();
+
+            if (pId.equals(parentId)) {
+                List<GroupTreeVo> treeList = buildTree(groups, id);
+                groupList.add(id);
+            }
+        }
+        return tree;
+    }
+
+    @Override
+    public IPage<UserVO> selectUserPageByParentId(Integer parentId, IPage<User> page) {
+        if (!existGroup(parentId)) {
+            throw new ApiException("群组不存在");
+        }
+
+        List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
+        //当前群及子群ID集合
+        ArrayList<Integer> groupIds = new ArrayList<>();
+        //添加父群ID
+        groupIds.add(parentId);
+        //获取所有子群Id
+        getAllGroupIdByParentId(groupAndParent, parentId, groupIds);
+        //获取所有用户ID
+        LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                in(UserGroup::getGroupId, groupIds).
+                eq(UserGroup::getStatus, UserGroup.NORMAL);
+        List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
+        //为空时返回null
+        if (CollectionUtils.isEmpty(userGroups)) {
+            return null;
+        }
+        List<Integer> userIds = userGroups.stream().map(UserGroup::getUserId).collect(Collectors.toList());
+        //获取所有用户
+        LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
+        IPage<User> userIPage = userService.page(page, userQueryWrapper);
+        return UserWrapper.build().pageVO(userIPage);
+    }
+
+    @Override
+    public List<Integer> selectUserIdByParentId(Integer parentId) {
+        if (!existGroup(parentId)) {
+            throw new ApiException("群组不存在");
+        }
+
+        List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
+        //当前群及子群ID集合
+        ArrayList<Integer> groupIds = new ArrayList<>();
+        //添加父群ID
+        groupIds.add(parentId);
+        //获取所有子群Id
+        getAllGroupIdByParentId(groupAndParent, parentId, groupIds);
+        //获取所有用户ID
+        LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                in(UserGroup::getGroupId, groupIds).
+                eq(UserGroup::getStatus, UserGroup.NORMAL);
+        List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
+        List<Integer> userIds = userGroups.stream().map(UserGroup::getUserId).collect(Collectors.toList());
+        return userIds;
     }
 
     @Override
