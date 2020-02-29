@@ -331,8 +331,8 @@ public class WxGroupController extends BladeController {
         Group group = groupService.getGroupById(groupId);
         String managers = group.getManagers();
         ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
-        if (managerList.contains(managerId)) {
-            throw new ApiException("管理员不存在");
+        if (!managerList.contains(managerId)) {
+            throw new ApiException("此用户不是管理员");
         }
         if (!userGroupService.existUserGroup(groupId, managerId)) {
             throw new ApiException("群组未发现此用户");
