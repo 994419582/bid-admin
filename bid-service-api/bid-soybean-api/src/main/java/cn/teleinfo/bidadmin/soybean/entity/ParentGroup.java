@@ -19,10 +19,13 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 /**
@@ -38,10 +41,24 @@ public class ParentGroup implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-  @TableId(value = "id", type = IdType.AUTO)
-  private Integer id;
-  private Integer parentId;
-  private Integer groupId;
+    //群状态(0:正常，1:已审核，2:删除)
+    public static final Integer NORMAL = 0;
+    public static final Integer APPROVAL_PENDING = 1;
+    public static final Integer DELETE = 2;
 
+    @TableId(value = "id", type = IdType.AUTO)
+    private Integer id;
+    @ApiModelProperty(value = "父群ID")
+    private Integer parentId;
 
+    @ApiModelProperty(value = "子群ID")
+    private Integer groupId;
+
+    @ApiModelProperty(value = "状态（0:未读，1:已读，2:删除）")
+    private Integer status;
+
+    @ApiModelProperty(value = "排序")
+    @Min(value = 0)
+    @Max(value = Integer.MAX_VALUE)
+    private Integer sort;
 }
