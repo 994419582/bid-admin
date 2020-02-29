@@ -81,55 +81,55 @@
         soybean_clockln t
         LEFT JOIN soybean_user u ON t.user_id = u.id
         where 1=1
-        <if test="param2 !=null">
+        <if test="ids !=null">
             and t.user_id in
-            <foreach collection="param2" index="index" item="item" open="(" separator="," close=")">
+            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
 
-        <if test="param3 !=null">
-            AND TO_DAYS(t.create_time) = TO_DAYS(#{param3})
+        <if test="clockInTime !=null">
+            AND TO_DAYS(t.create_time) = TO_DAYS(#{clockInTime})
         </if>
 
         <choose>
-            <when test="param4 !=null and param4==1">
+            <when test="healthy !=null and healthy==1">
                AND t.healthy=1
             </when>
-            <when test="param4 !=null and param4==2">
+            <when test="healthy !=null and healthy==2">
                 AND t.healthy=2
             </when>
-            <when test="param4 !=null and param4==0">
+            <when test="healthy !=null and healthy==0">
                AND t.healthy=0
             </when>
         </choose>
 
         <choose>
-            <when test="param5 !=null and param5==1">
+            <when test="region !=null and region==1">
                 and t.address LIKE '%武汉%'
             </when>
-            <when test="param5 !=null and param5==2">
+            <when test="region !=null and region==2">
                 and t.address LIKE '%湖北%' AND t.address not like '%武汉%'
             </when>
-            <when test="param5 !=null and param5==3">
+            <when test="region !=null and region==3">
                 and t.address LIKE '%北京%'
             </when>
-            <when test="param5 !=null and param5==4">
+            <when test="region !=null and region==4">
                 and t.address NOT LIKE '%湖北%' AND t.address not like '%北京%'
             </when>
         </choose>
 
         <choose>
-            <when test="param6 !=null and param6==1">
+            <when test="hospitalization !=null and hospitalization==1">
                 and t.comfirmed =2
             </when>
-            <when test="param6 !=null and param6==2">
+            <when test="hospitalization !=null and hospitalization==2">
                 and t.comfirmed != 2 and t.address  like '%北京%' and (TO_DAYS(NOW()) >= TO_DAYS(t.gobacktime) AND TO_DAYS(t.gobacktime)+14 >= TO_DAYS(NOW()) )
             </when>
-            <when test="param6 !=null and param6==3">
+            <when test="hospitalization !=null and hospitalization==3">
                 and t.comfirmed != 2 and (TO_DAYS(NOW()) > TO_DAYS(t.gobacktime)+14)
             </when>
-            <when test="param6 !=null and param6==4">
+            <when test="hospitalization !=null and hospitalization==4">
                 and ((t.comfirmed != 2 and t.address not like '%北京%') OR (t.comfirmed != 2 and t.address  like '%北京%' AND  t.leave = 1))
             </when>
         </choose>
