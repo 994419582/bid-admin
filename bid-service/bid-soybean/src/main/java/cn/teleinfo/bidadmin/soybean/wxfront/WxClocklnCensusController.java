@@ -141,15 +141,13 @@ public class WxClocklnCensusController extends BladeController {
 					}
 					LocalDate local = LocalDate.parse(str);
 
-					if (local !=null && today.compareTo(local) == 0){
-						gobackBeijing++;
-					}
+//					if (local !=null && today.compareTo(local) == 0){
+//						gobackBeijing++;
+//					}
 
 					if (c.getComfirmed() !=null && c.getComfirmed()==2){
 						diagnosis++;
-					}
-
-					if (local !=null && today.compareTo(local) >= 0){
+					}else if (local !=null && today.compareTo(local) >= 0){
 						//返京时间+14天 出隔离器时间
 						LocalDate localDate=local.plusDays(14);
 						if (today.compareTo(localDate)>0){
@@ -201,7 +199,7 @@ public class WxClocklnCensusController extends BladeController {
 		StringBuffer buffer=new StringBuffer("{");
 		//写入总体统计数据
 		buffer.append("\"totality\":{\"total\":"+group.getUserAccount()+",\"clockIn\":"+list.size()+",\"unClockIn\":"+(group.getUserAccount()-list.size())+",\"notInbeijing\":"+new Double(list.size()-beijing).intValue()+
-				",\"goBackBeijing\":"+gobackBeijing+",\"abnormalbody\":"+new Double(list.size()-healthy).intValue()+",\"diagnosis\":"+new Double(diagnosis).intValue()+"},");
+				",\"goBackBeijing\":"+new Double(isolator+outisolator).intValue()+",\"abnormalbody\":"+new Double(list.size()-healthy).intValue()+",\"diagnosis\":"+new Double(diagnosis).intValue()+"},");
 
 
 		//计算并写入第一张饼图数据
