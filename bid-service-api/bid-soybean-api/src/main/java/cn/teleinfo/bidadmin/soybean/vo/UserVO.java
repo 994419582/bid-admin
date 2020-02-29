@@ -35,4 +35,7 @@ public class UserVO extends User {
 	private Integer clockInId;
 	private Integer healthy;
 
+	private Integer comfirmed;
+	private Integer admitting;
+
 }
