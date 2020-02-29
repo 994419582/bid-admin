@@ -21,6 +21,7 @@ import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.mapper.ClocklnMapper;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,6 +38,9 @@ import java.util.List;
 @Service
 public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> implements IClocklnService {
 
+	@Autowired
+	ClocklnMapper mapper;
+
 	@Override
 	public IPage<ClocklnVO> selectClocklnPage(IPage<ClocklnVO> page, ClocklnVO clockln) {
 		return page.setRecords(baseMapper.selectClocklnPage(page, clockln));
@@ -44,7 +48,7 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
 
 	@Override
 	public  IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date clockInTime,Integer param3,Integer param4,Integer param5){
-		return page.setRecords(baseMapper.selectClocklnPageByGroup(page, ids,clockInTime,param3,param4,param5));
+		return page.setRecords(mapper.selectClocklnPageByGroup(page, ids,clockInTime,param3,param4,param5));
 	}
 
 	@Override

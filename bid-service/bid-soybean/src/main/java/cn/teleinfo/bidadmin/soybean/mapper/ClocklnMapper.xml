@@ -75,7 +75,7 @@
         ORDER BY t.create_time DESC
     </select>
 
-    <select id="selectClocklnPageByGroup" resultMap="clocklnResultMap">
+    <select id="selectClocklnPageByGroup" resultMap="clocklnResultVOMap">
         select t.* ,u.name,u.avatar_url
         FROM
         soybean_clockln t
