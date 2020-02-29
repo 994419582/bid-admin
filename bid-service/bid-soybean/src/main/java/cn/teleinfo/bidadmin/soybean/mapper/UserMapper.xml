@@ -53,7 +53,7 @@
 			soybean_user u
 		JOIN soybean_user_group g ON u.id = g.user_id
 		WHERE
-         1=1
+         g.status=0
         <if test=" param2 !=null">
             AND  g.group_id= #{ param2 }
         </if>

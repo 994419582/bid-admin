@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -63,10 +64,59 @@ public class WxClocklnCensusController extends BladeController {
 
 	private IUserService userService;
 
+	/**
+	 * 获取群组分页打卡信息
+	 */
+	@GetMapping("/hospitalization")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "群打卡信息分页", notes = "传入群ID和打卡日期")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
+			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query"),
+			@ApiImplicitParam(name = "hospitalization", value = "健康参数:1确诊，2隔离，3，出隔离，4其他", paramType = "query")
+	})
+	public R<IPage<ClocklnVO>> hospitalization(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("hospitalization") Integer hospitalization, Query query) {
+		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
+		IPage<ClocklnVO> pages=clocklnService.selectClocklnPageByGroup(Condition.getPage(query),ids,clocklnTime,null,null,hospitalization);
+		return R.data(pages);
+	}
 
 	/**
-	* 获取群组分页打卡信息
-	*/
+	 * 获取群组分页打卡信息
+	 */
+	@GetMapping("/region")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "群打卡信息分页", notes = "传入群ID和打卡日期")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
+			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query"),
+			@ApiImplicitParam(name = "region", value = "健康参数:1武汉，2湖北，3，北京，4其他", paramType = "query")
+	})
+	public R<IPage<ClocklnVO>> region(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("region") Integer region, Query query) {
+		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
+		IPage<ClocklnVO> pages=clocklnService.selectClocklnPageByGroup(Condition.getPage(query),ids,clocklnTime,null,region,null);
+		return R.data(pages);
+	}
+
+	/**
+	 * 获取群组分页打卡信息
+	 */
+	@GetMapping("/healthy")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "群打卡信息分页", notes = "传入群ID和打卡日期")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
+			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query"),
+			@ApiImplicitParam(name = "healthy", value = "健康参数:1健康，2有发烧、咳嗽等症状，0其他", paramType = "query")
+	})
+	public R<IPage<ClocklnVO>> healthy(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("healthy") Integer healthy, Query query) {
+		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
+		IPage<ClocklnVO> pages=clocklnService.selectClocklnPageByGroup(Condition.getPage(query),ids,clocklnTime,healthy,null,null);
+		return R.data(pages);
+	}
+		/**
+        * 获取群组分页打卡信息
+        */
 	@GetMapping("/list")
     @ApiOperationSupport(order = 1)
 	@ApiOperation(value = "群打卡信息分页", notes = "传入群ID和打卡日期")
@@ -82,7 +132,7 @@ public class WxClocklnCensusController extends BladeController {
 		if (group==null){
 			return R.fail("该群组不存在,请输入正确的群组ID");
 		}
-		IPage<UserVO> users=userService.selectUserVOPage(Condition.getPage(query),groupId);
+		IPage<UserVO> users=groupService.selectUserPageByParentId(groupId,Condition.getPage(query));
 		users.getRecords().forEach(x ->{
 			Clockln clockln=clocklnService.selectClocklnByUserID(x.getId(),clocklnTime);
 			if (clockln !=null) {
@@ -117,7 +167,8 @@ public class WxClocklnCensusController extends BladeController {
 		if (group==null){
 			return ("该群组不存在,请输入正确的群组ID");
 		}
-		List<Clockln> list = clocklnService.selectClocklnByGroup(groupId,clocklnTime);
+		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
+		List<Clockln> list = clocklnService.selectClocklnByGroup(ids,clocklnTime);
 
 
 		double healthy=0.0;
@@ -213,7 +264,7 @@ public class WxClocklnCensusController extends BladeController {
 		}
 		StringBuffer buffer=new StringBuffer("{");
 		//写入总体统计数据
-		buffer.append("\"totality\":{\"total\":"+group.getUserAccount()+",\"clockIn\":"+list.size()+",\"unClockIn\":"+(group.getUserAccount()-list.size())+",\"notInbeijing\":"+new Double(list.size()-beijing).intValue()+
+		buffer.append("\"totality\":{\"total\":"+ids.size()+",\"clockIn\":"+list.size()+",\"unClockIn\":"+(ids.size()-list.size())+",\"notInbeijing\":"+new Double(list.size()-beijing).intValue()+
 				",\"goBackBeijing\":"+new Double(isolator+outisolator).intValue()+",\"abnormalbody\":"+new Double(list.size()-healthy).intValue()+",\"diagnosis\":"+new Double(diagnosis).intValue()+"},");
 
 
@@ -240,6 +291,8 @@ public class WxClocklnCensusController extends BladeController {
 //		str=str.replace("\"","");
 		return object.toJSONString();
 	}
+
+
 
 
 	private String format(double in){

@@ -335,7 +335,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (CollectionUtils.isEmpty(userGroups)) {
             return null;
         }
-        List<Integer> userIds = userGroups.stream().map(UserGroup::getUserId).collect(Collectors.toList());
+        List<Integer> userIds = new ArrayList<>();
+        userGroups.forEach(x->{
+            if (!userIds.contains(x.getUserId())){
+                userIds.add(x.getUserId());
+            }
+        });
         //获取所有用户
         LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
         IPage<User> userIPage = userService.page(page, userQueryWrapper);
@@ -360,7 +365,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 in(UserGroup::getGroupId, groupIds).
                 eq(UserGroup::getStatus, UserGroup.NORMAL);
         List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
-        List<Integer> userIds = userGroups.stream().map(UserGroup::getUserId).collect(Collectors.toList());
+        List<Integer> userIds = new ArrayList<>();
+        userGroups.forEach(x->{
+            if (!userIds.contains(x.getUserId())){
+                userIds.add(x.getUserId());
+            }
+        });
         return userIds;
     }
 

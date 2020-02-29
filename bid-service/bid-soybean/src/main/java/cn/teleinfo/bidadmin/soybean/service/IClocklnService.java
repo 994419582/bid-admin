@@ -45,11 +45,11 @@ public interface IClocklnService extends IService<Clockln> {
 	/**
 	 *  根据组ID和时间统计当日打卡数据
 	 * @param page 分页信息
-	 * @param groupId 群组ID
+	 * @param ids 用户ids
 	 * @param clockInTime 统计日期
 	 * @return
 	 */
-	IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, Integer groupId, Date clockInTime);
+	IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page,  List<Integer> ids,  Date clockInTime,Integer param3,Integer param4,Integer param5);
 
 	/**
 	 *  根据群组ID和日期查询当日打卡数据 非分页
@@ -57,7 +57,7 @@ public interface IClocklnService extends IService<Clockln> {
 	 * @param clockInTime
 	 * @return
 	 */
-	List<Clockln> selectClocklnByGroup(Integer groupId, Date clockInTime);
+	List<Clockln> selectClocklnByGroup(List<Integer> ids, Date clockInTime);
 
 	/**
 	 *  根据群组ID和日期查询当日打卡数据 非分页
