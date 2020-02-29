@@ -87,4 +87,11 @@ public interface IUserGroupService extends IService<UserGroup> {
      * 根据ID获取状态正常的群组关系
      */
     UserGroup getUserGroupById(Integer id);
+
+    /**
+     * 群里是否存在此用户
+     * @return
+     */
+    boolean existUserGroup(Integer groupId,Integer userId);
+
 }

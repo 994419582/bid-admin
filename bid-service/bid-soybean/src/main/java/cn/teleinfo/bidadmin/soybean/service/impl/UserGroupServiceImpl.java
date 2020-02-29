@@ -230,7 +230,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         return this.getOne(Condition.getQueryWrapper(userGroup));
     }
 
-    private boolean existUserGroup(Integer groupId, Integer userId) {
+    public boolean existUserGroup(Integer groupId, Integer userId) {
         LambdaQueryWrapper<UserGroup> lambdaQuery = Wrappers.<UserGroup>lambdaQuery()
                 .eq(UserGroup::getGroupId, groupId).
                         eq(UserGroup::getStatus, UserGroup.NORMAL).

@@ -67,6 +67,7 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 1)
 	@ApiOperation(value = "详情", notes = "传入groupId")
 	public R<GroupVO> detail(Group group) {
+		group.setStatus(Group.NORMAL);
 		Group detail = groupService.detail(group);
 		return R.data(GroupWrapper.build().entityVO(detail));
 	}
@@ -94,7 +95,8 @@ public class GroupController extends BladeController {
 	@ApiOperationSupport(order = 1)
 	@ApiOperation(value = "模糊搜索", notes = "根据名称模糊搜索")
 	public R<List<GroupVO>> search(@RequestParam String name) {
-		List<Group> groups = groupService.list(Wrappers.<Group>lambdaQuery().like(Group::getFullName, name));
+		List<Group> groups = groupService.list(Wrappers.<Group>lambdaQuery().
+				like(Group::getFullName, name).eq(Group::getStatus, Group.NORMAL));
 		if (CollectionUtils.isEmpty(groups)) {
 			return R.data(null);
 		}

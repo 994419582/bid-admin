@@ -25,6 +25,7 @@ import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.*;
@@ -225,6 +226,9 @@ public class WxGroupController extends BladeController {
         if (!groupService.existUser(userId)) {
             throw new ApiException("用户不存在");
         }
+        if (!userGroupService.existUserGroup(groupId, transferId)) {
+            throw new ApiException("用户进群后才能任命为管理员");
+        }
         Group group = new Group();
         group.setId(groupId);
         group.setCreateUser(transferId);
@@ -280,7 +284,7 @@ public class WxGroupController extends BladeController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "新增群管理员", notes = "新增群管理员，只有群组拥有者有权限，可以设置管理员）")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "groupId", value = "子群组ID", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "managerId", value = "管理员ID", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "creatorId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
     })
@@ -297,7 +301,44 @@ public class WxGroupController extends BladeController {
         if (managerList.contains(managerId)) {
             throw new ApiException("管理员已存在");
         }
+        if (!userGroupService.existUserGroup(groupId, managerId)) {
+            throw new ApiException("用户进群后才能任命为管理员");
+        }
         managerList.add(managerId);
+        String newManagers = StringUtils.join(managerList, ",");
+        group.setManagers(newManagers);
+        return R.status(groupService.updateById(group));
+    }
+
+    /**
+     * 移除管理员
+     */
+    @DeleteMapping("/manager")
+    @ApiOperationSupport(order = 3)
+    @ApiOperation(value = "移除管理员", notes = "移除管理员，只有群组拥有者有权限，可以移除管理员）")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "managerId", value = "管理员ID", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "creatorId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
+    })
+    public R removeManager(@RequestParam(name = "groupId", required = true) Integer groupId,
+                     @RequestParam(name = "managerId", required = true) Integer managerId,
+                     @RequestParam(name = "creatorId", required = true) Integer creatorId) {
+
+        if (!groupService.isGroupCreater(groupId, creatorId)) {
+            throw new ApiException("不是群创建人");
+        }
+        Group group = groupService.getGroupById(groupId);
+        String managers = group.getManagers();
+        ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
+        if (managerList.contains(managerId)) {
+            throw new ApiException("管理员不存在");
+        }
+        if (!userGroupService.existUserGroup(groupId, managerId)) {
+            throw new ApiException("群组未发现此用户");
+        }
+        //移除此管理员
+        managerList.remove(managerId);
         String newManagers = StringUtils.join(managerList, ",");
         group.setManagers(newManagers);
         return R.status(groupService.updateById(group));
@@ -318,8 +359,4 @@ public class WxGroupController extends BladeController {
         return R.status(groupService.close(groupId,creatorId));
     }
 
-    @GetMapping("/test")
-    public R test(@RequestParam Integer id) {
-        return R.data(groupService.selectUserIdByParentId(id));
-    }
 }
