@@ -333,7 +333,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
         //为空时返回null
         if (CollectionUtils.isEmpty(userGroups)) {
-            return null;
+            return UserWrapper.build().pageVO(page);
         }
         List<Integer> userIds = userGroups.stream().map(UserGroup::getUserId).collect(Collectors.toList());
         //获取所有用户
