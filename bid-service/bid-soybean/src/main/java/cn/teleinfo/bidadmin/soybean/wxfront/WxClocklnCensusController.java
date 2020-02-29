@@ -147,9 +147,13 @@ public class WxClocklnCensusController extends BladeController {
 			if (clockln !=null) {
 				x.setClockInId(clockln.getId());
 				x.setHealthy(clockln.getHealthy());
+				x.setAdmitting(clockln.getAdmitting());
+				x.setComfirmed(clockln.getComfirmed());
 			}else {
 				x.setClockInId(0);
 				x.setHealthy(0);
+				x.setComfirmed(0);
+				x.setAdmitting(0);
 			}
 		});
 		return R.data(users);
