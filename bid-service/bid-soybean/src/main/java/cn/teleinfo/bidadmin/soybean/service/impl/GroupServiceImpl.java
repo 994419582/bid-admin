@@ -32,11 +32,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -169,12 +167,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         ArrayList<GroupTreeVo> treeRootList = new ArrayList<>();
         //查询所有群
         List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
-        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
-        List<Group> groupList = list(queryWrapper);
+
         //遍历获取用户管理的所有群
-        List<Group> filterList = groupList.stream().filter(group -> {
-            List<Integer> managerList = Func.toIntList(group.getManagers());
-            Integer createUser = group.getCreateUser();
+        List<GroupTreeVo> userGroupTreeList = groupAndParentList.stream().filter(groupTreeVo -> {
+            List<Integer> managerList = Func.toIntList(groupTreeVo.getManagers());
+            Integer createUser = groupTreeVo.getCreateUser();
             if (managerList.contains(userId)) {
                 return true;
             }
@@ -183,12 +180,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             return false;
         }).collect(Collectors.toList());
-        //获取群及其子群信息
-        for (Group group : filterList) {
-            GroupTreeVo groupTreeVo = new GroupTreeVo();
-            BeanUtils.copyProperties(group, groupTreeVo);
-            List<GroupTreeVo> groupTreeVos = buildTree(groupAndParentList, group.getId());
-            groupTreeVo.setChildren(groupTreeVos);
+        //递归获取群下所有子群添加到groupTreeVos
+        for (GroupTreeVo groupTreeVo : userGroupTreeList) {
+            List<GroupTreeVo> childTree = buildTree(groupAndParentList, groupTreeVo.getId());
+            if (!CollectionUtils.isEmpty(childTree)) {
+                groupTreeVo.setChildren(childTree);
+            }
             treeRootList.add(groupTreeVo);
         }
         return treeRootList;
@@ -351,6 +348,40 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
+    public List<UserVO> selectUserByParentId(Integer parentId) {
+        if (!existGroup(parentId)) {
+            throw new ApiException("群组不存在");
+        }
+
+        List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
+        //当前群及子群ID集合
+        ArrayList<Integer> groupIds = new ArrayList<>();
+        //添加父群ID
+        groupIds.add(parentId);
+        //获取所有子群Id
+        getAllGroupIdByParentId(groupAndParent, parentId, groupIds);
+        //获取所有用户ID
+        LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                in(UserGroup::getGroupId, groupIds).
+                eq(UserGroup::getStatus, UserGroup.NORMAL);
+        List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
+        //为空时返回null
+        if (CollectionUtils.isEmpty(userGroups)) {
+            return new ArrayList<>();
+        }
+        List<Integer> userIds = new ArrayList<>();
+        userGroups.forEach(x->{
+            if (!userIds.contains(x.getUserId())){
+                userIds.add(x.getUserId());
+            }
+        });
+        //获取所有用户
+        LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
+        List<User> userIPage = userService.list( userQueryWrapper);
+        return UserWrapper.build().listVO(userIPage);
+    }
+
+    @Override
     public List<Integer> selectUserIdByParentId(Integer parentId) {
         if (!existGroup(parentId)) {
             throw new ApiException("群组不存在");
@@ -448,18 +479,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     public boolean updateGroup(Group group) {
         //校验父群和子群格式是否正确
         checkParentGroupAndManager(group);
-        Integer createUser = group.getCreateUser();
-        String managers = group.getManagers();
-        //管理员校验
-        for (Integer managerId : Func.toIntList(managers)) {
-            if (!userGroupService.existUserGroup(group.getId(), managerId)) {
-                throw new ApiException("用户只有进群后，才能任命为管理员");
-            }
-        }
-        //创建人校验
-        if (!userGroupService.existUserGroup(group.getId(), createUser)) {
-            throw new ApiException("用户只有进群后，才能任命为创建人");
-        }
         //更新群
         updateById(group);
         Integer groupId = group.getId();
