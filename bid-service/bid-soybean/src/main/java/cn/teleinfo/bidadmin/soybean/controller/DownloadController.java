@@ -3,6 +3,7 @@ package cn.teleinfo.bidadmin.soybean.controller;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.poi.excel.RowUtil;
 import cn.hutool.poi.excel.WorkbookUtil;
 import cn.hutool.poi.excel.cell.CellUtil;
@@ -63,7 +64,9 @@ public class DownloadController extends BladeController {
                       @RequestParam(required = false, name = "to") @DateTimeFormat(pattern = "yyyy-MM-dd") Date to,
                       @RequestParam(required = false, name = "test", defaultValue = "false") boolean test,
                       HttpServletResponse response) {
-        Workbook workbook = WorkbookUtil.createBook("model/annex.xlsx");
+
+
+        Workbook workbook = WorkbookUtil.createBook(ResourceUtil.getStream("model/annex.xlsx"), false);
         try {
             /**
              * 生成Excel
@@ -88,6 +91,9 @@ public class DownloadController extends BladeController {
             List<DateTime> rangeDate = DateUtil.rangeToList(from, to, DateField.DAY_OF_YEAR);
             for (DateTime dateItem : rangeDate) {
                 List<ClocklnVO> clocklnsToday = clocklnsGroup.get(DateUtil.formatDate(dateItem));
+                if (clocklnsToday == null) {
+                    continue;
+                }
 
                 Sheet sheet = workbook.getSheetAt(0);
                 Cell cell = CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 0);
