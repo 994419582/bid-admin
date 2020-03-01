@@ -214,7 +214,6 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入group")
 	public R submit(@Valid @RequestBody Group group) {
-		GroupServiceImpl.modifyObject(group);
 		return R.status(groupService.saveOrUpdateGroup(group));
 	}
 
@@ -227,17 +226,12 @@ public class GroupController extends BladeController {
 	@ApiOperation(value = "逻辑删除", notes = "传入ids")
 	public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids) {
 		//查询用户Id和创建人是否一致
-		ArrayList<Group> groups = new ArrayList<>();
 		for (Integer id : Func.toIntList(ids)) {
 			if (!groupService.existGroup(id)) {
 				throw new ApiException("群不存在");
 			}
-			Group group = new Group();
-			group.setId(id);
-			group.setStatus(Group.DELETE);
-			groups.add(group);
 		}
-		return R.status(groupService.updateBatchById(groups));
+		return R.status(groupService.removeGroupByIds(ids));
 	}
 
 }
