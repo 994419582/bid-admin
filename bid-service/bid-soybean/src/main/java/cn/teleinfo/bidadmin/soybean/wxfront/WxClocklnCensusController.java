@@ -15,12 +15,11 @@
  */
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
+import cn.teleinfo.bidadmin.common.constant.Province;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
-import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
@@ -41,7 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -174,10 +172,14 @@ public class WxClocklnCensusController extends BladeController {
 		String pattern ="\\d{4}(\\-|\\/|.)\\d{1,2}\\1\\d{1,2}";
 		LocalDate today = LocalDate.now();
 
+		List<Province> provinces= Province.getPrivince();
+
 		if (groupId == null){
 			return ("群组ID不能为空");
 		}
 		Group group= groupService.getById(groupId);
+
+		String province="北京";
 		if (group==null){
 			return ("该群组不存在,请输入正确的群组ID");
 		}
