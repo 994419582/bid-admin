@@ -163,6 +163,31 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return maps;
     }
 
+    /**
+     * 递归构建树形下拉
+     * @param groups
+     * @param parentId
+     * @return
+     */
+    public List<GroupTreeVo> buildUserTree(List<GroupTreeVo> groups, Integer parentId) {
+        List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
+
+        for (GroupTreeVo group : groups) {
+            //获取群组ID
+            Integer id = group.getId();
+            //获取群组父ID
+            Integer pId = group.getParentId();
+
+            if (pId.equals(parentId)) {
+                List<GroupTreeVo> treeList = buildTree(groups, id);
+                group.setChildren(treeList);
+                group.setPermission(true);
+                tree.add(group);
+            }
+        }
+        return tree;
+    }
+
     @Override
     public List<GroupTreeVo> treeUser(Integer userId) {
         if (!existUser(userId)) {
@@ -191,7 +216,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             GroupTreeVo groupTreeVo = new GroupTreeVo();
             BeanUtils.copyProperties(group, groupTreeVo);
             groupTreeVo.setPermission(true);
-            List<GroupTreeVo> groupTreeVos = buildTree(groupAndParentList, group.getId());
+            List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId());
             groupTreeVo.setChildren(groupTreeVos);
             treeRootList.add(groupTreeVo);
         }
