@@ -14,7 +14,7 @@
     <resultMap id="userResultMap" type="cn.teleinfo.bidadmin.soybean.entity.User">
         <id column="id" property="id"/>
         <result column="wechat_id" property="wechatId"/>
-        <result column="nickname" property="nickname"/>
+        <result column="nickname" property="nickName"/>
         <result column="name" property="name"/>
         <result column="phone" property="phone"/>
         <result column="id_type" property="idType"/>

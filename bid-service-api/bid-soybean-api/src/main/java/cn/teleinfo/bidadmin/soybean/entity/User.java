@@ -16,6 +16,7 @@
 package cn.teleinfo.bidadmin.soybean.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -53,8 +54,10 @@ public class User implements Serializable {
     /**
      * 微信昵称
      */
+
     @ApiModelProperty(value = "微信昵称")
-    private String nickname;
+    @TableField("nickname")
+    private String nickName;
     /**
      * 姓名
      */
