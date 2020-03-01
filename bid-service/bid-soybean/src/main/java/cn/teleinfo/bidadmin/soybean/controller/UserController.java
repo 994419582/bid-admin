@@ -15,30 +15,28 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
+import cn.teleinfo.bidadmin.soybean.entity.User;
+import cn.teleinfo.bidadmin.soybean.service.IUserService;
+import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
-import javax.validation.Valid;
-
+import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RequestParam;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
-import cn.teleinfo.bidadmin.soybean.service.IUserService;
-import org.springblade.core.boot.ctrl.BladeController;
+
+import javax.validation.Valid;
 import java.util.List;
 
 /**
- *  控制器
+ * 控制器
  *
  * @author Blade
  * @since 2020-02-21
@@ -49,7 +47,7 @@ import java.util.List;
 @Api(value = "", tags = "用户")
 public class UserController extends BladeController {
 
-	private IUserService userService;
+    private IUserService userService;
 
     /**
      * 是否存在
@@ -57,7 +55,7 @@ public class UserController extends BladeController {
     @GetMapping("/exist")
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "是否存在", notes = "是否存在user")
-    public R<UserVO> detail(@RequestParam(name = "openid") String openid) {
+    public R<User> detail(@RequestParam(name = "openid") String openid) {
         User detail = userService.findByWechatId(openid);
         if (detail == null) {
             return R.data(null);
@@ -65,102 +63,102 @@ public class UserController extends BladeController {
         return R.data(UserWrapper.build().entityVO(detail));
     }
 
-	/**
-	* 详情
-	*/
-	@GetMapping("/detail")
+    /**
+     * 详情
+     */
+    @GetMapping("/detail")
     @ApiOperationSupport(order = 1)
-	@ApiOperation(value = "详情", notes = "传入user")
-	public R<UserVO> detail(User user) {
-		User detail = userService.getOne(Condition.getQueryWrapper(user));
-		return R.data(UserWrapper.build().entityVO(detail));
-	}
+    @ApiOperation(value = "详情", notes = "传入user")
+    public R<User> detail(User user) {
+        User detail = userService.getOne(Condition.getQueryWrapper(user));
+        return R.data(detail);
+    }
 
-	/**
-	* 分页 
-	*/
-	@GetMapping("/select")
+    /**
+     * 分页
+     */
+    @GetMapping("/select")
     @ApiOperationSupport(order = 2)
-	@ApiOperation(value = "根据名字查询列表，模糊匹配", notes = "根据名字查询列表，模糊匹配，传入user")
-	public R<List<User>> select(String name) {
-		QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-		queryWrapper.like("name", name);
-		List<User> list = userService.list(queryWrapper);
-		return R.data(list);
-	}
+    @ApiOperation(value = "根据名字查询列表，模糊匹配", notes = "根据名字查询列表，模糊匹配，传入user")
+    public R<List<User>> select(String name) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("name", name);
+        List<User> list = userService.list(queryWrapper);
+        return R.data(list);
+    }
 
-	/**
-	* 分页
-	*/
-	@GetMapping("/list")
+    /**
+     * 分页
+     */
+    @GetMapping("/list")
     @ApiOperationSupport(order = 2)
-	@ApiOperation(value = "分页", notes = "传入user")
-	public R<IPage<UserVO>> list(User user, Query query) {
-		IPage<User> pages = userService.page(Condition.getPage(query), Condition.getQueryWrapper(user));
-		return R.data(UserWrapper.build().pageVO(pages));
-	}
+    @ApiOperation(value = "分页", notes = "传入user")
+    public R<IPage<User>> list(User user, Query query) {
+        IPage<User> pages = userService.page(Condition.getPage(query), Condition.getQueryWrapper(user));
+        return R.data(pages);
+    }
 
-	/**
-	* 自定义分页 
-	*/
-	@GetMapping("/page")
+    /**
+     * 自定义分页
+     */
+    @GetMapping("/page")
     @ApiOperationSupport(order = 3)
-	@ApiOperation(value = "分页", notes = "传入user")
-	public R<IPage<UserVO>> page(UserVO user, Query query) {
-		IPage<UserVO> pages = userService.selectUserPage(Condition.getPage(query), user);
-		return R.data(pages);
-	}
+    @ApiOperation(value = "分页", notes = "传入user")
+    public R<IPage<User>> page(User user, Query query) {
+        IPage<User> pages = userService.selectUserPage(Condition.getPage(query), user);
+        return R.data(pages);
+    }
 
-	/**
-	* 新增 
-	*/
-	@PostMapping("/save")
+    /**
+     * 新增
+     */
+    @PostMapping("/save")
     @ApiOperationSupport(order = 4)
-	@ApiOperation(value = "新增", notes = "传入user")
-	public R save(@Valid @RequestBody User user) {
-		return R.status(userService.save(user));
-	}
+    @ApiOperation(value = "新增", notes = "传入user")
+    public R save(@Valid @RequestBody User user) {
+        return R.status(userService.save(user));
+    }
 
-	/**
-	* 修改 
-	*/
-	@PostMapping("/update")
+    /**
+     * 修改
+     */
+    @PostMapping("/update")
     @ApiOperationSupport(order = 5)
-	@ApiOperation(value = "修改", notes = "传入user")
-	public R update(@Valid @RequestBody User user) {
-		return R.status(userService.updateById(user));
-	}
+    @ApiOperation(value = "修改", notes = "传入user")
+    public R update(@Valid @RequestBody User user) {
+        return R.status(userService.updateById(user));
+    }
 
-	/**
-	* 新增或修改 
-	*/
-	@PostMapping("/submit")
+    /**
+     * 新增或修改
+     */
+    @PostMapping("/submit")
     @ApiOperationSupport(order = 6)
-	@ApiOperation(value = "新增或修改", notes = "传入user")
-	public R submit(@Valid @RequestBody User user) {
-		return R.status(userService.saveOrUpdate(user));
-	}
+    @ApiOperation(value = "新增或修改", notes = "传入user")
+    public R submit(@Valid @RequestBody User user) {
+        return R.status(userService.saveOrUpdate(user));
+    }
 
-	/**
-	 * 新增或修改
-	 */
-	@PostMapping("/saveOrUpdate")
-	@ApiOperationSupport(order = 6)
-	@ApiOperation(value = "新增或修改", notes = "传入user")
-	public R saveOrUpdate(@Valid @RequestBody User user) {
-		return R.status(userService.submit(user));
-	}
+    /**
+     * 新增或修改
+     */
+    @PostMapping("/saveOrUpdate")
+    @ApiOperationSupport(order = 6)
+    @ApiOperation(value = "新增或修改", notes = "传入user")
+    public R saveOrUpdate(@Valid @RequestBody User user) {
+        return R.status(userService.submit(user));
+    }
 
-	
-	/**
-	* 删除 
-	*/
-	@PostMapping("/remove")
+
+    /**
+     * 删除
+     */
+    @PostMapping("/remove")
     @ApiOperationSupport(order = 7)
-	@ApiOperation(value = "逻辑删除", notes = "传入ids")
-	public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids) {
-		return R.status(userService.removeByIds(Func.toIntList(ids)));
-	}
+    @ApiOperation(value = "逻辑删除", notes = "传入ids")
+    public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids) {
+        return R.status(userService.removeByIds(Func.toIntList(ids)));
+    }
 
-	
+
 }

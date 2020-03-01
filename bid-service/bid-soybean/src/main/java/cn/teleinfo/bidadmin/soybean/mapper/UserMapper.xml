@@ -46,7 +46,7 @@
         select * from soybean_user where is_deleted = 0
     </select>
 
-    <select id="selectUserVOPage" resultMap="userVOResultMap">
+    <select id="selectUserVOPage" resultMap="userResultMap">
         SELECT
 			u.*
 		FROM

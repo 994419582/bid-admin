@@ -36,11 +36,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
 	@Override
-	public IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user) {
+	public IPage<User> selectUserPage(IPage<User> page, User user) {
 		return page.setRecords(baseMapper.selectUserPage(page, user));
 	}
 	@Override
-	public IPage<UserVO> selectUserVOPage(IPage<UserVO> page, Integer group) {
+	public IPage<User> selectUserVOPage(IPage<User> page, Integer group) {
 		return page.setRecords(baseMapper.selectUserVOPage(page, group));
 	}
 
