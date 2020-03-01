@@ -79,6 +79,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
     }
 
     @Override
+    @Transactional
     public boolean managerRemoveUser(UserGroupVO userGroup) {
         Integer managerId = userGroup.getManagerId();
         if (managerId == null) {
@@ -118,6 +119,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         return true;
     }
 
+    @Transactional
     private void motifyUserAccount(Integer groupId, Integer addAccount) {
         Group group = groupService.getGroupById(groupId);
         group.setUserAccount(group.getUserAccount() + addAccount);

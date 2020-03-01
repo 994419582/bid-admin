@@ -190,7 +190,6 @@ public class WxGroupController extends BladeController {
             throw new ApiException("用户不存在");
         }
         //查询用户Id和创建人是否一致
-        ArrayList<Group> groups = new ArrayList<>();
         for (Integer id : Func.toIntList(ids)) {
             if (!groupService.existGroup(id)) {
                 throw new ApiException("群不存在");
@@ -198,12 +197,8 @@ public class WxGroupController extends BladeController {
             if (!groupService.isGroupCreater(id, userId)) {
                 throw new ApiException("用户ID和群创建人ID不一致");
             }
-            Group group = new Group();
-            group.setId(id);
-            group.setStatus(Group.DELETE);
-            groups.add(group);
         }
-        return R.status(groupService.updateBatchById(groups));
+        return R.status(groupService.removeGroupByIds(ids));
     }
 
     /**
