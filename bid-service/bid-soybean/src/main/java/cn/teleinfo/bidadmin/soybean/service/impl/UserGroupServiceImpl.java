@@ -99,6 +99,9 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 		if (getUserGroupStatus(groupId, userId).equals(UserGroup.DELETE)) {
             throw new ApiException("用户已退群");
         }
+        if (groupService.isGroupCreater(groupId, userId)) {
+            throw new ApiException("不能移除群创建者");
+        }
         if (groupService.isGroupManger(groupId, managerId) || groupService.isGroupCreater(groupId, managerId)) {
             LambdaUpdateWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaUpdate().
                     eq(UserGroup::getUserId, userId).
@@ -137,6 +140,9 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 		}
         if (getUserGroupStatus(groupId, userId).equals(UserGroup.DELETE)) {
             throw new ApiException("用户已退群");
+        }
+        if (groupService.isGroupCreater(groupId, userId)) {
+            throw new ApiException("创建者不能退群,只能解散群");
         }
         //更新状态为已删除
         LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
