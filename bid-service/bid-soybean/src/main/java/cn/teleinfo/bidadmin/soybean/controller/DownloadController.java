@@ -197,7 +197,7 @@ public class DownloadController extends BladeController {
                         } else {
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 10 + i), 9).setCellValue("否");
                         }
-                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 10 + i), 10).setCellValue(clockln.getHospital() == 1 ? "否" : "是");
+                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 10 + i), 10).setCellValue(clockln.getAdmitting() == 1 ? "否" : "是");
                         CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 10 + i), 11).setCellValue(clockln.getComfirmed() == 1 ? "否" : "是");
                         if (clockln.getNobackreason() != null) {
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 10 + i), 12).setCellValue(clockln.getNobackreason() == 1 ? "身体不适" : clockln.getNobackreason() == 2 ? "当地未放行" : "");
