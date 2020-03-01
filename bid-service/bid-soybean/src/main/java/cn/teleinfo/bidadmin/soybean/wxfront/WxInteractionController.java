@@ -146,7 +146,7 @@ public class WxInteractionController extends BladeController {
 
 				   @RequestBody Clockln clockln
 	) {
-		if (clockln.getUserId() == null || clockln.getUserId() < 0) {
+		if (clockln.getUserId() == null || "".equals(clockln.getUserId()) || clockln.getUserId() < 0) {
 			return R.fail("用户不存在，请输入正确的用户~");
 		}
 		User user = userService.getById(clockln.getUserId());
