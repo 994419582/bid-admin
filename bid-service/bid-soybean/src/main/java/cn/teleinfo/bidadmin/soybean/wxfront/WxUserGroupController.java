@@ -42,7 +42,7 @@ import javax.validation.Valid;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/wx/usergroup")
-@Api(value = "", tags = "用户群组接口")
+@Api(value = "", tags = "微信用户群组接口")
 public class WxUserGroupController extends BladeController {
 
 	private IUserGroupService userGroupService;
