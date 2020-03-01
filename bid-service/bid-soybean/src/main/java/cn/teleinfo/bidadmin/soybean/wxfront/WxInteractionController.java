@@ -102,7 +102,15 @@ public class WxInteractionController extends BladeController {
 		LocalDateTime now = LocalDateTime.now();
 		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
 		IPage<Clockln> pages = clocklnService.page(Condition.getPage(query), clocklnQueryWrapper);
-		return R.data(ClocklnWrapper.build().pageVO(pages));
+		IPage<ClocklnVO> clocklnVOIPage = ClocklnWrapper.build().pageVO(pages);
+		List<ClocklnVO> records = clocklnVOIPage.getRecords();
+		for (ClocklnVO c : records) {
+			User user = userService.getById(c.getUserId());
+			c.setPhone(user.getPhone());
+			c.setUserName(user.getName());
+			c.setAvatarUrl(user.getAvatarUrl());
+		}
+		return R.data(clocklnVOIPage);
 	}
 
 	/**￿

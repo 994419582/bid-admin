@@ -158,4 +158,11 @@ public interface IGroupService extends IService<Group> {
      * @return
      */
 	List<Integer> selectUserIdByParentId(Integer parentId);
+
+	/**
+	 * 删除群并设置用户和群的状态为已删除
+	 * @param ids
+	 * @return
+	 */
+    boolean removeGroupByIds(String ids);
 }

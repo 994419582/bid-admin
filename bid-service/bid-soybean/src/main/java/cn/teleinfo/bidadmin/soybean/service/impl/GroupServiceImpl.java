@@ -42,6 +42,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.validation.constraints.NotNull;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -161,6 +163,31 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return maps;
     }
 
+    /**
+     * 递归构建树形下拉
+     * @param groups
+     * @param parentId
+     * @return
+     */
+    public List<GroupTreeVo> buildUserTree(List<GroupTreeVo> groups, Integer parentId) {
+        List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
+
+        for (GroupTreeVo group : groups) {
+            //获取群组ID
+            Integer id = group.getId();
+            //获取群组父ID
+            Integer pId = group.getParentId();
+
+            if (pId.equals(parentId)) {
+                List<GroupTreeVo> treeList = buildTree(groups, id);
+                group.setChildren(treeList);
+                group.setPermission(true);
+                tree.add(group);
+            }
+        }
+        return tree;
+    }
+
     @Override
     public List<GroupTreeVo> treeUser(Integer userId) {
         if (!existUser(userId)) {
@@ -188,9 +215,36 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         for (Group group : filterList) {
             GroupTreeVo groupTreeVo = new GroupTreeVo();
             BeanUtils.copyProperties(group, groupTreeVo);
-            List<GroupTreeVo> groupTreeVos = buildTree(groupAndParentList, group.getId());
+            groupTreeVo.setPermission(true);
+            List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId());
             groupTreeVo.setChildren(groupTreeVos);
             treeRootList.add(groupTreeVo);
+        }
+        //添加用户加入但没管理权限的群
+        LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                eq(UserGroup::getUserId, userId).
+                eq(UserGroup::getStatus, UserGroup.NORMAL);
+        List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
+        //获取所有群ID
+        List<Integer> groupIds = userGroups.stream().map(UserGroup::getGroupId).
+                distinct().collect(Collectors.toList());
+        //遍历群ID查看是否有管理权限
+        for (Integer groupId : groupIds) {
+            //群不存在，则跳过
+            if (!existGroup(groupId)) {
+                continue;
+            }
+            //没有管理权限则添加进列表，并设置Permission为false
+            if (!isGroupManger(groupId, userId) && !isGroupCreater(groupId, userId)) {
+                LambdaQueryWrapper<Group> groupQueryWrapper = Wrappers.<Group>lambdaQuery().
+                        eq(Group::getId, groupId).
+                        eq(Group::getStatus, Group.NORMAL);
+                Group group = getOne(groupQueryWrapper);
+                GroupTreeVo groupTreeVo = new GroupTreeVo();
+                BeanUtils.copyProperties(group,groupTreeVo);
+                groupTreeVo.setPermission(false);
+                treeRootList.add(groupTreeVo);
+            }
         }
         return treeRootList;
     }
@@ -418,6 +472,26 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Override
     @Transactional
+    public boolean removeGroupByIds(String ids) {
+        //查询用户Id和创建人是否一致
+        ArrayList<Group> groups = new ArrayList<>();
+        for (Integer id : Func.toIntList(ids)) {
+            Group group = new Group();
+            group.setId(id);
+            group.setStatus(Group.DELETE);
+            groups.add(group);
+            //设置用户在群中的状态为已删除
+            LambdaUpdateWrapper<UserGroup> userGroupUpdateWrapper = Wrappers.<UserGroup>lambdaUpdate().
+                    eq(UserGroup::getGroupId, id).
+                    set(UserGroup::getStatus, UserGroup.DELETE);
+            userGroupService.update(userGroupUpdateWrapper);
+        }
+        updateBatchById(groups);
+        return true;
+    }
+
+    @Override
+    @Transactional
     public boolean saveGroup(Group group) {
         if (group.getId() != null) {
             throw new ApiException("群主键ID只能为空");
@@ -426,6 +500,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             throw new ApiException("群人数只能为空");
         }
         checkParentGroupAndManager(group);
+        //设置群人数为1
+        group.setUserAccount(1);
         //新增群
         group.setStatus(Group.NORMAL);
         save(group);
@@ -484,6 +560,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
+    @Transactional
     public boolean updateGroup(Group group) {
         //校验父群和子群格式是否正确
         checkParentGroupAndManager(group);
