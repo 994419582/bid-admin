@@ -15,6 +15,8 @@
  */
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Quarantine;
 import cn.teleinfo.bidadmin.soybean.entity.QuarantineTrip;
@@ -166,23 +168,13 @@ public class WxInteractionController extends BladeController {
 
 		clockln.setCreateTime(now);
 
-		if (clockln.getAddress().contains("湖北")) {
-			clockln.setHubei(1);
-		} else {
-			clockln.setHubei(0);
-		}
 
 		QueryWrapper<Clockln> clocklnLastQueryWrapper = new QueryWrapper<>();
 		clocklnLastQueryWrapper.eq("user_id", clockln.getUserId());
-		clocklnLastQueryWrapper.between("create_time", LocalDateTime.of(now.plusDays(-1).toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MIN));
+		clocklnLastQueryWrapper.between("create_time", DateUtil.offsetDay(DateUtil.beginOfDay(DateUtil.date()), -28), DateUtil.endOfDay(DateUtil.date()));
 		List<Clockln> lastlist = clocklnService.list(clocklnLastQueryWrapper);
-
-		for (Clockln c : lastlist) {
-			if (c.getHubei() == 1) {
-				clockln.setHubei(1);
-				break;
-			}
-		}
+		boolean hubei = lastlist.stream().anyMatch(item -> StrUtil.contains(item.getAddress(), "湖北"));
+		clockln.setHubei(hubei ? 1 : 0);
 
 		if (clockln.getAddress().contains("北京")) {
 			clockln.setBeijing(1);

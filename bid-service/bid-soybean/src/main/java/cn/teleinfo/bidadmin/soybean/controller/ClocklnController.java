@@ -93,7 +93,7 @@ public class ClocklnController extends BladeController {
 	@ApiOperation(value = "新增", notes = "传入clockln")
 	public R save(@Valid @RequestBody Clockln clockln) {
 		clockln.setCreateTime(LocalDateTime.now());
-		return R.status(clocklnService.save(clockln));
+		return R.status(clocklnService.saveIt(clockln));
 	}
 
 	/**

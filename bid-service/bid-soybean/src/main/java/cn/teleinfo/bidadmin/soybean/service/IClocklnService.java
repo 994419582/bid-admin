@@ -70,4 +70,6 @@ public interface IClocklnService extends IService<Clockln> {
 
 	List<ClocklnVO> findByUserIdInAndCreatetimeBetween(List<Integer> collect, Date from, Date to);
 	List<ClocklnVO> findByUserIdInAndCreateTime(@RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date from);
+
+    boolean saveIt(Clockln clockln);
 }
