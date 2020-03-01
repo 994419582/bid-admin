@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
+import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.entity.User;
@@ -351,7 +352,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public List<UserVO> selectUserByParentId(Integer parentId) {
+    public UserBO selectUserByParentId(Integer parentId) {
         if (!existGroup(parentId)) {
             throw new ApiException("群组不存在");
         }
@@ -370,18 +371,22 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
         //为空时返回null
         if (CollectionUtils.isEmpty(userGroups)) {
-            return new ArrayList<>();
+            return new UserBO();
         }
         List<Integer> userIds = new ArrayList<>();
-        userGroups.forEach(x->{
-            if (!userIds.contains(x.getUserId())){
+        userGroups.forEach(x -> {
+            if (!userIds.contains(x.getUserId())) {
                 userIds.add(x.getUserId());
             }
         });
         //获取所有用户
         LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
-        List<User> userIPage = userService.list( userQueryWrapper);
-        return UserWrapper.build().listVO(userIPage);
+        List<User> userIPage = userService.list(userQueryWrapper);
+
+        UserBO ub = new UserBO();
+        ub.setUserGroups(userGroups);
+        ub.setUsers(UserWrapper.build().listVO(userIPage));
+        return ub;
     }
 
     @Override

@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.service;
 
+import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
@@ -151,7 +152,7 @@ public interface IGroupService extends IService<Group> {
 	 */
 	IPage<UserVO> selectUserPageByParentId(Integer parentId, IPage<User> page);
 
-	List<UserVO> selectUserByParentId(Integer parentId);
+	UserBO selectUserByParentId(Integer parentId);
 	/**
 	 * 获取当前群和子群的所有用户列表
      * @return
