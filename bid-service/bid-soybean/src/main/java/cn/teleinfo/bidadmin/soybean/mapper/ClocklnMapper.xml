@@ -34,6 +34,7 @@
         <result column="reason" property="reason"/>
         <result column="name" property="userName"/>
         <result column="avatar_url" property="avatarUrl"/>
+        <result column="phone" property="phone"/>
     </resultMap>
 
 
@@ -76,7 +77,7 @@
     </select>
 
     <select id="selectClocklnPageByGroup" resultMap="clocklnResultVOMap">
-        select t.* ,u.name,u.avatar_url
+        select t.* ,u.name,u.avatar_url,u.phone
         FROM
         soybean_clockln t
         LEFT JOIN soybean_user u ON t.user_id = u.id
