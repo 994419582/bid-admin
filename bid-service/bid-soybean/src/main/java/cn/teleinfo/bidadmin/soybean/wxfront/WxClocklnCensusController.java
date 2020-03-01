@@ -45,6 +45,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  *  控制器
@@ -170,7 +171,7 @@ public class WxClocklnCensusController extends BladeController {
 			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query")
 	})
 	public String  census(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd") Date clocklnTime) {
-
+		String pattern ="\\d{4}(\\-|\\/|.)\\d{1,2}\\1\\d{1,2}";
 		LocalDate today = LocalDate.now();
 
 		if (groupId == null){
@@ -215,27 +216,33 @@ public class WxClocklnCensusController extends BladeController {
 		int gobackBeijing=0;
 
 		for (Clockln c:list ) {
+
+			if (c.getComfirmed() !=null && c.getComfirmed()==2){
+				diagnosis++;
+			}
 			if (!StringUtil.isEmpty(c.getGobacktime())){
 				try {
 					String str=c.getGobacktime();
 					if (str.contains("T")){
 						str=str.substring(0,str.indexOf("T"));
 					}
-					LocalDate local = LocalDate.parse(str);
+					LocalDate local=null;
+					if(!StringUtil.isEmpty(str)  && Pattern.matches(pattern, str)){
+						local = LocalDate.parse(str);
+					}
 
 //					if (local !=null && today.compareTo(local) == 0){
 //						gobackBeijing++;
 //					}
-
-					if (c.getComfirmed() !=null && c.getComfirmed()==2){
-						diagnosis++;
-					}else if (local !=null && today.compareTo(local) >= 0){
-						//返京时间+14天 出隔离器时间
-						LocalDate localDate=local.plusDays(14);
-						if (today.compareTo(localDate)>0){
-							outisolator++;
-						}else {
-							isolator++;
+					if (local !=null && today.compareTo(local) >= 0){
+						if (c.getComfirmed() ==null || c.getComfirmed()!=2) {
+							//返京时间+14天 出隔离器时间
+							LocalDate localDate = local.plusDays(14);
+							if (today.compareTo(localDate) > 0) {
+								outisolator++;
+							} else {
+								isolator++;
+							}
 						}
 					}
 				}catch (Exception e){

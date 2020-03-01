@@ -1,5 +1,6 @@
 package cn.teleinfo.bidadmin.soybean.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -30,6 +31,7 @@ public class GroupTreeVo implements Serializable {
      * 父群组ID
      */
     @ApiModelProperty(value = "父群组ID")
+    @JsonIgnore
     private Integer parentId;
 
     /**

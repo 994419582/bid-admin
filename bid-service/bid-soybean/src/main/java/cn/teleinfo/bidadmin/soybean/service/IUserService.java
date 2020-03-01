@@ -36,8 +36,8 @@ public interface IUserService extends IService<User> {
 	 * @param user
 	 * @return
 	 */
-	IPage<UserVO> selectUserPage(IPage<UserVO> page, UserVO user);
-	IPage<UserVO> selectUserVOPage(IPage<UserVO> page, Integer group);
+	IPage<User> selectUserPage(IPage<User> page, User user);
+	IPage<User> selectUserVOPage(IPage<User> page, Integer group);
 
 	/**
 	 * 根据openid查询

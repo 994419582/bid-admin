@@ -30,7 +30,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.Api;
 import org.springblade.core.mp.support.Condition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,7 +67,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
     public void checkAddUserGroup(UserGroup userGroup) {
         Group group = groupService.getGroupById(userGroup.getGroupId());
         if (group == null) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("用户已退群");
         }
 		List<UserGroup> userGroups = this.list(Wrappers.<UserGroup>lambdaQuery().
 				eq(UserGroup::getGroupId, userGroup.getGroupId()).
@@ -210,7 +209,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         for (Integer id : toIntList) {
             UserGroup userGroup = getUserGroupById(id);
             if (userGroup == null) {
-                throw new ApiException("群组ID不存在");
+                throw new ApiException("用户已退群");
+            }
+            if (groupService.isGroupCreater(userGroup.getGroupId(), userGroup.getUserId())) {
+                throw new ApiException("不能移除群创建人");
             }
             //修改状态
             userGroup.setStatus(UserGroup.DELETE);
@@ -220,7 +222,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             //添加日志
             groupLogService.addLog(userGroup.getGroupId(), userGroup.getUserId(), GroupLog.DELETE_USER);
         }
-        return false;
+        return true;
     }
 
     @Override

@@ -32,7 +32,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
@@ -169,6 +168,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         ArrayList<GroupTreeVo> treeRootList = new ArrayList<>();
         //查询所有群
         List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
+
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
         List<Group> groupList = list(queryWrapper);
         //遍历获取用户管理的所有群
@@ -348,6 +348,40 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
         IPage<User> userIPage = userService.page(page, userQueryWrapper);
         return UserWrapper.build().pageVO(userIPage);
+    }
+
+    @Override
+    public List<UserVO> selectUserByParentId(Integer parentId) {
+        if (!existGroup(parentId)) {
+            throw new ApiException("群组不存在");
+        }
+
+        List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
+        //当前群及子群ID集合
+        ArrayList<Integer> groupIds = new ArrayList<>();
+        //添加父群ID
+        groupIds.add(parentId);
+        //获取所有子群Id
+        getAllGroupIdByParentId(groupAndParent, parentId, groupIds);
+        //获取所有用户ID
+        LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                in(UserGroup::getGroupId, groupIds).
+                eq(UserGroup::getStatus, UserGroup.NORMAL);
+        List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
+        //为空时返回null
+        if (CollectionUtils.isEmpty(userGroups)) {
+            return new ArrayList<>();
+        }
+        List<Integer> userIds = new ArrayList<>();
+        userGroups.forEach(x->{
+            if (!userIds.contains(x.getUserId())){
+                userIds.add(x.getUserId());
+            }
+        });
+        //获取所有用户
+        LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
+        List<User> userIPage = userService.list( userQueryWrapper);
+        return UserWrapper.build().listVO(userIPage);
     }
 
     @Override

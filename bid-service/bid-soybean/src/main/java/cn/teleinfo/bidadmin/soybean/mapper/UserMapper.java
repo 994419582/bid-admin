@@ -19,26 +19,26 @@ import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 /**
- *  Mapper 接口
+ * Mapper 接口
  *
  * @author Blade
  * @since 2020-02-21
  */
 public interface UserMapper extends BaseMapper<User> {
 
-	/**
-	 * 自定义分页
-	 *
-	 * @param page
-	 * @param user
-	 * @return
-	 */
-	List<UserVO> selectUserPage(IPage page, UserVO user);
-	List<UserVO> selectUserVOPage(IPage page, Integer group);
+    /**
+     * 自定义分页
+     *
+     * @param page
+     * @param user
+     * @return
+     */
+    List<User> selectUserPage(IPage page, User user);
+
+    List<User> selectUserVOPage(IPage page, Integer group);
 
 }
