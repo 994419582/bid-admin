@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static cn.teleinfo.bidadmin.soybean.utils.TokenUtil.createAuthInfo;
 
 /**
@@ -65,7 +68,24 @@ public class WxMaUserController extends BladeController {
 //                    userService.save(user);
 //                }
 //            }
-            return R.data(session);
+
+            User user = userService.findByWechatId(appid);
+            if (user == null) {
+                user = new User();
+            }
+
+            AuthInfo authInfo = createAuthInfo(user);
+
+            Map<String, String> map = new HashMap<>();
+            map.put("openid", session.getOpenid());
+            map.put("sessionKey", session.getSessionKey());
+            map.put("unionid", session.getUnionid());
+            map.put("accessToken", authInfo.getAccessToken());
+            map.put("expiresIn", authInfo.getExpiresIn()+"");
+            map.put("refreshToken", authInfo.getRefreshToken());
+            map.put("tokenType", authInfo.getTokenType());
+
+            return R.data(map);
         } catch (WxErrorException e) {
             log.error(e.getMessage(), e);
             return R.fail(e.toString());
@@ -114,25 +134,6 @@ public class WxMaUserController extends BladeController {
 
         userService.saveOrUpdate(user);
         return R.data(UserWrapper.build().entityVO(user));
-    }
-
-    /**
-     * 各位大哥，这个方法，请不要删除，需要作为参考使用
-     * @param appid
-     * @return
-     */
-    @GetMapping("/test")
-    public R test(@RequestParam(name = "appid") String appid) {
-        // 根据openid绑定并更新用户信息
-        // test01asdfasdf
-        User user = userService.findByWechatId(appid);
-        if (user == null) {
-            user = new User();
-        }
-
-        AuthInfo authInfo = createAuthInfo(user);
-
-        return R.data(authInfo);
     }
 
     /**
