@@ -71,5 +71,10 @@ public class GroupLog implements Serializable {
     @ApiModelProperty(value = "操作类型")
     private Integer eventType;
 
+    /**
+     * 创建时间
+     */
+    @ApiModelProperty(value = "创建时间")
+    private Integer createTime;
 
 }
