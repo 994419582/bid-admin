@@ -4,9 +4,20 @@ import cn.teleinfo.bidadmin.soybean.mysql.data.transfer.entity.ClocklnEntity;
 import cn.teleinfo.bidadmin.soybean.mysql.data.transfer.entity.UserEntity;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 
 public class DatabaseUtils {
     private static String oldStr = "function getHours() { [native code] }";
+
+//    private static String userTableName = "spf_soybean_user";
+//    private static String groupTableName = "spf_soybean_user_group";
+//    private static String clocklnTableName = "spf_soybean_clockln";
+
+    private static String userTableName = "soybean_user";
+    private static String groupTableName = "soybean_user_group";
+    private static String clocklnTableName = "soybean_clockln";
+
+    private static LocalDateTime now = LocalDateTime.now();
 
     public static void userInsert(UserEntity u) {
         Connection con = JDBCUtils.getConnection();
@@ -17,7 +28,7 @@ public class DatabaseUtils {
         ResultSet select_rs = null;
         int id = 0;//存放数据库返回的用户注册过后的id
         try {
-            String select_sql = "select id from soybean_user where wechat_id = ?";
+            String select_sql = "select id from "+userTableName+" where wechat_id = ?";
             select_ps = con.prepareStatement(select_sql);
             select_ps.setString(1, u.get_openid());
             select_rs = select_ps.executeQuery();
@@ -25,7 +36,7 @@ public class DatabaseUtils {
                 return;
             }
 
-            String sql = "insert into soybean_user (" +
+            String sql = "insert into "+userTableName+" (" +
                     "`wechat_id`, `nickname`,`name`,`phone`,`id_type`,`id_number`,`create_time`,`update_time`,`status`," +
                     "`remarks`,`gender`,`country`,`province`,`city`,`avatar_url`,`home_id`,`home_address`," +
                     "`detail_address`,`is_deleted`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -41,11 +52,15 @@ public class DatabaseUtils {
                 ps.setInt(5, 2); // id_type
             } else if("军官证".equals(u.getCertificate_type())) {
                 ps.setInt(5, 3); // id_type
+            } else {
+                ps.setInt(5, -1); // id_type
             }
 
             ps.setString(6, u.getCertificate_number());// id_number
-            ps.setString(7, u.getCreated_at().replace(oldStr, "0"));
-            ps.setString(8, u.getUpdated_at().replace(oldStr, "0"));
+//            ps.setString(7, u.getCreated_at());
+//            ps.setString(8, u.getUpdated_at());
+            ps.setString(7, now.toString());
+            ps.setString(8, now.toString());
             ps.setInt(9, 0);// status
             ps.setString(10, "");// remarks
             ps.setInt(11, 0);//gender
@@ -63,7 +78,7 @@ public class DatabaseUtils {
                 id=rs.getInt(1);
             }
 
-            String sql_g = "insert into soybean_user_group (`user_id`, `group_id`,`status`) values (?,?,?)";
+            String sql_g = "insert into "+groupTableName+" (`user_id`, `group_id`,`status`) values (?,?,?)";
             ps_g=con.prepareStatement(sql_g, Statement.RETURN_GENERATED_KEYS);
 
             ps_g.setInt(1, id);// user_id
@@ -98,16 +113,17 @@ public class DatabaseUtils {
         int id = 0;//存放数据库返回的用户注册过后的id
         try {
             int userId = 0;
-            String select_sql = "select id from soybean_user where wechat_id = ?";
+            String select_sql = "select id from "+userTableName+" where wechat_id = ?";
             select_ps = con.prepareStatement(select_sql);
-            select_ps.setString(1, c.getUserinfo().get(0).get_openid());
+//            select_ps.setString(1, c.getUserinfo().get(0).get_openid());
+            select_ps.setString(1, c.get_openid());
             select_rs = select_ps.executeQuery();
             if(select_rs.next()) {
                 userId = select_rs.getInt(1);
             }
 
 
-            String sql = "insert into soybean_clockln (" +
+            String sql = "insert into "+clocklnTableName+" (" +
                     "`user_id`,`address`,`healthy`,`hospital`,`wuhan`," +
                     "`gobacktime`,`remarks`,`create_time`,`quarantine`,`reason`," +
                     "`temperature`,`nobackreason`,`comfirmed`,`admitting`,`leave`," +

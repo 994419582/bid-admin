@@ -9,8 +9,8 @@ import java.util.List;
 
 public class MainClass {
 
-    private static String userPath = "/Users/shanpengfei/work/idea/bif/github/bid-admin/bid-service/bid-soybean/src/main/java/cn/teleinfo/bidadmin/soybean/mysql/data/transfer/file/user.json";
-    private static String clocklnPath = "/Users/shanpengfei/work/idea/bif/github/bid-admin/bid-service/bid-soybean/src/main/java/cn/teleinfo/bidadmin/soybean/mysql/data/transfer/file/clockln.json";
+    private static String userPath = "/Users/shanpengfei/work/idea/bif/github/bid-admin/bid-service/bid-soybean/src/main/java/cn/teleinfo/bidadmin/soybean/mysql/data/transfer/file/database_export-user_info.json";
+    private static String clocklnPath = "/Users/shanpengfei/work/idea/bif/github/bid-admin/bid-service/bid-soybean/src/main/java/cn/teleinfo/bidadmin/soybean/mysql/data/transfer/file/database_export-user_healthy.json";
 
     public static void main(String[] args) {
 
@@ -32,6 +32,9 @@ public class MainClass {
         for(ClocklnEntity clocklnEntity : clocklnJsonList) {
             DatabaseUtils.clocklnInsert(clocklnEntity);
         }
+
+
+
 
         System.out.println("finish ~~~");
     }

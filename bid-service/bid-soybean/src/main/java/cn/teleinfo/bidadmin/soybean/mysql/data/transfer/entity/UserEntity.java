@@ -21,4 +21,13 @@ public class UserEntity implements Serializable {
     String company_detail;
     String usertype;
     String superuser;
+
+    String leave_date;
+    String out_reason;
+    String place;
+    String ever_leave_beijing;
+    String is_in_beijing;
+    String plan_beijing;
+    String return_date;
+    String traffic;
 }
