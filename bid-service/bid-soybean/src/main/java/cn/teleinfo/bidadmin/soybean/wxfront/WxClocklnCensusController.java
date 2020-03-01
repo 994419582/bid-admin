@@ -292,15 +292,23 @@ public class WxClocklnCensusController extends BladeController {
 
 
 		//计算并写入第一张饼图数据
-		buffer.append("\"healthy\":[{\"name\":\"健康\",\"value\":"+ new Double(healthy).intValue()+",\"percent\":"+format(healthyPer)+"}," +
+		buffer.append(
+			"\"healthy\":[" +
 				"{\"name\":\"发烧，咳嗽\",\"value\":"+new Double(ferver).intValue()+",\"percent\":"+format(ferverPer)+"}," +
-				"{\"name\":\"其他症状\",\"value\":"+new Double(other).intValue()+",\"percent\":"+format(otherPer)+"}],");
+				"{\"name\":\"其他症状\",\"value\":"+new Double(other).intValue()+",\"percent\":"+format(otherPer)+"}," +
+				"{\"name\":\"健康\",\"value\":"+ new Double(healthy).intValue()+",\"percent\":"+format(healthyPer)+"}" +
+			"],"
+		);
 
 		//计算并写入第二张饼图数据
-		buffer.append("\"region\":[{\"name\":\"北京\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}," +
-				"{\"name\":\"湖北\",\"value\":"+new Double(hubei).intValue()+",\"percent\":"+format(hubeiPer)+"}," +
+		buffer.append(
+			"\"region\":[" +
 				"{\"name\":\"武汉\",\"value\":"+new Double(wuhan).intValue()+",\"percent\":"+format(wuhanPer)+"}," +
-				"{\"name\":\"其他地区\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}],");
+				"{\"name\":\"湖北\",\"value\":"+new Double(hubei).intValue()+",\"percent\":"+format(hubeiPer)+"}," +
+				"{\"name\":\"其他地区\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}," +
+				"{\"name\":\"北京\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
+			"],"
+		);
 
 		//计算并写入第三张饼图数据
 		buffer.append("\"hospitalization\":[{\"name\":\"确诊\",\"value\":"+new Double(diagnosis).intValue()+",\"percent\":"+format(+diagnosisPer)+"}," +
