@@ -35,6 +35,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -168,10 +169,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //查询所有群
         List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
 
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
+        List<Group> groupList = list(queryWrapper);
         //遍历获取用户管理的所有群
-        List<GroupTreeVo> userGroupTreeList = groupAndParentList.stream().filter(groupTreeVo -> {
-            List<Integer> managerList = Func.toIntList(groupTreeVo.getManagers());
-            Integer createUser = groupTreeVo.getCreateUser();
+        List<Group> filterList = groupList.stream().filter(group -> {
+            List<Integer> managerList = Func.toIntList(group.getManagers());
+            Integer createUser = group.getCreateUser();
             if (managerList.contains(userId)) {
                 return true;
             }
@@ -180,12 +183,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             return false;
         }).collect(Collectors.toList());
-        //递归获取群下所有子群添加到groupTreeVos
-        for (GroupTreeVo groupTreeVo : userGroupTreeList) {
-            List<GroupTreeVo> childTree = buildTree(groupAndParentList, groupTreeVo.getId());
-            if (!CollectionUtils.isEmpty(childTree)) {
-                groupTreeVo.setChildren(childTree);
-            }
+        //获取群及其子群信息
+        for (Group group : filterList) {
+            GroupTreeVo groupTreeVo = new GroupTreeVo();
+            BeanUtils.copyProperties(group, groupTreeVo);
+            List<GroupTreeVo> groupTreeVos = buildTree(groupAndParentList, group.getId());
+            groupTreeVo.setChildren(groupTreeVos);
             treeRootList.add(groupTreeVo);
         }
         return treeRootList;
@@ -479,6 +482,18 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     public boolean updateGroup(Group group) {
         //校验父群和子群格式是否正确
         checkParentGroupAndManager(group);
+        Integer createUser = group.getCreateUser();
+        String managers = group.getManagers();
+        //管理员校验
+        for (Integer managerId : Func.toIntList(managers)) {
+            if (!userGroupService.existUserGroup(group.getId(), managerId)) {
+                throw new ApiException("用户只有进群后，才能任命为管理员");
+            }
+        }
+        //创建人校验
+        if (!userGroupService.existUserGroup(group.getId(), createUser)) {
+            throw new ApiException("用户只有进群后，才能任命为创建人");
+        }
         //更新群
         updateById(group);
         Integer groupId = group.getId();
