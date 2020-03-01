@@ -54,7 +54,7 @@ public class User implements Serializable {
      * 微信昵称
      */
     @ApiModelProperty(value = "微信昵称")
-    private String nickname;
+    private String nickName;
     /**
      * 姓名
      */
