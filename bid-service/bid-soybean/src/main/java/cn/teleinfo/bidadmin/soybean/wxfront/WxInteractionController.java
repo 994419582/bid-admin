@@ -137,6 +137,7 @@ public class WxInteractionController extends BladeController {
 	public R<IPage<ClocklnVO>> list(Integer userId, Query query) {
 		Clockln clockln = new Clockln();
 		clockln.setUserId(userId);
+		query.setDescs("create_time");
 		IPage<Clockln> pages = clocklnService.page(Condition.getPage(query), Condition.getQueryWrapper(clockln));
 		return R.data(ClocklnWrapper.build().pageVO(pages));
 	}
