@@ -17,6 +17,7 @@ package cn.teleinfo.bidadmin.soybean.wxfront;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
@@ -24,8 +25,11 @@ import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
+import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
+import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.*;
@@ -33,13 +37,16 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
+import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 控制器
@@ -50,7 +57,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/wx/group")
-@Api(value = "", tags = "群组接口")
+@Api(value = "", tags = "微信群组接口")
 public class WxGroupController extends BladeController {
 
     private IGroupService groupService;
@@ -103,6 +110,42 @@ public class WxGroupController extends BladeController {
     public R<List<GroupVO>> select() {
         List<Group> groups = groupService.select();
         return R.data(GroupWrapper.build().listVO(groups));
+    }
+
+    /**
+     * 分页查询当前群及子群下所有用户
+     *
+     * @return
+     */
+    @GetMapping("/user/all")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "当前群及子群组列表", notes = "分页查询当前群及子群下所有用户")
+    public R<IPage<UserVO>> selectUserPageByParentId(@RequestParam(name = "groupId",required = true) Integer groupId,
+                                                     Query query) {
+        return R.data(groupService.selectUserPageByParentId(groupId, Condition.getPage(query)));
+    }
+
+    /**
+     * 分页查询当前群下所有用户
+     *
+     * @return
+     */
+    @GetMapping("/user/current")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "当前群组列表", notes = "分页查询当前群下所有用户")
+    public R<IPage<UserVO>> selectUserByParentId(@RequestParam(name = "groupId",required = true) Integer groupId,
+                                                 Query query) {
+        //查询所有用户ID
+        UserGroup userGroup = new UserGroup();
+        userGroup.setGroupId(groupId);
+        userGroup.setStatus(UserGroup.NORMAL);
+        List<UserGroup> userGroupList = userGroupService.list(Condition.getQueryWrapper(userGroup));
+        List<Integer> userIdList = userGroupList.stream().map(UserGroup::getUserId).collect(Collectors.toList());
+        //创造分页条件
+        LambdaQueryWrapper<User> queryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIdList);
+        //开始查询
+        IPage<User> page = userService.page(Condition.getPage(query), queryWrapper);
+        return R.data(UserWrapper.build().pageVO(page));
     }
 
     /**
