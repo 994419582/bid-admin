@@ -30,6 +30,7 @@ import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.*;
@@ -158,6 +159,9 @@ public class WxGroupController extends BladeController {
             userGroup.setStatus(UserGroup.NORMAL);
             List<UserGroup> userGroupList = userGroupService.list(Condition.getQueryWrapper(userGroup));
             List<Integer> userIdList = userGroupList.stream().map(UserGroup::getUserId).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(userIdList)) {
+                return R.data(UserWrapper.build().pageVO(Condition.getPage(query)));
+            }
             //创造分页条件
             LambdaQueryWrapper<User> queryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIdList);
             //开始查询
