@@ -25,6 +25,7 @@ import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineService;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineTripService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
+import cn.teleinfo.bidadmin.soybean.utils.RegexUtil;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineVO;
@@ -162,6 +163,14 @@ public class WxInteractionController extends BladeController {
 		User user = userService.getById(clockln.getUserId());
 		if (user == null) {
 			return R.fail("用户不存在，请输入正确的用户~");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getGobacktime())) {
+			return R.fail("回京时间格式不正确，请写成2020-02-02");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getLeavetime())) {
+			return R.fail("离京时间格式不正确，请写成2020-02-02");
 		}
 
 		LocalDateTime now = LocalDateTime.now();
