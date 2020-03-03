@@ -68,8 +68,6 @@ import java.util.Map;
 public class WxInteractionController extends BladeController {
 
 	private IClocklnService clocklnService;
-	private IQuarantineService quarantineService;
-	private IQuarantineTripService quarantineTripService;
 	private IUserService userService;
 
 	/**￿

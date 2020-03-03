@@ -15,6 +15,12 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.teleinfo.bidadmin.soybean.entity.User;
+import cn.teleinfo.bidadmin.soybean.service.IUserService;
+import cn.teleinfo.bidadmin.soybean.utils.RegexUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
@@ -36,6 +42,7 @@ import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import org.springblade.core.boot.ctrl.BladeController;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -51,6 +58,7 @@ import java.util.List;
 public class ClocklnController extends BladeController {
 
 	private IClocklnService clocklnService;
+	private IUserService userService;
 
 	/**
 	* 详情
@@ -92,7 +100,59 @@ public class ClocklnController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入clockln")
 	public R save(@Valid @RequestBody Clockln clockln) {
-		clockln.setCreateTime(LocalDateTime.now());
+		if (clockln.getUserId() == null || "".equals(clockln.getUserId()) || clockln.getUserId() < 0) {
+			return R.fail("用户不存在，请输入正确的用户~");
+		}
+		User user = userService.getById(clockln.getUserId());
+		if (user == null) {
+			return R.fail("用户不存在，请输入正确的用户~");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getGobacktime())) {
+			return R.fail("回京时间格式不正确，请写成2020-02-02");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getLeavetime())) {
+			return R.fail("离京时间格式不正确，请写成2020-02-02");
+		}
+
+		LocalDateTime now = LocalDateTime.now();
+
+		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
+		clocklnQueryWrapper.eq("user_id", clockln.getUserId());
+		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+		List<Clockln> clist = clocklnService.list(clocklnQueryWrapper);
+		if (clist != null && !clist.isEmpty()) {
+			return R.fail("今日已打卡~~正常打卡");
+		}
+
+		clockln.setCreateTime(now);
+
+
+		QueryWrapper<Clockln> clocklnLastQueryWrapper = new QueryWrapper<>();
+		clocklnLastQueryWrapper.eq("user_id", clockln.getUserId());
+		clocklnLastQueryWrapper.between("create_time", DateUtil.offsetDay(DateUtil.beginOfDay(DateUtil.date()), -28), DateUtil.endOfDay(DateUtil.date()));
+		List<Clockln> lastlist = clocklnService.list(clocklnLastQueryWrapper);
+		boolean hubei = lastlist.stream().anyMatch(item -> StrUtil.contains(item.getAddress(), "湖北"));
+		clockln.setHubei(hubei ? 1 : 0);
+
+		if (clockln.getAddress().contains("北京")) {
+			clockln.setBeijing(1);
+
+			// 是否在隔离期
+			QueryWrapper<Clockln> clockln14QueryWrapper = new QueryWrapper<>();
+			clockln14QueryWrapper.eq("user_id", clockln.getUserId());
+			clockln14QueryWrapper.between("create_time", LocalDateTime.of(now.plusDays(-14).toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MIN));
+			int count = clocklnService.count(clockln14QueryWrapper);
+			if(count < 14) {
+				clockln.setQuarantine(1);
+			} else {
+				clockln.setQuarantine(0);
+			}
+
+		} else {
+			clockln.setBeijing(0);
+		}
 		return R.status(clocklnService.saveIt(clockln));
 	}
 
@@ -103,6 +163,21 @@ public class ClocklnController extends BladeController {
     @ApiOperationSupport(order = 5)
 	@ApiOperation(value = "修改", notes = "传入clockln")
 	public R update(@Valid @RequestBody Clockln clockln) {
+		if (clockln.getUserId() == null || "".equals(clockln.getUserId()) || clockln.getUserId() < 0) {
+			return R.fail("用户不存在，请输入正确的用户~");
+		}
+		User user = userService.getById(clockln.getUserId());
+		if (user == null) {
+			return R.fail("用户不存在，请输入正确的用户~");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getGobacktime())) {
+			return R.fail("回京时间格式不正确，请写成2020-02-02");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getLeavetime())) {
+			return R.fail("离京时间格式不正确，请写成2020-02-02");
+		}
 		return R.status(clocklnService.updateById(clockln));
 	}
 
@@ -113,7 +188,59 @@ public class ClocklnController extends BladeController {
     @ApiOperationSupport(order = 6)
 	@ApiOperation(value = "新增或修改", notes = "传入clockln")
 	public R submit(@Valid @RequestBody Clockln clockln) {
-		clockln.setCreateTime(LocalDateTime.now());
+		if (clockln.getUserId() == null || "".equals(clockln.getUserId()) || clockln.getUserId() < 0) {
+			return R.fail("用户不存在，请输入正确的用户~");
+		}
+		User user = userService.getById(clockln.getUserId());
+		if (user == null) {
+			return R.fail("用户不存在，请输入正确的用户~");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getGobacktime())) {
+			return R.fail("回京时间格式不正确，请写成2020-02-02");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getLeavetime())) {
+			return R.fail("离京时间格式不正确，请写成2020-02-02");
+		}
+
+		LocalDateTime now = LocalDateTime.now();
+
+		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
+		clocklnQueryWrapper.eq("user_id", clockln.getUserId());
+		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+		List<Clockln> clist = clocklnService.list(clocklnQueryWrapper);
+		if (clist != null && !clist.isEmpty()) {
+			return R.fail("今日已打卡~~正常打卡");
+		}
+
+		clockln.setCreateTime(now);
+
+
+		QueryWrapper<Clockln> clocklnLastQueryWrapper = new QueryWrapper<>();
+		clocklnLastQueryWrapper.eq("user_id", clockln.getUserId());
+		clocklnLastQueryWrapper.between("create_time", DateUtil.offsetDay(DateUtil.beginOfDay(DateUtil.date()), -28), DateUtil.endOfDay(DateUtil.date()));
+		List<Clockln> lastlist = clocklnService.list(clocklnLastQueryWrapper);
+		boolean hubei = lastlist.stream().anyMatch(item -> StrUtil.contains(item.getAddress(), "湖北"));
+		clockln.setHubei(hubei ? 1 : 0);
+
+		if (clockln.getAddress().contains("北京")) {
+			clockln.setBeijing(1);
+
+			// 是否在隔离期
+			QueryWrapper<Clockln> clockln14QueryWrapper = new QueryWrapper<>();
+			clockln14QueryWrapper.eq("user_id", clockln.getUserId());
+			clockln14QueryWrapper.between("create_time", LocalDateTime.of(now.plusDays(-14).toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MIN));
+			int count = clocklnService.count(clockln14QueryWrapper);
+			if(count < 14) {
+				clockln.setQuarantine(1);
+			} else {
+				clockln.setQuarantine(0);
+			}
+
+		} else {
+			clockln.setBeijing(0);
+		}
 		return R.status(clocklnService.saveOrUpdate(clockln));
 	}
 
