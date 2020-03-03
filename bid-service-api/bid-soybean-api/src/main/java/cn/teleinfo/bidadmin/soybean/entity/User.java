@@ -126,4 +126,10 @@ public class User implements Serializable {
     @ApiModelProperty(value = "详细地址")
     private String detailAddress;
 
+    /**
+     * 详细地址
+     */
+    @ApiModelProperty(value = "区块链地址")
+    private String bidAddress;
+
 }
