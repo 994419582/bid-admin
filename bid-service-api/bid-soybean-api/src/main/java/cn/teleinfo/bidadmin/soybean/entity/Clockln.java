@@ -146,4 +146,14 @@ public class Clockln implements Serializable {
      */
     @ApiModelProperty(value = "现在是否在北京")
     private Integer beijing;
+    /**
+     * 交通方式
+     */
+    @ApiModelProperty(value = "交通方式")
+    private Integer transport;
+    /**
+     * 在岗状态
+     */
+    @ApiModelProperty(value = "在岗状态")
+    private Integer jobstatus;
 }
