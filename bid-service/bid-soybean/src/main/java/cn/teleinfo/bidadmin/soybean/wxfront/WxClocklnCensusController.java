@@ -377,7 +377,7 @@ public class WxClocklnCensusController extends BladeController {
 
 		//计算并写入第四张饼图数据
 		buffer.append(
-			"\"hospitalization\":[" +
+			"\"fugong\":[" +
 				"{\"name\":\"已在岗\",\"value\":"+new Double(onJob).intValue()+",\"percent\":"+format(+onJobPer)+"}," +
 				"{\"name\":\"远程办公\",\"value\":"+new Double(awayJob).intValue()+",\"percent\":"+format(awayJobPer)+"}," +
 				"{\"name\":\"未复工\",\"value\":"+new Double(haveNoJob).intValue()+",\"percent\":"+format(haveNoJobPer)+"}" +
