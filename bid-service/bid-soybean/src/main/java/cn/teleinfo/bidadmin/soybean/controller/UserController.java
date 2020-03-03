@@ -25,6 +25,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
+import org.bifj.crypto.Keys;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 控制器
@@ -116,6 +118,9 @@ public class UserController extends BladeController {
     @ApiOperationSupport(order = 4)
     @ApiOperation(value = "新增", notes = "传入user")
     public R save(@Valid @RequestBody User user) {
+        String uuid = UUID.randomUUID().toString();
+        String bid = Keys.createBID(uuid);
+        user.setBidAddress(bid);
         return R.status(userService.save(user));
     }
 
@@ -136,6 +141,9 @@ public class UserController extends BladeController {
     @ApiOperationSupport(order = 6)
     @ApiOperation(value = "新增或修改", notes = "传入user")
     public R submit(@Valid @RequestBody User user) {
+        String uuid = UUID.randomUUID().toString();
+        String bid = Keys.createBID(uuid);
+        user.setBidAddress(bid);
         return R.status(userService.saveOrUpdate(user));
     }
 
@@ -146,6 +154,9 @@ public class UserController extends BladeController {
     @ApiOperationSupport(order = 6)
     @ApiOperation(value = "新增或修改", notes = "传入user")
     public R saveOrUpdate(@Valid @RequestBody User user) {
+        String uuid = UUID.randomUUID().toString();
+        String bid = Keys.createBID(uuid);
+        user.setBidAddress(bid);
         return R.status(userService.submit(user));
     }
 

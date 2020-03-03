@@ -42,11 +42,13 @@ public interface ClocklnMapper extends BaseMapper<Clockln> {
 	 */
 	List<ClocklnVO> selectClocklnPage(IPage page, ClocklnVO clockln);
 
-
-	List<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @Param("ids") List<Integer> ids, @Param("clockInTime") Date clockInTime, @Param("healthy") Integer param3, @Param("region")Integer param4, @Param("hospitalization")Integer param5);
+	List<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @Param("ids") List<Integer> ids, @Param("clockInTime") Date clockInTime, @Param("healthy") Integer param3, @Param("region")Integer param4, @Param("hospitalization")Integer param5, @Param("jobstatus")Integer param6);
 
 	List<Clockln> selectClocklnByGroup(@RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date clockInTime);
+
 	Clockln selectClocklnByUserID(@RequestParam("userId") Integer userId, @RequestParam("clockInTime") Date clockInTime);
+
 	List<ClocklnVO> findByUserIdInAndCreatetimeBetween(@RequestParam("ids") List<Integer> ids, @RequestParam("from") Date from, @RequestParam("to") Date to);
+
 	List<ClocklnVO> findByUserIdInAndCreateTime(@RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date from);
 }

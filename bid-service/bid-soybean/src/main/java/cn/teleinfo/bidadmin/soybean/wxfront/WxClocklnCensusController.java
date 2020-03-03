@@ -77,7 +77,7 @@ public class WxClocklnCensusController extends BladeController {
 	public R<IPage<ClocklnVO>> hospitalization(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("hospitalization") Integer hospitalization, Query query) {
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
-			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, null, hospitalization);
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, null, hospitalization, null);
 			return R.data(pages);
 		}
 		return R.data(null);
@@ -97,7 +97,7 @@ public class WxClocklnCensusController extends BladeController {
 		public R<IPage<ClocklnVO>> region(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("region") Integer region, Query query) {
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
-			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, region, null);
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, region, null, null);
 			return R.data(pages);
 		}
 		return R.data(null);
@@ -117,14 +117,35 @@ public class WxClocklnCensusController extends BladeController {
 	public R<IPage<ClocklnVO>> healthy(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("healthy") Integer healthy, Query query) {
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
-			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, healthy, null, null);
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, healthy, null, null, null);
 			return R.data(pages);
 		}
 		return R.data(null);
 	}
-		/**
-        * 获取群组分页打卡信息
-        */
+
+	/**
+	 * 获取在岗状态信息
+	 */
+	@GetMapping("/job")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "群打卡信息分页", notes = "传入群ID和打卡日期")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
+			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query"),
+			@ApiImplicitParam(name = "jobstatus", value = "在岗状态:1已在岗，2远程办公，3未复工", paramType = "query")
+	})
+	public R<IPage<ClocklnVO>> job(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("jobstatus") Integer jobstatus, Query query) {
+		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
+		if (ids.size()>0) {
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, null, null, jobstatus);
+			return R.data(pages);
+		}
+		return R.data(null);
+	}
+
+	/**
+	* 获取群组分页打卡信息
+	*/
 	@GetMapping("/list")
     @ApiOperationSupport(order = 1)
 	@ApiOperation(value = "群打卡信息分页", notes = "传入群ID和打卡日期")
@@ -215,6 +236,13 @@ public class WxClocklnCensusController extends BladeController {
 		double outisolatorPer=0.0;
 		double otherIsolatorPer=0.0;
 
+		double onJob = 0.0;
+		double onJobPer = 0.0;
+		double awayJob = 0.0;
+		double awayJobPer = 0.0;
+		double haveNoJob = 0.0;
+		double haveNoJobPer = 0.0;
+
 		int gobackBeijing=0;
 
 		for (Clockln c:list ) {
@@ -272,6 +300,16 @@ public class WxClocklnCensusController extends BladeController {
 			}else {
 				otherRegion++;
 			}
+
+			if(c.getJobstatus() != null) {
+				if (c.getJobstatus() == 1) {
+					onJob++;
+				} else if (c.getJobstatus() == 2) {
+					awayJob++;
+				} else if (c.getJobstatus() == 3) {
+					haveNoJob++;
+				}
+			}
 		}
 		if (list.size()>0) {
 			healthyPer = healthy / list.size() * 100;
@@ -286,11 +324,26 @@ public class WxClocklnCensusController extends BladeController {
 			outisolatorPer=outisolator/list.size()*100;
 			otherIsolatorPer= (list.size()-isolator-diagnosis-outisolator)/list.size()*100;
 
+			onJobPer =onJob/list.size() *100;
+			awayJobPer =awayJob/list.size() *100;
+			haveNoJobPer =haveNoJob/list.size() *100;
 		}
 		StringBuffer buffer=new StringBuffer("{");
 		//写入总体统计数据
-		buffer.append("\"totality\":{\"total\":"+ids.size()+",\"clockIn\":"+list.size()+",\"unClockIn\":"+(ids.size()-list.size())+",\"notInbeijing\":"+new Double(list.size()-beijing).intValue()+
-				",\"goBackBeijing\":"+new Double(isolator+outisolator).intValue()+",\"abnormalbody\":"+new Double(list.size()-healthy).intValue()+",\"diagnosis\":"+new Double(diagnosis).intValue()+"},");
+		buffer.append(
+			"\"totality\":{" +
+				"\"total\":"+ids.size()+"," +
+				"\"clockIn\":"+list.size()+"," +
+				"\"unClockIn\":"+(ids.size()-list.size())+"," +
+				"\"notInbeijing\":"+new Double(list.size()-beijing).intValue()+ "," +
+				"\"goBackBeijing\":"+new Double(isolator+outisolator).intValue()+"," +
+				"\"abnormalbody\":"+new Double(list.size()-healthy).intValue()+"," +
+				"\"diagnosis\":"+new Double(diagnosis).intValue()+"," +
+				"\"onJob\":"+new Double(onJob).intValue()+"," +
+				"\"awayJob\":"+new Double(awayJob).intValue()+"," +
+				"\"haveNoJob\":"+new Double(haveNoJob).intValue()+
+			"},"
+		);
 
 
 		//计算并写入第一张饼图数据
@@ -313,10 +366,23 @@ public class WxClocklnCensusController extends BladeController {
 		);
 
 		//计算并写入第三张饼图数据
-		buffer.append("\"hospitalization\":[{\"name\":\"确诊\",\"value\":"+new Double(diagnosis).intValue()+",\"percent\":"+format(+diagnosisPer)+"}," +
+		buffer.append(
+			"\"hospitalization\":[" +
+				"{\"name\":\"确诊\",\"value\":"+new Double(diagnosis).intValue()+",\"percent\":"+format(+diagnosisPer)+"}," +
 				"{\"name\":\"隔离期\",\"value\":"+new Double(isolator).intValue()+",\"percent\":"+format(isolatorPer)+"}," +
 				"{\"name\":\"出隔离期\",\"value\":"+new Double(outisolator).intValue()+",\"percent\":"+format(outisolatorPer)+"}," +
-				"{\"name\":\"其他\",\"value\":"+new Double(list.size()-diagnosis-outisolator-isolator).intValue()+",\"percent\":"+format(otherIsolatorPer)+"}]}");
+				"{\"name\":\"其他\",\"value\":"+new Double(list.size()-diagnosis-outisolator-isolator).intValue()+",\"percent\":"+format(otherIsolatorPer)+"}" +
+			"],"
+		);
+
+		//计算并写入第四张饼图数据
+		buffer.append(
+			"\"hospitalization\":[" +
+				"{\"name\":\"已在岗\",\"value\":"+new Double(onJob).intValue()+",\"percent\":"+format(+onJobPer)+"}," +
+				"{\"name\":\"远程办公\",\"value\":"+new Double(awayJob).intValue()+",\"percent\":"+format(awayJobPer)+"}," +
+				"{\"name\":\"未复工\",\"value\":"+new Double(haveNoJob).intValue()+",\"percent\":"+format(haveNoJobPer)+"}" +
+			"]}"
+		);
 
 		String str =buffer.toString();
 		JSONObject object=JSONObject.parseObject(str);
@@ -324,9 +390,6 @@ public class WxClocklnCensusController extends BladeController {
 //		str=str.replace("\"","");
 		return object.toJSONString();
 	}
-
-
-
 
 	private String format(double in){
 		DecimalFormat df = new DecimalFormat("#.00");

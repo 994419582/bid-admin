@@ -58,7 +58,11 @@ public class WxUserGroupController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "用户加群", notes = "传入userGroup")
 	public R save(@Valid @RequestBody UserGroup userGroup) {
-		return R.status(userGroupService.saveUserGroup(userGroup));
+		try {
+			return R.status(userGroupService.saveUserGroup(userGroup));
+		} catch (Exception e) {
+			return R.fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -68,7 +72,11 @@ public class WxUserGroupController extends BladeController {
 	@ApiOperationSupport(order = 4)
 	@ApiOperation(value = "用户退群", notes = "传入用户ID和群ID")
 	public R remove(@Valid @RequestBody UserGroup userGroup) {
-		return R.status(userGroupService.quitGroup(userGroup));
+		try {
+			return R.status(userGroupService.quitGroup(userGroup));
+		} catch (Exception e) {
+			return R.fail(e.getMessage());
+		}
 	}
 
 
@@ -79,7 +87,11 @@ public class WxUserGroupController extends BladeController {
 	@ApiOperationSupport(order = 4)
 	@ApiOperation(value = "群管理员踢除用户", notes = "传入用户ID，群组ID，操作人ID")
 	public R save(@Valid @RequestBody UserGroupVO userGroup) {
-		return R.status(userGroupService.managerRemoveUser(userGroup));
+		try {
+			return R.status(userGroupService.managerRemoveUser(userGroup));
+		} catch (Exception e) {
+			return R.fail(e.getMessage());
+		}
 	}
 
 }

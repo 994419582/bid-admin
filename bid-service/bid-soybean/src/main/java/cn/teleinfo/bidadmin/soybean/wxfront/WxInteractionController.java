@@ -25,9 +25,11 @@ import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineService;
 import cn.teleinfo.bidadmin.soybean.service.IQuarantineTripService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
+import cn.teleinfo.bidadmin.soybean.utils.RegexUtil;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
 import cn.teleinfo.bidadmin.soybean.vo.QuarantineVO;
+import cn.teleinfo.bidadmin.soybean.vo.UserClocklnVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.ClocklnWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -40,6 +42,7 @@ import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
+import org.springblade.core.tool.utils.BeanUtil;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,8 +68,6 @@ import java.util.Map;
 public class WxInteractionController extends BladeController {
 
 	private IClocklnService clocklnService;
-	private IQuarantineService quarantineService;
-	private IQuarantineTripService quarantineTripService;
 	private IUserService userService;
 
 	/**￿
@@ -116,6 +117,57 @@ public class WxInteractionController extends BladeController {
 	/**￿
 	* 查看当天打卡信息
 	*/
+	@GetMapping("/show/user")
+    @ApiOperationSupport(order = 1)
+	@ApiOperation(value = "查看指定用户的信息及当天打卡信息", notes = "传入用户ID")
+	public R<UserClocklnVO> user(Integer userId) {
+		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
+		clocklnQueryWrapper.eq("user_id", userId);
+		LocalDateTime now = LocalDateTime.now();
+		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+		clocklnQueryWrapper.orderByDesc("create_time");
+		clocklnQueryWrapper.last("limit 1");
+
+		Clockln clockln = clocklnService.getOne(clocklnQueryWrapper);
+		User user = userService.getById(userId);
+
+		UserClocklnVO uc = new UserClocklnVO();
+
+		BeanUtil.copy(user, uc);
+		BeanUtil.copy(clockln, uc);
+
+		if (uc.getLeave() != null && uc.getLeave() == 2) {
+			uc.setLeaveString("是");
+		} else if(uc.getLeave() != null && uc.getLeave() == 1) {
+			uc.setLeaveString("否");
+		}
+
+		if (uc.getHubei() != null && uc.getHubei() == 1) {
+			uc.setHubeiString("是");
+		} else if(uc.getHubei() != null && uc.getHubei() == 0) {
+			uc.setHubeiString("否");
+		}
+
+		if (uc.getWuhan() != null && uc.getWuhan() == 1) {
+			uc.setWuhanString("是");
+		} else if(uc.getWuhan() != null && uc.getWuhan() == 0) {
+			uc.setWuhanString("否");
+		}
+
+		if (uc.getHealthy() != null && uc.getHealthy() == 1) {
+			uc.setHealthyString("健康");
+		} else if (uc.getHealthy() != null && uc.getHealthy() == 2) {
+			uc.setHealthyString("有发烧、咳嗽等症状");
+		} else if (uc.getHealthy() != null && uc.getHealthy() == 0) {
+			uc.setHealthyString("其他症状");
+		}
+
+		return R.data(uc);
+	}
+
+	/**￿
+	* 查看当天打卡信息
+	*/
 	@GetMapping("/all/today")
     @ApiOperationSupport(order = 1)
 	@ApiOperation(value = "查看所有用户当天打卡信息", notes = "")
@@ -136,6 +188,7 @@ public class WxInteractionController extends BladeController {
 	public R<IPage<ClocklnVO>> list(Integer userId, Query query) {
 		Clockln clockln = new Clockln();
 		clockln.setUserId(userId);
+		query.setDescs("create_time");
 		IPage<Clockln> pages = clocklnService.page(Condition.getPage(query), Condition.getQueryWrapper(clockln));
 		return R.data(ClocklnWrapper.build().pageVO(pages));
 	}
@@ -162,6 +215,14 @@ public class WxInteractionController extends BladeController {
 		User user = userService.getById(clockln.getUserId());
 		if (user == null) {
 			return R.fail("用户不存在，请输入正确的用户~");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getGobacktime())) {
+			return R.fail("回京时间格式不正确，请写成2020-02-02");
+		}
+
+		if (!RegexUtil.dateFormat(clockln.getLeavetime())) {
+			return R.fail("离京时间格式不正确，请写成2020-02-02");
 		}
 
 		LocalDateTime now = LocalDateTime.now();
