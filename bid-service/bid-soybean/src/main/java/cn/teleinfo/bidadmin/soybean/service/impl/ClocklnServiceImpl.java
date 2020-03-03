@@ -46,8 +46,8 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
     }
 
     @Override
-    public IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date clockInTime, Integer param3, Integer param4, Integer param5) {
-        return page.setRecords(baseMapper.selectClocklnPageByGroup(page, ids, clockInTime, param3, param4, param5));
+    public IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page, @RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date clockInTime, Integer param3, Integer param4, Integer param5, Integer param6) {
+        return page.setRecords(baseMapper.selectClocklnPageByGroup(page, ids, clockInTime, param3, param4, param5, param6));
     }
 
     @Override

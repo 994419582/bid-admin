@@ -35,6 +35,7 @@
         <result column="name" property="userName"/>
         <result column="avatar_url" property="avatarUrl"/>
         <result column="phone" property="phone"/>
+        <result column="jobstatus" property="jobstatus"/>
     </resultMap>
 
 
@@ -132,6 +133,18 @@
             </when>
             <when test="hospitalization !=null and hospitalization==4">
                 and ((t.comfirmed != 2 and t.address not like '%北京%') OR (t.comfirmed != 2 and t.address  like '%北京%' AND  t.leave = 1))
+            </when>
+        </choose>
+
+        <choose>
+            <when test="jobstatus !=null and jobstatus==1">
+                AND t.jobstatus=1
+            </when>
+            <when test="jobstatus !=null and jobstatus==2">
+                AND t.jobstatus=2
+            </when>
+            <when test="jobstatus !=null and jobstatus==3">
+                AND t.jobstatus=3
             </when>
         </choose>
 
