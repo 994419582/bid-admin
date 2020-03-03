@@ -42,6 +42,8 @@ public class UserClocklnVO extends User {
 	private Integer leave;
 	@ApiModelProperty(value = "近14天，是否接触过湖北情况标识")
 	private Integer hubei;
+	@ApiModelProperty(value = "是否接触过武汉情况标识")
+	private Integer wuhan;
 	@ApiModelProperty(value = "目前健康状态标识")
 	private Integer healthy;
 
@@ -49,6 +51,8 @@ public class UserClocklnVO extends User {
 	private String leaveString;
 	@ApiModelProperty(value = "近14天，是否接触过湖北情况")
 	private String hubeiString;
+	@ApiModelProperty(value = "是否接触过武汉情况")
+	private String wuhanString;
 	@ApiModelProperty(value = "目前健康状态")
 	private String healthyString;
 }

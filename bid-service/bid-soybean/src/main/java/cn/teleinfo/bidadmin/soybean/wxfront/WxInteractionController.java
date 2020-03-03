@@ -138,23 +138,29 @@ public class WxInteractionController extends BladeController {
 		BeanUtil.copy(user, uc);
 		BeanUtil.copy(clockln, uc);
 
-		if (uc.getLeave() == 2) {
+		if (uc.getLeave() != null && uc.getLeave() == 2) {
 			uc.setLeaveString("是");
-		} else if(uc.getLeave() == 1) {
+		} else if(uc.getLeave() != null && uc.getLeave() == 1) {
 			uc.setLeaveString("否");
 		}
 
-		if (uc.getHubei() == 1) {
+		if (uc.getHubei() != null && uc.getHubei() == 1) {
 			uc.setHubeiString("是");
-		} else if(uc.getHubei() == 0) {
+		} else if(uc.getHubei() != null && uc.getHubei() == 0) {
 			uc.setHubeiString("否");
 		}
 
-		if (uc.getHealthy() == 1) {
+		if (uc.getWuhan() != null && uc.getWuhan() == 1) {
+			uc.setWuhanString("是");
+		} else if(uc.getWuhan() != null && uc.getWuhan() == 0) {
+			uc.setWuhanString("否");
+		}
+
+		if (uc.getHealthy() != null && uc.getHealthy() == 1) {
 			uc.setHealthyString("健康");
-		} else if (uc.getHealthy() == 2) {
+		} else if (uc.getHealthy() != null && uc.getHealthy() == 2) {
 			uc.setHealthyString("有发烧、咳嗽等症状");
-		} else if (uc.getHealthy() == 0) {
+		} else if (uc.getHealthy() != null && uc.getHealthy() == 0) {
 			uc.setHealthyString("其他症状");
 		}
 

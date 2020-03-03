@@ -45,7 +45,7 @@ public class Clockln implements Serializable {
      */
     @ApiModelProperty(value = "主键")
     @TableId(value = "id", type = IdType.AUTO)
-  private Integer id;
+    private Integer id;
     /**
      * 用户主键
      */
@@ -69,7 +69,7 @@ public class Clockln implements Serializable {
     /**
      * 是否接触过武汉人同或经过武汉午
      */
-    @ApiModelProperty(value = "是否接触过武汉人同或经过武汉午")
+    @ApiModelProperty(value = "是否接触过武汉人或经过武汉")
     private Integer wuhan;
     /**
      * 计划反京时间
