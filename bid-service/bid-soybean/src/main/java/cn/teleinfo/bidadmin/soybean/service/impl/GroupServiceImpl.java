@@ -733,6 +733,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 if (groupList.size() > 1) {
                     throw new ApiException("一个群组只能有一个父群组");
                 }
+                //个人群不能是其他群的父群
+                if (groupList.get(0).getGroupType().equals(Group.TYPE_PERSON)) {
+                    throw new ApiException("父组织群不能是个人群");
+                }
                 //设置父ID
                 parentGroup.setParentId(groupList.get(0).getId());
                 //保存中间表
