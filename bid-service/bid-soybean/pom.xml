@@ -67,33 +67,38 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.bifj</groupId>
-            <artifactId>abi</artifactId>
-            <version>4.4.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/lib/abi-4.4.1-SNAPSHOT.jar</systemPath>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.bifj</groupId>-->
+<!--            <artifactId>abi</artifactId>-->
+<!--            <version>4.4.1-SNAPSHOT</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/main/lib/abi-4.4.1-SNAPSHOT.jar</systemPath>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.bifj</groupId>-->
+<!--            <artifactId>crypto</artifactId>-->
+<!--            <version>4.4.1-SNAPSHOT</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/main/lib/crypto-4.4.1-SNAPSHOT.jar</systemPath>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.bifj</groupId>-->
+<!--            <artifactId>rlp</artifactId>-->
+<!--            <version>4.4.1-SNAPSHOT</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/main/lib/rlp-4.4.1-SNAPSHOT.jar</systemPath>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.bifj</groupId>-->
+<!--            <artifactId>utils</artifactId>-->
+<!--            <version>4.4.1-SNAPSHOT</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/main/lib/utils-4.4.1-SNAPSHOT.jar</systemPath>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.bifj</groupId>
             <artifactId>crypto</artifactId>
             <version>4.4.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/lib/crypto-4.4.1-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.bifj</groupId>
-            <artifactId>rlp</artifactId>
-            <version>4.4.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/lib/rlp-4.4.1-SNAPSHOT.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.bifj</groupId>
-            <artifactId>utils</artifactId>
-            <version>4.4.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/lib/utils-4.4.1-SNAPSHOT.jar</systemPath>
         </dependency>
     </dependencies>
 
