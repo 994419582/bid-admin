@@ -132,7 +132,7 @@ public class Group implements Serializable {
     /**
      * 群类型（组织，个人）
      */
-    @ApiModelProperty(value = "群组类型（组织，个人）",required = true)
+    @ApiModelProperty(value = "群组类型（组织0，个人1）",required = true)
     @NotNull(message = "群组类型不能为空")
     @Excel(name = "组织类型", replace = {"组织_0", "个人_1"})
     @Min(value = 0, message = "组织类型只能是0或者1")

@@ -687,6 +687,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 if (StringUtils.isBlank(group.getParentName())) {
                     throw new ApiException("父组织名称不能为空");
                 }
+                //去除空格
+                group.setName(group.getName().trim());
+                group.setParentName(group.getParentName().trim());
                 Integer groupType = group.getGroupType();
                 if (!groupType.equals(Group.TYPE_ORGANIZATION) && !groupType.equals(Group.TYPE_PERSON)) {
                     throw new ApiException("组织类型错误");
@@ -735,7 +738,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 //保存中间表
                 parentGroupService.save(parentGroup);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ApiException(e.getMessage());
         }
         return true;

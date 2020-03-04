@@ -136,7 +136,7 @@ public class WxGroupController extends BladeController {
     @GetMapping("/user/all")
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "当前群及子群组列表", notes = "分页查询当前群及子群下所有用户")
-    public R<IPage<UserVO>> selectUserPageByParentId(@RequestParam(name = "groupId",required = true) Integer groupId,
+    public R<IPage<UserVO>> selectUserPageByParentId(@RequestParam(name = "groupId", required = true) Integer groupId,
                                                      Query query) {
         try {
             return R.data(groupService.selectUserPageByParentId(groupId, Condition.getPage(query)));
@@ -153,7 +153,7 @@ public class WxGroupController extends BladeController {
     @GetMapping("/user/current")
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "当前群组列表", notes = "分页查询当前群下所有用户")
-    public R<IPage<UserVO>> selectUserByParentId(@RequestParam(name = "groupId",required = true) Integer groupId,
+    public R<IPage<UserVO>> selectUserByParentId(@RequestParam(name = "groupId", required = true) Integer groupId,
                                                  Query query) {
         try {
             //查询所有用户ID
@@ -347,21 +347,17 @@ public class WxGroupController extends BladeController {
                          @RequestParam(name = "phone", required = true) String phone,
                          @RequestParam(name = "userId", required = true) Integer userId,
                          @RequestParam("excelFile") MultipartFile excelFile) {
-        try {
-            if (!groupService.existUser(userId)) {
-                throw new ApiException("用户不存在");
-            }
-            Group group = new Group();
-            group.setLogo(logo);
-            group.setName(name);
-            group.setRemarks(remarks);
-            group.setContact(contact);
-            group.setPhone(phone);
-            group.setCreateUser(userId);
-            return R.status(groupService.excelImport(group,excelFile));
-        } catch (ApiException e) {
-            return R.fail(e.getMessage());
+        if (!groupService.existUser(userId)) {
+            throw new ApiException("用户不存在");
         }
+        Group group = new Group();
+        group.setLogo(logo);
+        group.setName(name);
+        group.setRemarks(remarks);
+        group.setContact(contact);
+        group.setPhone(phone);
+        group.setCreateUser(userId);
+        return R.status(groupService.excelImport(group, excelFile));
     }
 
 
@@ -377,10 +373,10 @@ public class WxGroupController extends BladeController {
             @ApiImplicitParam(name = "creatorId", value = "父群创建人ID", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "sort", value = "排序", required = true, paramType = "query", dataType = "int")
     })
-    public R sort( @RequestParam(name = "parentGroupId", required = true) Integer parentGroupId,
-                      @RequestParam(name = "groupId", required = true) Integer groupId,
-                      @RequestParam(name = "creatorId", required = true) Integer creatorId,
-                      @RequestParam(name = "sort", required = true) Integer sort) {
+    public R sort(@RequestParam(name = "parentGroupId", required = true) Integer parentGroupId,
+                  @RequestParam(name = "groupId", required = true) Integer groupId,
+                  @RequestParam(name = "creatorId", required = true) Integer creatorId,
+                  @RequestParam(name = "sort", required = true) Integer sort) {
 
         try {
             if (!groupService.existUser(creatorId)) {
@@ -458,8 +454,8 @@ public class WxGroupController extends BladeController {
             @ApiImplicitParam(name = "creatorId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
     })
     public R removeManager(@RequestParam(name = "groupId", required = true) Integer groupId,
-                     @RequestParam(name = "managerId", required = true) Integer managerId,
-                     @RequestParam(name = "creatorId", required = true) Integer creatorId) {
+                           @RequestParam(name = "managerId", required = true) Integer managerId,
+                           @RequestParam(name = "creatorId", required = true) Integer creatorId) {
 
         try {
             if (!groupService.isGroupCreater(groupId, creatorId)) {
@@ -495,16 +491,16 @@ public class WxGroupController extends BladeController {
             @ApiImplicitParam(name = "creatorId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
     })
     public R close(@RequestParam(name = "groupId", required = true) Integer groupId,
-                     @RequestParam(name = "creatorId", required = true) Integer creatorId) {
+                   @RequestParam(name = "creatorId", required = true) Integer creatorId) {
         try {
-            return R.status(groupService.close(groupId,creatorId));
+            return R.status(groupService.close(groupId, creatorId));
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }
     }
 
     @GetMapping("/test")
-    public R test(Integer parentId,Integer checkId) {
+    public R test(Integer parentId, Integer checkId) {
         List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
         boolean flag = groupService.isChildrenGroup(groupAndParent, parentId, checkId);
         return R.data(flag);
