@@ -23,6 +23,7 @@ import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
+import cn.teleinfo.bidadmin.soybean.utils.ExcelUtils;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
@@ -42,9 +43,11 @@ import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -222,6 +225,7 @@ public class WxGroupController extends BladeController {
         }
     }
 
+
     /**
      * 修改群组
      */
@@ -317,6 +321,44 @@ public class WxGroupController extends BladeController {
             group.setCreateUser(transferId);
 
             return R.status(groupService.updateById(group));
+        } catch (ApiException e) {
+            return R.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * Excel批量导入群组
+     */
+    @PostMapping("/excelImport")
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "Excel批量导入群组", notes = "传入一级群组属性，和Excel模板，模板中父群组必须存在")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "name", value = "名称", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "logo", value = "群组ID", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "remarks", value = "简介", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "contact", value = "联系人", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "phone", value = "电话", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "userId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
+    })
+    public R excelImport(@RequestParam(name = "logo", required = true) String logo,
+                         @RequestParam(name = "name", required = true) String name,
+                         @RequestParam(name = "remarks", required = true) String remarks,
+                         @RequestParam(name = "contact", required = true) String contact,
+                         @RequestParam(name = "phone", required = true) String phone,
+                         @RequestParam(name = "userId", required = true) Integer userId,
+                         @RequestParam("excelFile") MultipartFile excelFile) {
+        try {
+            if (!groupService.existUser(userId)) {
+                throw new ApiException("用户不存在");
+            }
+            Group group = new Group();
+            group.setLogo(logo);
+            group.setName(name);
+            group.setRemarks(remarks);
+            group.setContact(contact);
+            group.setPhone(phone);
+            group.setCreateUser(userId);
+            return R.status(groupService.excelImport(group,excelFile));
         } catch (ApiException e) {
             return R.fail(e.getMessage());
         }
@@ -459,6 +501,13 @@ public class WxGroupController extends BladeController {
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }
+    }
+
+    @GetMapping("/test")
+    public R test(Integer parentId,Integer checkId) {
+        List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
+        boolean flag = groupService.isChildrenGroup(groupAndParent, parentId, checkId);
+        return R.data(flag);
     }
 
 }
