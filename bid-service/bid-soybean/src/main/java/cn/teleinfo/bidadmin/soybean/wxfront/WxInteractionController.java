@@ -123,9 +123,11 @@ public class WxInteractionController extends BladeController {
 		List<ClocklnVO> records = clocklnVOIPage.getRecords();
 		for (ClocklnVO c : records) {
 			User user = userService.getById(c.getUserId());
-			c.setPhone(user.getPhone());
-			c.setUserName(user.getName());
-			c.setAvatarUrl(user.getAvatarUrl());
+			if(user != null) {
+				c.setPhone(user.getPhone());
+				c.setUserName(user.getName());
+				c.setAvatarUrl(user.getAvatarUrl());
+			}
 		}
 		return R.data(clocklnVOIPage);
 	}
@@ -196,9 +198,11 @@ public class WxInteractionController extends BladeController {
 		List<ClocklnVO> records = clocklnVOIPage.getRecords();
 		for (ClocklnVO c : records) {
 			User user = userService.getById(c.getUserId());
-			c.setPhone(user.getPhone());
-			c.setUserName(user.getName());
-			c.setAvatarUrl(user.getAvatarUrl());
+			if(user != null) {
+				c.setPhone(user.getPhone());
+				c.setUserName(user.getName());
+				c.setAvatarUrl(user.getAvatarUrl());
+			}
 		}
 		return R.data(clocklnVOIPage);
 	}
