@@ -128,13 +128,16 @@ public class ClocklnController extends BladeController {
 
 		clockln.setCreateTime(now);
 
-
-		QueryWrapper<Clockln> clocklnLastQueryWrapper = new QueryWrapper<>();
-		clocklnLastQueryWrapper.eq("user_id", clockln.getUserId());
-		clocklnLastQueryWrapper.between("create_time", DateUtil.offsetDay(DateUtil.beginOfDay(DateUtil.date()), -28), DateUtil.endOfDay(DateUtil.date()));
-		List<Clockln> lastlist = clocklnService.list(clocklnLastQueryWrapper);
-		boolean hubei = lastlist.stream().anyMatch(item -> StrUtil.contains(item.getAddress(), "湖北"));
-		clockln.setHubei(hubei ? 1 : 0);
+		if (StrUtil.contains(clockln.getAddress(), "湖北")) {
+			clockln.setHubei(1);
+		} else {
+			QueryWrapper<Clockln> clocklnLastQueryWrapper = new QueryWrapper<>();
+			clocklnLastQueryWrapper.eq("user_id", clockln.getUserId());
+			clocklnLastQueryWrapper.between("create_time", DateUtil.offsetDay(DateUtil.beginOfDay(DateUtil.date()), -28), DateUtil.endOfDay(DateUtil.date()));
+			List<Clockln> lastlist = clocklnService.list(clocklnLastQueryWrapper);
+			boolean hubei = lastlist.stream().anyMatch(item -> StrUtil.contains(item.getAddress(), "湖北"));
+			clockln.setHubei(hubei ? 1 : 0);
+		}
 
 		if (clockln.getAddress().contains("北京")) {
 			clockln.setBeijing(1);
