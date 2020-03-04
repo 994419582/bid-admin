@@ -15,8 +15,10 @@
  */
 package cn.teleinfo.bidadmin.soybean.entity;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -52,6 +54,10 @@ public class Group implements Serializable {
     public static final Integer DELETE = 1;
     public static final Integer APPROVAL_PENDING = 2;
 
+    //群类型
+    public static final Integer TYPE_ORGANIZATION = 0;
+    public static final Integer TYPE_PERSON = 1;
+
     /**
      * 主键
      */
@@ -64,12 +70,12 @@ public class Group implements Serializable {
     @ApiModelProperty(value = "群组名", required = true)
     @NotBlank(message = "名称不能为空")
     @Pattern(regexp = "^(?!null).*", message = "名称不能包含字符串null")
+    @Excel(name = "组织名称")
     private String name;
     /**
      * 群组名全称
      */
-    @ApiModelProperty(value = "群组名全称", required = true)
-    @NotBlank(message = "全称不能为空")
+    @ApiModelProperty(value = "群组名全称", required = false)
     @Pattern(regexp = "^(?!null).*", message = "全称不能包含字符串null")
     private String fullName;
     /**
@@ -85,7 +91,7 @@ public class Group implements Serializable {
     /**
      * 群人数
      */
-    @ApiModelProperty(value = "群人数", required = true)
+    @ApiModelProperty(value = "群人数", required = false)
     private Integer userAccount;
     /**
      * 群管理员
@@ -122,34 +128,38 @@ public class Group implements Serializable {
      */
     @ApiModelProperty(value = "群状态(0:正常，1:删除，2:审核中)")
     private Integer status;
-//    /**
-//     * 是否需要审批(0:否，1:是)
-//     */
-//    @ApiModelProperty(value = "是否需要审批(0:否，1:是)")
-//    private Integer approval;
+
     /**
-     * 群组类型（公司，社区，其他）
+     * 群类型（组织，个人）
      */
-    @ApiModelProperty(value = "群组类型（公司，社区，其他）",required = true)
+    @ApiModelProperty(value = "群组类型（组织，个人）",required = true)
     @NotNull(message = "群组类型不能为空")
+    @Excel(name = "组织类型", replace = {"组织_0", "个人_1"})
+    @Min(value = 0, message = "组织类型只能是0或者1")
+    @Max(value = 1,message = "组织类型只能是0或者1")
     private Integer groupType;
-//    /**
-//     * 公司地址ID（只有公司和社区需要）
-//     */
-//    @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
-//    private Integer addressId;
-//    /**
-//     * 公司地址名称
-//     */
-//    @ApiModelProperty(value = "公司地址名称")
-//    private String addressName;
-//    /**
-//     * 详细地址
-//     */
-//    @ApiModelProperty(value = "详细地址")
-//    private String detailAddress;
+
+    /**
+     * 联系人
+     */
+    @ApiModelProperty(value = "联系人",required = false)
+    private String contact;
+
+    @ApiModelProperty(value = "联系电话",required = false)
+    private String phone;
+
+    @ApiModelProperty(value = "数据管理员",required = false)
+    private String dataManagers;
 
     @ApiModelProperty(value = "父群主")
     @TableField(exist = false)
     private String parentGroups;
+
+    /**
+     * 父群组名称
+     */
+    @JsonIgnore
+    @TableField(exist = false)
+    @Excel(name = "父组织名称")
+    private String parentName;
 }

@@ -23,6 +23,7 @@ import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.mapper.GroupMapper;
 import cn.teleinfo.bidadmin.soybean.mapper.UserMapper;
 import cn.teleinfo.bidadmin.soybean.service.*;
+import cn.teleinfo.bidadmin.soybean.utils.ExcelUtils;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
@@ -33,6 +34,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
@@ -41,14 +43,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.lang.reflect.Array;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 服务实现类
@@ -231,7 +238,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //遍历群ID查看是否有管理权限
         for (Integer groupId : groupIds) {
             //群不存在，则跳过
-            if (!existGroup(groupId)) {
+            if (!groupList.contains(groupId)) {
                 continue;
             }
             //没有管理权限则添加进列表，并设置Permission为false
@@ -643,19 +650,95 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      * @param parentId 群ID
      * @param checkId 父群ID
      */
-    public void isChildrenGroup(List<GroupTreeVo> groups, Integer parentId, Integer checkId) {
+    public boolean isChildrenGroup(List<GroupTreeVo> groups, Integer parentId, Integer checkId) {
+        boolean flag = false;
         for (GroupTreeVo group : groups) {
             //获取群组ID
             Integer id = group.getId();
             //获取群组父ID
             Integer pId = group.getParentId();
             if (pId.equals(parentId)) {
-                isChildrenGroup(groups, id, checkId);
+                flag = isChildrenGroup(groups, id, checkId);
+                if (flag) {
+                    return true;
+                }
                 if (id.equals(checkId)) {
-                    throw new ApiException("不能设置子群为父ID");
+//                    throw new ApiException("不能设置子群为父ID");
+                    return true;
                 }
             }
         }
+        return false;
+    }
+
+    @Override
+    @Transactional
+    public boolean excelImport(Group topGroup, MultipartFile excelFile) {
+        try {
+            List<Group> groups = ExcelUtils.importExcel(excelFile, 0,1, false, Group.class);
+            //模板校验
+            if (CollectionUtils.isEmpty(groups)) {
+                throw new ApiException("模板格式错误，或者数据为空");
+            }
+            for (Group group : groups) {
+                if (StringUtils.isBlank(group.getName())) {
+                    throw new ApiException("组织名称不能为空");
+                }
+                if (StringUtils.isBlank(group.getParentName())) {
+                    throw new ApiException("父组织名称不能为空");
+                }
+                Integer groupType = group.getGroupType();
+                if (!groupType.equals(Group.TYPE_ORGANIZATION) && !groupType.equals(Group.TYPE_PERSON)) {
+                    throw new ApiException("组织类型错误");
+                }
+            }
+            //创建一级组织
+            topGroup.setStatus(Group.NORMAL);
+            topGroup.setGroupType(Group.TYPE_ORGANIZATION);
+            save(topGroup);
+            //维护一级组织中间表
+            ParentGroup topParentGroup = new ParentGroup();
+            topParentGroup.setGroupId(topGroup.getId());
+            topParentGroup.setParentId(Group.TOP_PARENT_ID);
+            parentGroupService.save(topParentGroup);
+            //保存所有子群
+            for (Group group : groups) {
+                group.setCreateUser(topGroup.getCreateUser());
+                group.setStatus(Group.NORMAL);
+                save(group);
+            }
+            //组装一个包含一级组织的群组
+            ArrayList<Group> allGroups = new ArrayList<>();
+            allGroups.add(topGroup);
+            allGroups.addAll(groups);
+            //维护子群组中间表
+            for (Group group : groups) {
+                ParentGroup parentGroup = new ParentGroup();
+                parentGroup.setGroupId(group.getId());
+                //查询父Id
+                List<Group> groupList = allGroups.stream().filter(filterGroup -> {
+                    String name = filterGroup.getName();
+                    if (name == null) {
+                        throw new ApiException("组织名称不能为空");
+                    } else {
+                        return name.equals(group.getParentName());
+                    }
+                }).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(groupList)) {
+                    throw new ApiException("未发现"+group.getName()+"的父群组");
+                }
+                if (groupList.size() > 1) {
+                    throw new ApiException("一个群组只能有一个父群组");
+                }
+                //设置父ID
+                parentGroup.setParentId(groupList.get(0).getId());
+                //保存中间表
+                parentGroupService.save(parentGroup);
+            }
+        } catch (IOException e) {
+            throw new ApiException(e.getMessage());
+        }
+        return true;
     }
 
     /**

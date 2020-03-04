@@ -21,6 +21,9 @@
         <result column="address_id" property="addressId"/>
         <result column="address_name" property="addressName"/>
         <result column="detail_address" property="detailAddress"/>
+        <result column="contact" property="contact"/>
+        <result column="phone" property="phone"/>
+        <result column="data_managers" property="dataManagers"/>
     </resultMap>
 
 

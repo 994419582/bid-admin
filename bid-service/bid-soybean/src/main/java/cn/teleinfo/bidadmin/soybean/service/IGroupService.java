@@ -23,6 +23,7 @@ import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -165,4 +166,14 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
     boolean removeGroupByIds(String ids);
+
+	boolean isChildrenGroup(List<GroupTreeVo> groupTreeVos,Integer parentId,Integer checkId);
+
+	/**
+	 * 批量导入组织架构
+	 * @param group
+	 * @param excelFile
+	 * @return
+	 */
+	boolean excelImport(Group group, MultipartFile excelFile);
 }
