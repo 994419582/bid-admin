@@ -98,7 +98,7 @@ public class WxInteractionController extends BladeController {
 	@GetMapping("/show/today")
     @ApiOperationSupport(order = 1)
 	@ApiOperation(value = "查看指定用户当天打卡信息", notes = "传入用户ID，打卡时间，格式：2020-02-02")
-	public R<IPage<ClocklnVO>> clock(Integer userId, String time, Query query) {
+	public R<IPage<ClocklnVO>> clock(Integer userId, @RequestParam(required = false, defaultValue = "") String time, Query query) {
 		if (!RegexUtil.dateFormat(time)) {
 			return R.fail("查询的打卡时间格式不正确，请写成2020-02-02");
 		}
