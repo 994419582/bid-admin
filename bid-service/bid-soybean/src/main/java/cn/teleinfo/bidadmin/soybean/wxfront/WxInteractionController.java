@@ -38,6 +38,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
+import org.bifj.abi.datatypes.Int;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
@@ -96,12 +97,27 @@ public class WxInteractionController extends BladeController {
 	*/
 	@GetMapping("/show/today")
     @ApiOperationSupport(order = 1)
-	@ApiOperation(value = "查看指定用户当天打卡信息", notes = "传入用户ID")
-	public R<IPage<ClocklnVO>> clock(Integer userId, Query query) {
+	@ApiOperation(value = "查看指定用户当天打卡信息", notes = "传入用户ID，打卡时间，格式：2020-02-02")
+	public R<IPage<ClocklnVO>> clock(Integer userId, String time, Query query) {
+		if (!RegexUtil.dateFormat(time)) {
+			return R.fail("查询的打卡时间格式不正确，请写成2020-02-02");
+		}
+
 		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
 		clocklnQueryWrapper.eq("user_id", userId);
-		LocalDateTime now = LocalDateTime.now();
-		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+
+		if ("".equals(time)) {
+			LocalDateTime now = LocalDateTime.now();
+			clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
+		} else {
+			String[] times = time.split("-");
+			int years = Integer.parseInt(times[0]);
+			int month = Integer.parseInt(times[1]);
+			int day = Integer.parseInt(times[2]);
+			LocalDateTime start = LocalDateTime.of(years, month, day, 0, 0, 0);
+			LocalDateTime end = LocalDateTime.of(years, month, ++day, 0, 0, 0);
+			clocklnQueryWrapper.between("create_time", start, end);
+		}
 		IPage<Clockln> pages = clocklnService.page(Condition.getPage(query), clocklnQueryWrapper);
 		IPage<ClocklnVO> clocklnVOIPage = ClocklnWrapper.build().pageVO(pages);
 		List<ClocklnVO> records = clocklnVOIPage.getRecords();
@@ -176,7 +192,15 @@ public class WxInteractionController extends BladeController {
 		LocalDateTime now = LocalDateTime.now();
 		clocklnQueryWrapper.between("create_time", LocalDateTime.of(now.toLocalDate(), LocalTime.MIN), LocalDateTime.of(now.toLocalDate(), LocalTime.MAX));
 		IPage<Clockln> pages = clocklnService.page(Condition.getPage(query), clocklnQueryWrapper);
-		return R.data(ClocklnWrapper.build().pageVO(pages));
+		IPage<ClocklnVO> clocklnVOIPage = ClocklnWrapper.build().pageVO(pages);
+		List<ClocklnVO> records = clocklnVOIPage.getRecords();
+		for (ClocklnVO c : records) {
+			User user = userService.getById(c.getUserId());
+			c.setPhone(user.getPhone());
+			c.setUserName(user.getName());
+			c.setAvatarUrl(user.getAvatarUrl());
+		}
+		return R.data(clocklnVOIPage);
 	}
 
 	/**
