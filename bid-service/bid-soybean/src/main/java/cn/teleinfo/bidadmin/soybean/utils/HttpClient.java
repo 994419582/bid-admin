@@ -128,15 +128,15 @@ public class HttpClient {
         return is;
     }
 
-    public static void main(String[] args) {
-        InputStream is =HttpClient.doGet("http://39.99.132.122:8080/ipfs/Qma2uV833wTSSEZaQyBnW7NtoaBTWQezoQH4PuP2wGYDJv");
-//        try {
-//            List<Group> metaGroups = ExcelUtils.importExcel(is, 0,1, false, Group.class);
-//            metaGroups.forEach(x ->{
-//                System.out.println("的值是：---"+ x.toString() + "，当前方法=HttpClient.main()");
-//            });
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
-    }
+//    public static void main(String[] args) {
+//        InputStream is =HttpClient.doGet("http://39.99.132.122:8080/ipfs/Qma2uV833wTSSEZaQyBnW7NtoaBTWQezoQH4PuP2wGYDJv");
+////        try {
+////            List<Group> metaGroups = ExcelUtils.importExcel(is, 0,1, false, Group.class);
+////            metaGroups.forEach(x ->{
+////                System.out.println("的值是：---"+ x.toString() + "，当前方法=HttpClient.main()");
+////            });
+////        }catch (Exception e){
+////            e.printStackTrace();
+////        }
+//    }
 }
