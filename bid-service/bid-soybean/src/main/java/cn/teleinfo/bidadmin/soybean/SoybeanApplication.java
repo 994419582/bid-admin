@@ -21,6 +21,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springblade.core.launch.BladeApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * Desk启动器
@@ -30,6 +31,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringCloudApplication
 @EnableFeignClients(basePackages = {AppConstant.BASE_PACKAGES})
 @MapperScan("cn.teleinfo.bidadmin.soybean.mapper")
+@ComponentScan(basePackages = {AppConstant.BASE_PACKAGES})
 public class SoybeanApplication {
 
 	public static void main(String[] args) {
