@@ -373,7 +373,7 @@ public class WxClocklnCensusController extends BladeController {
 				"{\"name\":\"武汉\",\"value\":"+new Double(wuhan).intValue()+",\"percent\":"+format(wuhanPer)+"}," +
 				"{\"name\":\"湖北\",\"value\":"+new Double(hubei).intValue()+",\"percent\":"+format(hubeiPer)+"}," +
 				"{\"name\":\"其他地区\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}," +
-				"{\"name\":\""+province+"\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
+				"{\"name\":\"查看人单位所在城市\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
 			"],"
 		);
 
