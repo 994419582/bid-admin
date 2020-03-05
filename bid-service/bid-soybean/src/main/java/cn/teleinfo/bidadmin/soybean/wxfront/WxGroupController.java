@@ -24,6 +24,7 @@ import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.utils.ExcelUtils;
+import cn.teleinfo.bidadmin.soybean.vo.ExcelGroupVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
@@ -42,6 +43,7 @@ import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -326,44 +328,6 @@ public class WxGroupController extends BladeController {
         }
     }
 
-    /**
-     * Excel批量导入群组
-     */
-    @PostMapping("/excelImport")
-    @ApiOperationSupport(order = 4)
-    @ApiOperation(value = "Excel批量导入群组", notes = "传入一级群组属性，和Excel模板，模板中父群组必须存在")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "name", value = "名称", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "logo", value = "logo", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "addressName", value = "地址名称", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "remarks", value = "简介", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "contact", value = "联系人", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "phone", value = "电话", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "userId", value = "创建人ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "excelFile", value = "excel文件地址", required = true, paramType = "query", dataType = "String"),
-    })
-    public R excelImport(@RequestParam(name = "logo", required = true) String logo,
-                         @RequestParam(name = "name", required = true) String name,
-                         @RequestParam(name = "addressName", required = true) String addressName,
-                         @RequestParam(name = "remarks", required = true) String remarks,
-                         @RequestParam(name = "contact", required = true) String contact,
-                         @RequestParam(name = "phone", required = true) String phone,
-                         @RequestParam(name = "userId", required = true) Integer userId,
-                         @RequestParam(name = "excelFile", required = true) String excelFile) {
-        if (!groupService.existUser(userId)) {
-            throw new ApiException("用户不存在");
-        }
-        Group group = new Group();
-        group.setLogo(logo);
-        group.setName(name);
-        group.setRemarks(remarks);
-        group.setContact(contact);
-        group.setPhone(phone);
-        group.setCreateUser(userId);
-        group.setAddressName(addressName);
-        return R.status(groupService.excelImport(group, excelFile));
-    }
-
 
     /**
      * 子群排序
@@ -410,6 +374,29 @@ public class WxGroupController extends BladeController {
     }
 
     /**
+     * Excel批量导入群组
+     */
+    @PostMapping("/excelImport")
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "Excel批量导入群组", notes = "传入一级群组属性，和Excel模板，模板中父群组必须存在")
+    public R excelImport(@Valid @RequestBody ExcelGroupVo excelGroupVo) {
+        if (!groupService.existUser(excelGroupVo.getUserId())) {
+            throw new ApiException("用户不存在");
+        }
+        Group group = new Group();
+        BeanUtils.copyProperties(excelGroupVo, group);
+        group.setCreateUser(excelGroupVo.getUserId());
+//        group.setLogo(logo);
+//        group.setName(name);
+//        group.setRemarks(remarks);
+//        group.setContact(contact);
+//        group.setPhone(phone);
+//        group.setCreateUser(userId);
+//        group.setAddressName(addressName);
+        return R.status(groupService.excelImport(group, excelGroupVo.getExcelFile()));
+    }
+
+    /**
      * 设置管理员
      */
     @PostMapping("/manager")
@@ -417,15 +404,15 @@ public class WxGroupController extends BladeController {
     @ApiOperation(value = "新增群管理员", notes = "新增群管理员，只有群组拥有者有权限，可以设置管理员）")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "managerId", value = "管理员ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "creatorId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
+            @ApiImplicitParam(name = "managerId", value = "要设置的管理员ID", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "userId", value = "用户ID", required = true, paramType = "query", dataType = "int")
     })
     public R manager(@RequestParam(name = "groupId", required = true) Integer groupId,
                      @RequestParam(name = "managerId", required = true) Integer managerId,
-                     @RequestParam(name = "creatorId", required = true) Integer creatorId) {
+                     @RequestParam(name = "userId", required = true) Integer userId) {
 
         try {
-            if (!groupService.isGroupCreater(groupId, creatorId)) {
+            if (!groupService.isGroupCreater(groupId, userId)) {
                 throw new ApiException("不是群创建人");
             }
             Group group = groupService.getGroupById(groupId);
