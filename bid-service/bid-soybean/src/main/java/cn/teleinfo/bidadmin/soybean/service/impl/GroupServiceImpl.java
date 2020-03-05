@@ -671,11 +671,18 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Transactional
     public boolean excelImport(Group topGroup, MultipartFile excelFile) {
         try {
-            List<Group> groups = ExcelUtils.importExcel(excelFile, 0,1, false, Group.class);
+            List<Group> metaGroups = ExcelUtils.importExcel(excelFile, 0,1, false, Group.class);
             //模板校验
-            if (CollectionUtils.isEmpty(groups)) {
+            if (CollectionUtils.isEmpty(metaGroups)) {
                 throw new ApiException("模板格式错误，或者数据为空");
             }
+            //过滤空数据
+            List<Group> groups = metaGroups.stream().filter(group -> {
+                if (group.getName() == null && group.getGroupType() == null && group.getParentName() == null) {
+                    return false;
+                }
+                return true;
+            }).collect(Collectors.toList());
             for (Group group : groups) {
                 if (StringUtils.isBlank(group.getName())) {
                     throw new ApiException("组织名称不能为空");
