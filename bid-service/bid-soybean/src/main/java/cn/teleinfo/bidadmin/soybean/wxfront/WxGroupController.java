@@ -412,19 +412,24 @@ public class WxGroupController extends BladeController {
                      @RequestParam(name = "userId", required = true) Integer userId) {
 
         try {
+            //校验改群及其子群下是否有此用户
+            List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
+            if (!groupUserIds.contains(managerId)) {
+                throw new ApiException("改组织下未发现ID等于" + managerId + "的用户");
+            }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
             List<Group> managerGroups = groupService.list(queryWrapper);
             managerGroups.removeIf(group -> {
                 String managers = group.getManagers();
                 if (Func.toIntList(managers).contains(userId)) {
-                    return true;
+                    return false;
                 }
                 Integer createUser = group.getCreateUser();
                 if (createUser != null && createUser.equals(userId)) {
-                    return true;
+                    return false;
                 }
-                return false;
+                return true;
             });
             //获取用户管理的所有用户
             ArrayList<Integer> managerUserIds = new ArrayList<>();
@@ -433,16 +438,18 @@ public class WxGroupController extends BladeController {
                 managerUserIds.addAll(userIds);
             }
             //校验此用户是否有权限设置管理员
-
+            if (!managerUserIds.contains(userId)) {
+                throw new ApiException("没有权限");
+            }
             Group group = groupService.getGroupById(groupId);
             String managers = group.getManagers();
             ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
             if (managerList.contains(managerId)) {
                 throw new ApiException("管理员已存在");
             }
-            if (!userGroupService.existUserGroup(groupId, managerId)) {
-                throw new ApiException("用户进群后才能任命为管理员");
-            }
+//            if (!userGroupService.existUserGroup(groupId, managerId)) {
+//                throw new ApiException("用户进群后才能任命为管理员");
+//            }
             managerList.add(managerId);
             String newManagers = StringUtils.join(managerList, ",");
             group.setManagers(newManagers);

@@ -403,7 +403,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             Integer pId = group.getParentId();
 
             if (pId.equals(parentId)) {
-                List<GroupTreeVo> treeList = buildTree(groups, id);
+                List<GroupTreeVo> treeList = getAllGroupIdByParentId(groups, id, groupList);
                 groupList.add(id);
             }
         }
