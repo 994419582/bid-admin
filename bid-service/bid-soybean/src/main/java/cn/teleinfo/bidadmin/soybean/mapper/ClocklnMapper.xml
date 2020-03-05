@@ -114,10 +114,15 @@
                 and t.address LIKE '%湖北%' AND t.address not like '%武汉%'
             </when>
             <when test="region !=null and region==3">
-                and t.address LIKE '%北京%'
+                <if test="city !=null and city !=''">
+                  and t.address LIKE contact('%',#{city},'%')
+                </if>
             </when>
             <when test="region !=null and region==4">
-                and t.address NOT LIKE '%湖北%' AND t.address not like '%北京%'
+                and t.address NOT LIKE '%湖北%'
+                <if test="city !=null and city !=''">
+                    and t.address NOT LIKE contact('%',#{city},'%')
+                </if>
             </when>
         </choose>
 
@@ -126,13 +131,10 @@
                 and t.comfirmed =2
             </when>
             <when test="hospitalization !=null and hospitalization==2">
-                and t.comfirmed != 2 and t.address  like '%北京%' and (TO_DAYS(NOW()) >= TO_DAYS(t.gobacktime) AND TO_DAYS(t.gobacktime)+14 >= TO_DAYS(NOW()) )
+                and t.comfirmed != 2 and (t.leave =2 OR leave_city =2)
             </when>
             <when test="hospitalization !=null and hospitalization==3">
-                and t.comfirmed != 2 and (TO_DAYS(NOW()) > TO_DAYS(t.gobacktime)+14)
-            </when>
-            <when test="hospitalization !=null and hospitalization==4">
-                and ((t.comfirmed != 2 and t.address not like '%北京%') OR (t.comfirmed != 2 and t.address  like '%北京%' AND  t.leave = 1))
+                and t.comfirmed != 2 and and (t.leave !=2 OR leave_city !=2)
             </when>
         </choose>
 

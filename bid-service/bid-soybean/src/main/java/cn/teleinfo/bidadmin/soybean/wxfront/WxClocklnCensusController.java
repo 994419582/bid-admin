@@ -77,7 +77,7 @@ public class WxClocklnCensusController extends BladeController {
 	public R<IPage<ClocklnVO>> hospitalization(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("hospitalization") Integer hospitalization, Query query) {
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
-			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, null, hospitalization, null);
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, null, hospitalization, null,null);
 			return R.data(pages);
 		}
 		return R.data(null);
@@ -95,9 +95,15 @@ public class WxClocklnCensusController extends BladeController {
 			@ApiImplicitParam(name = "region", value = "健康参数:1武汉，2湖北，3，北京，4其他", paramType = "query")
 	})
 		public R<IPage<ClocklnVO>> region(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("region") Integer region, Query query) {
+		Group group= groupService.getById(groupId);
+
+		if (group==null){
+			return R.fail("该群组不存在,请输入正确的群组ID");
+		}
+		String province=group.getAddressName();
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
-			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, region, null, null);
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, region, null, null,province);
 			return R.data(pages);
 		}
 		return R.data(null);
@@ -117,7 +123,7 @@ public class WxClocklnCensusController extends BladeController {
 	public R<IPage<ClocklnVO>> healthy(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("healthy") Integer healthy, Query query) {
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
-			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, healthy, null, null, null);
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, healthy, null, null, null,null);
 			return R.data(pages);
 		}
 		return R.data(null);
@@ -137,7 +143,7 @@ public class WxClocklnCensusController extends BladeController {
 	public R<IPage<ClocklnVO>> job(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("jobstatus") Integer jobstatus, Query query) {
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
-			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, null, null, jobstatus);
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, null, null, jobstatus,null);
 			return R.data(pages);
 		}
 		return R.data(null);
@@ -200,10 +206,10 @@ public class WxClocklnCensusController extends BladeController {
 		}
 		Group group= groupService.getById(groupId);
 
-		String province="北京";
 		if (group==null){
 			return ("该群组不存在,请输入正确的群组ID");
 		}
+		String province=group.getAddressName();
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		List<Clockln> list =new ArrayList<>();
 		if (ids.size() >0){
@@ -250,7 +256,15 @@ public class WxClocklnCensusController extends BladeController {
 			if (c.getComfirmed() !=null && c.getComfirmed()==2){
 				diagnosis++;
 			}
-			if (!StringUtil.isEmpty(c.getGobacktime())){
+			if (c.getComfirmed() ==null || c.getComfirmed()!=2) {
+				//返京时间+14天 出隔离器时间
+				if (c.getLeave()==2 || c.getLeaveCity() ==2) {
+					isolator++;
+				} else {
+					outisolator++;
+				}
+			}
+			/*if (!StringUtil.isEmpty(c.getGobacktime())){
 				try {
 					String str=c.getGobacktime();
 					if (str.contains("T")){
@@ -279,7 +293,7 @@ public class WxClocklnCensusController extends BladeController {
 					e.printStackTrace();
 				}
 
-			}
+			}*/
 
 			if (c.getHealthy() != null && c.getHealthy()==1){
 				healthy++;
@@ -289,7 +303,7 @@ public class WxClocklnCensusController extends BladeController {
 				other++;
 			}
 
-			if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("北京")){
+			if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains(province)){
 				beijing++;
 			}else if(!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("湖北")){
 				if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("武汉")){
@@ -322,8 +336,6 @@ public class WxClocklnCensusController extends BladeController {
 			diagnosisPer = diagnosis/list.size()*100;
 			isolatorPer =isolator/list.size() *100;
 			outisolatorPer=outisolator/list.size()*100;
-			otherIsolatorPer= (list.size()-isolator-diagnosis-outisolator)/list.size()*100;
-
 			onJobPer =onJob/list.size() *100;
 			awayJobPer =awayJob/list.size() *100;
 			haveNoJobPer =haveNoJob/list.size() *100;
@@ -361,17 +373,16 @@ public class WxClocklnCensusController extends BladeController {
 				"{\"name\":\"武汉\",\"value\":"+new Double(wuhan).intValue()+",\"percent\":"+format(wuhanPer)+"}," +
 				"{\"name\":\"湖北\",\"value\":"+new Double(hubei).intValue()+",\"percent\":"+format(hubeiPer)+"}," +
 				"{\"name\":\"其他地区\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}," +
-				"{\"name\":\"北京\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
+				"{\"name\":\""+province+"\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
 			"],"
 		);
 
 		//计算并写入第三张饼图数据
 		buffer.append(
 			"\"hospitalization\":[" +
-				"{\"name\":\"确诊\",\"value\":"+new Double(diagnosis).intValue()+",\"percent\":"+format(+diagnosisPer)+"}," +
-				"{\"name\":\"隔离期\",\"value\":"+new Double(isolator).intValue()+",\"percent\":"+format(isolatorPer)+"}," +
-				"{\"name\":\"出隔离期\",\"value\":"+new Double(outisolator).intValue()+",\"percent\":"+format(outisolatorPer)+"}," +
-				"{\"name\":\"其他\",\"value\":"+new Double(list.size()-diagnosis-outisolator-isolator).intValue()+",\"percent\":"+format(otherIsolatorPer)+"}" +
+				"{\"name\":\"确诊隔离\",\"value\":"+new Double(diagnosis).intValue()+",\"percent\":"+format(+diagnosisPer)+"}," +
+				"{\"name\":\"一般隔离\",\"value\":"+new Double(isolator).intValue()+",\"percent\":"+format(isolatorPer)+"}," +
+				"{\"name\":\"非隔离期\",\"value\":"+new Double(outisolator).intValue()+",\"percent\":"+format(outisolatorPer)+"}," +
 			"],"
 		);
 

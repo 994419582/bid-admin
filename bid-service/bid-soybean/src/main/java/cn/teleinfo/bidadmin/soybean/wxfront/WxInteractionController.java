@@ -18,17 +18,11 @@ package cn.teleinfo.bidadmin.soybean.wxfront;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
-import cn.teleinfo.bidadmin.soybean.entity.Quarantine;
-import cn.teleinfo.bidadmin.soybean.entity.QuarantineTrip;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
-import cn.teleinfo.bidadmin.soybean.service.IQuarantineService;
-import cn.teleinfo.bidadmin.soybean.service.IQuarantineTripService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.utils.RegexUtil;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
-import cn.teleinfo.bidadmin.soybean.vo.QuarantineTripVO;
-import cn.teleinfo.bidadmin.soybean.vo.QuarantineVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserClocklnVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.ClocklnWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,25 +30,17 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
-import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
-import org.bifj.abi.datatypes.Int;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.BeanUtil;
-import org.springblade.core.tool.utils.Func;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  *  控制器

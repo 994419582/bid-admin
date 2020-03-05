@@ -49,7 +49,7 @@ public interface IClocklnService extends IService<Clockln> {
 	 * @param clockInTime 统计日期
 	 * @return
 	 */
-	IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page,  List<Integer> ids,  Date clockInTime,Integer param3,Integer param4,Integer param5,Integer param6);
+	IPage<ClocklnVO> selectClocklnPageByGroup(IPage<ClocklnVO> page,  List<Integer> ids,  Date clockInTime,Integer param3,Integer param4,Integer param5,Integer param6,String city);
 
 	/**
 	 *  根据群组ID和日期查询当日打卡数据 非分页
