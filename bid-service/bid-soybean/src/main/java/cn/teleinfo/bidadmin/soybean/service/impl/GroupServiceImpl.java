@@ -24,6 +24,7 @@ import cn.teleinfo.bidadmin.soybean.mapper.GroupMapper;
 import cn.teleinfo.bidadmin.soybean.mapper.UserMapper;
 import cn.teleinfo.bidadmin.soybean.service.*;
 import cn.teleinfo.bidadmin.soybean.utils.ExcelUtils;
+import cn.teleinfo.bidadmin.soybean.utils.HttpClient;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
@@ -42,9 +43,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -673,9 +676,29 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Override
     @Transactional
-    public boolean excelImport(Group topGroup, MultipartFile excelFile) {
+    public boolean excelImport(Group topGroup, String excelFile) {
         try {
-            List<Group> metaGroups = ExcelUtils.importExcel(excelFile, 0,1, false, Group.class);
+            HttpURLConnection connection = null;
+            InputStream inputStream = null;
+            // 创建远程url连接对象
+            URL url = new URL(excelFile);
+            // 通过远程url连接对象打开一个连接，强转成httpURLConnection类
+            connection = (HttpURLConnection) url.openConnection();
+            // 设置连接方式：get
+            connection.setRequestMethod("GET");
+            // 设置连接主机服务器的超时时间：15000毫秒
+            connection.setConnectTimeout(15000);
+            // 设置读取远程返回的数据时间：60000毫秒
+            connection.setReadTimeout(60000);
+            // 发送请求
+            connection.connect();
+            // 通过connection连接，获取输入流
+            if (connection.getResponseCode() == 200) {
+                inputStream = connection.getInputStream();
+            } else {
+                throw new ApiException("获取文件异常");
+            }
+            List<Group> metaGroups = ExcelUtils.importExcel(inputStream, 0,1, false, Group.class);
             //模板校验
             if (CollectionUtils.isEmpty(metaGroups)) {
                 throw new ApiException("模板格式错误，或者数据为空");

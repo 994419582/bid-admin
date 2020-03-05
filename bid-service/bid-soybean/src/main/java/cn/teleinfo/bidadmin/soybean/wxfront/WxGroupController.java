@@ -334,12 +334,13 @@ public class WxGroupController extends BladeController {
     @ApiOperation(value = "Excel批量导入群组", notes = "传入一级群组属性，和Excel模板，模板中父群组必须存在")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "name", value = "名称", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "logo", value = "群组ID", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "logo", value = "logo", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "addressName", value = "地址名称", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "remarks", value = "简介", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "contact", value = "联系人", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "phone", value = "电话", required = true, paramType = "query", dataType = "String"),
-            @ApiImplicitParam(name = "userId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
+            @ApiImplicitParam(name = "userId", value = "创建人ID", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "excelFile", value = "excel文件地址", required = true, paramType = "query", dataType = "String"),
     })
     public R excelImport(@RequestParam(name = "logo", required = true) String logo,
                          @RequestParam(name = "name", required = true) String name,
@@ -348,7 +349,7 @@ public class WxGroupController extends BladeController {
                          @RequestParam(name = "contact", required = true) String contact,
                          @RequestParam(name = "phone", required = true) String phone,
                          @RequestParam(name = "userId", required = true) Integer userId,
-                         @RequestParam("excelFile") MultipartFile excelFile) {
+                         @RequestParam(name = "excelFile", required = true) String excelFile) {
         if (!groupService.existUser(userId)) {
             throw new ApiException("用户不存在");
         }
