@@ -156,4 +156,20 @@ public class Clockln implements Serializable {
      */
     @ApiModelProperty(value = "在岗状态")
     private Integer jobstatus;
+
+    @ApiModelProperty(value = "共同居住人员亲属（含合租人员）健康状况")
+    private Integer roomPerson;
+    @ApiModelProperty(value = "其他症状，共同居住人员亲属（含合租人员）健康状况")
+    private String roomPersonOther;
+
+    @ApiModelProperty(value = "共同居住人员亲属（含合租人员）所在单位/公司是否有疑似病例、确诊病例")
+    private Integer roomCompany;
+    @ApiModelProperty(value = "其他，共同居住人员亲属（含合租人员）所在单位/公司是否有疑似病例、确诊病例")
+    private String roomCompanyOther;
+
+    @ApiModelProperty(value = "居住小区是否有疑似病例、确诊病例")
+    private Integer neighbor;
+    @ApiModelProperty(value = "其他，居住小区是否有疑似病例、确诊病例")
+    private String neighborOther;
+
 }
