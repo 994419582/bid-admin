@@ -140,6 +140,22 @@ public class Group implements Serializable {
     private Integer groupType;
 
     /**
+     * 公司地址ID（只有公司和社区需要）
+     */
+    @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
+    private Integer addressId;
+    /**
+     * 公司地址名称
+     */
+    @ApiModelProperty(value = "公司地址名称")
+    private String addressName;
+    /**
+     * 详细地址
+     */
+    @ApiModelProperty(value = "详细地址")
+    private String detailAddress;
+
+    /**
      * 联系人
      */
     @ApiModelProperty(value = "联系人",required = false)

@@ -34,7 +34,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
@@ -45,17 +44,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 服务实现类
@@ -164,9 +157,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
-    public List<GroupTreeVo> treeChildren() {
+    public List<GroupTreeVo> treeChildren(Integer groupId) {
         List<GroupTreeVo> tree = selectAllGroupAndParent();
-        List<GroupTreeVo> maps = buildTree(tree, 0);
+        if (groupId == null) {
+            groupId = 0;
+        }
+        List<GroupTreeVo> maps = buildTree(tree, groupId);
         return maps;
     }
 
@@ -694,9 +690,20 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 if (!groupType.equals(Group.TYPE_ORGANIZATION) && !groupType.equals(Group.TYPE_PERSON)) {
                     throw new ApiException("组织类型错误");
                 }
+                //设置全称,全称不能重复
+                group.setFullName(group.getParentName() + "_" +group.getName());
             }
+            //一级组织名称不能重复
+            LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
+                    eq(Group::getName, topGroup.getName()).eq(Group::getStatus, Group.NORMAL);
+            if (count(groupLambdaQueryWrapper) > 0) {
+                throw new ApiException("一级组织名称不能重名");
+            }
+            //查询一级组织父组织名称
+            String topParentName = getGroupById(Group.TOP_PARENT_ID).getName();
             //创建一级组织
             topGroup.setStatus(Group.NORMAL);
+            topGroup.setFullName(topParentName + "_" + topGroup.getName());
             topGroup.setGroupType(Group.TYPE_ORGANIZATION);
             save(topGroup);
             //维护一级组织中间表
@@ -731,7 +738,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     throw new ApiException("未发现"+group.getName()+"的父群组");
                 }
                 if (groupList.size() > 1) {
-                    throw new ApiException("一个群组只能有一个父群组");
+                    throw new ApiException("一个组织只能有一个父群组");
                 }
                 //个人群不能是其他群的父群
                 if (groupList.get(0).getGroupType().equals(Group.TYPE_PERSON)) {

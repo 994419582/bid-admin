@@ -60,8 +60,9 @@ public interface IGroupService extends IService<Group> {
 	/**
 	 * 群组下拉树
 	 * @return
+	 * @param groupId
 	 */
-	List<GroupTreeVo> treeChildren();
+	List<GroupTreeVo> treeChildren(Integer groupId);
 
 	/**
 	 * 根据父群组查询子群组

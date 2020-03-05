@@ -47,6 +47,11 @@ public class GroupTreeVo implements Serializable {
     private String logo;
 
     /**
+     * 群类型(组织0 个人1)
+     */
+    private String groupType;
+
+    /**
      * 是否有管理员权限
      */
     @ApiModelProperty(value = "是否有管理权限")

@@ -38,6 +38,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -202,6 +205,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         }
         if (userGroup.getStatus() != null) {
             throw new ApiException("新增时不能指定用户状态");
+        }
+        Integer groupType = groupService.getGroupById(groupId).getGroupType();
+        if (Group.TYPE_PERSON.equals(groupType)) {
+            throw new ApiException("只能个人组织才能加人");
         }
         //检查用此群是否存在此用户,不存在则新增
         if (!existUserGroup(groupId, userId)) {

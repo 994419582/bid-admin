@@ -21,6 +21,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.springblade.core.mp.base.BaseService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
+import java.util.List;
+
 /**
  *  服务类
  *
@@ -48,4 +50,11 @@ public interface IUserService extends IService<User> {
 	User findByWechatId(String openid);
 
     boolean submit(User user);
+
+	/**
+	 * 删除用户
+	 * @param toIntList
+	 * @return
+	 */
+	boolean removeUserByIds(List<Integer> toIntList);
 }

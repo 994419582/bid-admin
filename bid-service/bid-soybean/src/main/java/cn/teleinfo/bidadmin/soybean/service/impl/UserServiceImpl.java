@@ -16,15 +16,21 @@
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
 import cn.teleinfo.bidadmin.soybean.entity.User;
+import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
+import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import cn.teleinfo.bidadmin.soybean.mapper.UserMapper;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springblade.core.mp.base.BaseServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  *  服务实现类
@@ -34,6 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+
+	@Autowired
+	private IUserGroupService userGroupService;
 
 	@Override
 	public IPage<User> selectUserPage(IPage<User> page, User user) {
@@ -68,4 +77,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 		}
 		return false;
 	}
+
+    @Override
+	@Transactional
+    public boolean removeUserByIds(List<Integer> ids) {
+		//删除所有用户
+		removeByIds(ids);
+		//查询用户加入的群组
+		for (Integer userId : ids) {
+			LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
+					eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
+			List<UserGroup> userGroups = userGroupService.list(queryWrapper);
+			//用户退群
+			for (UserGroup userGroup : userGroups) {
+				userGroupService.quitGroup(userGroup);
+			}
+		}
+		return true;
+    }
 }

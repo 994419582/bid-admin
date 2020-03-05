@@ -18,7 +18,6 @@ package cn.teleinfo.bidadmin.soybean.controller;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
-import cn.teleinfo.bidadmin.soybean.service.impl.GroupServiceImpl;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
@@ -122,8 +121,8 @@ public class GroupController extends BladeController {
 	@GetMapping("/tree/children")
 	@ApiOperationSupport(order = 2)
 	@ApiOperation(value = "树形下拉列表字典", notes = "带有children的下拉树")
-	public R<List<GroupTreeVo>> treeChildren() {
-		List<GroupTreeVo> tree = groupService.treeChildren();
+	public R<List<GroupTreeVo>> treeChildren(Integer groupId) {
+		List<GroupTreeVo> tree = groupService.treeChildren(groupId);
 		return R.data(tree);
 	}
 

@@ -182,10 +182,10 @@ public class WxGroupController extends BladeController {
      */
     @GetMapping("/tree")
     @ApiOperationSupport(order = 2)
-    @ApiOperation(value = "树形下拉列表字典", notes = "群查看接口（下拉树形图）")
-    public R<List<GroupTreeVo>> treeChildren() {
+    @ApiOperation(value = "树形下拉列表字典", notes = "群查看接口（下拉树形图）,groupId为空默认查询根组织下所有群组")
+    public R<List<GroupTreeVo>> tree(Integer groupId) {
         try {
-            List<GroupTreeVo> tree = groupService.treeChildren();
+            List<GroupTreeVo> tree = groupService.treeChildren(groupId);
             return R.data(tree);
         } catch (Exception e) {
             return R.fail(e.getMessage());
