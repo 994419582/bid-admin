@@ -413,8 +413,27 @@ public class WxGroupController extends BladeController {
 
         try {
             //获取用户是管理员的群
-//            Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL)
-            List<Group> list = groupService.list();
+            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
+            List<Group> managerGroups = groupService.list(queryWrapper);
+            managerGroups.removeIf(group -> {
+                String managers = group.getManagers();
+                if (Func.toIntList(managers).contains(userId)) {
+                    return true;
+                }
+                Integer createUser = group.getCreateUser();
+                if (createUser != null && createUser.equals(userId)) {
+                    return true;
+                }
+                return false;
+            });
+            //获取用户管理的所有用户
+            ArrayList<Integer> managerUserIds = new ArrayList<>();
+            for (Group managerGroup : managerGroups) {
+                List<Integer> userIds = groupService.selectUserIdByParentId(managerGroup.getId());
+                managerUserIds.addAll(userIds);
+            }
+            //校验此用户是否有权限设置管理员
+
             Group group = groupService.getGroupById(groupId);
             String managers = group.getManagers();
             ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));

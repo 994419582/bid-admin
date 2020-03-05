@@ -266,10 +266,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             //没有管理权限则添加进列表，并设置Permission为false
             if (!isGroupManger(groupId, userId) && !isGroupCreater(groupId, userId)) {
                 //校验是否为其管理群的子群组
+                boolean flag = false;
                 for (Group group : filterList) {
                     if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
-                        continue;
+                        flag = true;
                     }
+                }
+                if (flag == true) {
+                    continue;
                 }
                 LambdaQueryWrapper<Group> groupQueryWrapper = Wrappers.<Group>lambdaQuery().
                         eq(Group::getId, groupId).
