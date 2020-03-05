@@ -24,6 +24,7 @@ import cn.teleinfo.bidadmin.soybean.mapper.GroupMapper;
 import cn.teleinfo.bidadmin.soybean.mapper.UserMapper;
 import cn.teleinfo.bidadmin.soybean.service.*;
 import cn.teleinfo.bidadmin.soybean.utils.ExcelUtils;
+import cn.teleinfo.bidadmin.soybean.utils.HttpClient;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
@@ -42,9 +43,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -183,6 +186,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
             if (pId.equals(parentId)) {
                 List<GroupTreeVo> treeList = buildTree(groups, id);
+                //计算组织人数
+                for (GroupTreeVo groupTreeVo : treeList) {
+                    group.setUserAccount(group.getUserAccount() + groupTreeVo.getUserAccount());
+                }
                 group.setChildren(treeList);
                 group.setPermission(true);
                 tree.add(group);
@@ -197,9 +204,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             throw new ApiException("用户不存在");
         }
         ArrayList<GroupTreeVo> treeRootList = new ArrayList<>();
-        //查询所有群
-        List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
-
+        //过滤掉非管理员的群组
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
         List<Group> groupList = list(queryWrapper);
         //遍历获取用户管理的所有群
@@ -214,12 +219,32 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             return false;
         }).collect(Collectors.toList());
+        //过滤掉子群组
+        ArrayList<Integer> removeIds = new ArrayList<>();
+        List<GroupTreeVo> groupAndParentListTemp = selectAllGroupAndParent();
+        for (Group group : filterList) {
+            for (Group groupTemp : filterList) {
+                if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupTemp.getId())) {
+                    removeIds.add(groupTemp.getId());
+                }
+            }
+        }
+        filterList.removeIf(group -> {
+            return removeIds.contains(group.getId());
+        });
         //获取群及其子群信息
         for (Group group : filterList) {
             GroupTreeVo groupTreeVo = new GroupTreeVo();
             BeanUtils.copyProperties(group, groupTreeVo);
             groupTreeVo.setPermission(true);
+            groupTreeVo.setUserAccount(0);
+            //查询所有群
+            List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
             List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId());
+            //计算当前群人数
+            for (GroupTreeVo treeVo : groupTreeVos) {
+                groupTreeVo.setUserAccount(groupTreeVo.getUserAccount() + treeVo.getUserAccount());
+            }
             groupTreeVo.setChildren(groupTreeVos);
             treeRootList.add(groupTreeVo);
         }
@@ -232,13 +257,24 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<Integer> groupIds = userGroups.stream().map(UserGroup::getGroupId).
                 distinct().collect(Collectors.toList());
         //遍历群ID查看是否有管理权限
+        List<Integer> ids = groupList.stream().map(Group::getId).collect(Collectors.toList());
         for (Integer groupId : groupIds) {
             //群不存在，则跳过
-            if (!groupList.contains(groupId)) {
+            if (!ids.contains(groupId)) {
                 continue;
             }
             //没有管理权限则添加进列表，并设置Permission为false
             if (!isGroupManger(groupId, userId) && !isGroupCreater(groupId, userId)) {
+                //校验是否为其管理群的子群组
+                boolean flag = false;
+                for (Group group : filterList) {
+                    if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
+                        flag = true;
+                    }
+                }
+                if (flag == true) {
+                    continue;
+                }
                 LambdaQueryWrapper<Group> groupQueryWrapper = Wrappers.<Group>lambdaQuery().
                         eq(Group::getId, groupId).
                         eq(Group::getStatus, Group.NORMAL);
@@ -367,7 +403,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             Integer pId = group.getParentId();
 
             if (pId.equals(parentId)) {
-                List<GroupTreeVo> treeList = buildTree(groups, id);
+                List<GroupTreeVo> treeList = getAllGroupIdByParentId(groups, id, groupList);
                 groupList.add(id);
             }
         }
@@ -673,9 +709,29 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Override
     @Transactional
-    public boolean excelImport(Group topGroup, MultipartFile excelFile) {
+    public boolean excelImport(Group topGroup, String excelFile) {
         try {
-            List<Group> metaGroups = ExcelUtils.importExcel(excelFile, 0,1, false, Group.class);
+            HttpURLConnection connection = null;
+            InputStream inputStream = null;
+            // 创建远程url连接对象
+            URL url = new URL(excelFile);
+            // 通过远程url连接对象打开一个连接，强转成httpURLConnection类
+            connection = (HttpURLConnection) url.openConnection();
+            // 设置连接方式：get
+            connection.setRequestMethod("GET");
+            // 设置连接主机服务器的超时时间：15000毫秒
+            connection.setConnectTimeout(15000);
+            // 设置读取远程返回的数据时间：60000毫秒
+            connection.setReadTimeout(60000);
+            // 发送请求
+            connection.connect();
+            // 通过connection连接，获取输入流
+            if (connection.getResponseCode() == 200) {
+                inputStream = connection.getInputStream();
+            } else {
+                throw new ApiException("获取文件异常");
+            }
+            List<Group> metaGroups = ExcelUtils.importExcel(inputStream, 0,1, false, Group.class);
             //模板校验
             if (CollectionUtils.isEmpty(metaGroups)) {
                 throw new ApiException("模板格式错误，或者数据为空");

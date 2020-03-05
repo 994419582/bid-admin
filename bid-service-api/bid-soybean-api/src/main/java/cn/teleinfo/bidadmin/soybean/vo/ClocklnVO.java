@@ -35,5 +35,7 @@ public class ClocklnVO extends Clockln {
 	private String userName;
 	private String phone;
 	private  String avatarUrl;
+	private  String companyAddress;
+	private  String companyDetailAddress;
 
 }

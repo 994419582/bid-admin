@@ -127,7 +127,7 @@ public class HttpClient {
         }
         return is;
     }
-
+//
 //    public static void main(String[] args) {
 //        InputStream is =HttpClient.doGet("http://39.99.132.122:8080/ipfs/Qma2uV833wTSSEZaQyBnW7NtoaBTWQezoQH4PuP2wGYDJv");
 ////        try {
