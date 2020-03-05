@@ -633,6 +633,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
             if (pId.equals(parentId)) {
                 List<GroupTreeVo> treeList = buildTree(groups, id);
+                //计算组织人数
+                for (GroupTreeVo groupTreeVo : treeList) {
+                    group.setUserAccount(group.getUserAccount() + groupTreeVo.getUserAccount());
+                }
                 group.setChildren(treeList);
                 tree.add(group);
             }
@@ -699,6 +703,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 }
                 //设置全称,全称不能重复
                 group.setFullName(group.getParentName() + "_" +group.getName());
+                //设置地址
+                group.setAddressName(topGroup.getAddressName());
             }
             //一级组织名称不能重复
             LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().

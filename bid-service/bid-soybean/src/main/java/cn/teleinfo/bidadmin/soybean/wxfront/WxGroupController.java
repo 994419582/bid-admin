@@ -335,6 +335,7 @@ public class WxGroupController extends BladeController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "name", value = "名称", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "logo", value = "群组ID", required = true, paramType = "query", dataType = "String"),
+            @ApiImplicitParam(name = "addressName", value = "地址名称", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "remarks", value = "简介", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "contact", value = "联系人", required = true, paramType = "query", dataType = "String"),
             @ApiImplicitParam(name = "phone", value = "电话", required = true, paramType = "query", dataType = "String"),
@@ -342,6 +343,7 @@ public class WxGroupController extends BladeController {
     })
     public R excelImport(@RequestParam(name = "logo", required = true) String logo,
                          @RequestParam(name = "name", required = true) String name,
+                         @RequestParam(name = "addressName", required = true) String addressName,
                          @RequestParam(name = "remarks", required = true) String remarks,
                          @RequestParam(name = "contact", required = true) String contact,
                          @RequestParam(name = "phone", required = true) String phone,
@@ -357,6 +359,7 @@ public class WxGroupController extends BladeController {
         group.setContact(contact);
         group.setPhone(phone);
         group.setCreateUser(userId);
+        group.setAddressName(addressName);
         return R.status(groupService.excelImport(group, excelFile));
     }
 
