@@ -412,9 +412,9 @@ public class WxGroupController extends BladeController {
                      @RequestParam(name = "userId", required = true) Integer userId) {
 
         try {
-            if (!groupService.isGroupCreater(groupId, userId)) {
-                throw new ApiException("不是群创建人");
-            }
+            //获取用户是管理员的群
+//            Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL)
+            List<Group> list = groupService.list();
             Group group = groupService.getGroupById(groupId);
             String managers = group.getManagers();
             ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));

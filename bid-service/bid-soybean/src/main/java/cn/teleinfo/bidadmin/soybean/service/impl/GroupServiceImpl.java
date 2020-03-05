@@ -257,9 +257,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<Integer> groupIds = userGroups.stream().map(UserGroup::getGroupId).
                 distinct().collect(Collectors.toList());
         //遍历群ID查看是否有管理权限
+        List<Integer> ids = groupList.stream().map(Group::getId).collect(Collectors.toList());
         for (Integer groupId : groupIds) {
             //群不存在，则跳过
-            if (!groupList.contains(groupId)) {
+            if (!ids.contains(groupId)) {
                 continue;
             }
             //没有管理权限则添加进列表，并设置Permission为false
