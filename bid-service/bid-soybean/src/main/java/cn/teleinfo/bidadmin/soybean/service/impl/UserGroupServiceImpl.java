@@ -30,6 +30,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
@@ -209,6 +210,12 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         Integer groupType = groupService.getGroupById(groupId).getGroupType();
         if (!Group.TYPE_PERSON.equals(groupType)) {
             throw new ApiException("只能个人组织才能加人");
+        }
+        //用户只能加入一个群组
+        LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
+        if (count(userGroupQueryWrapper) > 0) {
+            throw new ApiException("用户只能加入一个群组");
         }
         //检查用此群是否存在此用户,不存在则新增
         if (!existUserGroup(groupId, userId)) {
