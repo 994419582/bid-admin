@@ -68,30 +68,46 @@ public class WxMaUserController extends BladeController {
 //                    userService.save(user);
 //                }
 //            }
+            Map<String, String> map = new HashMap<>();
 
             User user = userService.findByWechatId(appid);
             if (user == null) {
-                user = new User();
+                map.put("openid", session.getOpenid());
+                map.put("sessionKey", session.getSessionKey());
+                map.put("unionid", session.getUnionid());
+            } else {
+                AuthInfo authInfo = createAuthInfo(user);
+
+                map.put("openid", session.getOpenid());
+                map.put("sessionKey", session.getSessionKey());
+                map.put("unionid", session.getUnionid());
+                map.put("accessToken", authInfo.getAccessToken());
+                map.put("expiresIn", authInfo.getExpiresIn() + "");
+                map.put("refreshToken", authInfo.getRefreshToken());
+                map.put("tokenType", authInfo.getTokenType());
+
             }
-
-            AuthInfo authInfo = createAuthInfo(user);
-
-            Map<String, String> map = new HashMap<>();
-            map.put("openid", session.getOpenid());
-            map.put("sessionKey", session.getSessionKey());
-            map.put("unionid", session.getUnionid());
-            map.put("accessToken", authInfo.getAccessToken());
-            map.put("expiresIn", authInfo.getExpiresIn()+"");
-            map.put("refreshToken", authInfo.getRefreshToken());
-            map.put("tokenType", authInfo.getTokenType());
-
             return R.data(map);
+
         } catch (WxErrorException e) {
             log.error(e.getMessage(), e);
             return R.fail(e.toString());
         }
     }
 
+    /**
+     * 登陆接口
+     *
+     * @param appid
+     * @return
+     */
+    @ApiOperation(value = "token", notes = "token")
+    @GetMapping("/token")
+    public R token(@RequestParam(name = "appid") String appid) {
+        User user = userService.findByWechatId(appid);
+        AuthInfo authInfo = createAuthInfo(user);
+        return R.data(authInfo);
+    }
 
     /**
      * 获取用户信息接口

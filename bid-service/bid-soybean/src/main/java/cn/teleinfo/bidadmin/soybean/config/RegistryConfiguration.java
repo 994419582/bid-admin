@@ -33,6 +33,11 @@ public class RegistryConfiguration implements WebMvcConfigurer {
 	public SecureRegistry secureRegistry() {
 		SecureRegistry secureRegistry = new SecureRegistry();
 //		secureRegistry.excludePathPatterns("/soybean/front/**");
+
+//		secureRegistry.excludePathPatterns("/wx/user/login");
+//		secureRegistry.excludePathPatterns("/wx/user/token");
+//		secureRegistry.excludePathPatterns("/user/saveOrUpdate");
+
 		// TODO 权限暂时全部放开
 		secureRegistry.excludePathPatterns("/wx/**");
 		secureRegistry.excludePathPatterns("/user/**");
