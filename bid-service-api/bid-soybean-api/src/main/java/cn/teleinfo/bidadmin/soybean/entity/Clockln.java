@@ -118,14 +118,21 @@ public class Clockln implements Serializable {
     /**
      * 是否离京
      */
-    @ApiModelProperty(value = "是否离京")
+    @ApiModelProperty(value = "14天内是否离开过工作地")
     @TableField("`leave`")
     private Integer leave;
     /**
+     * 是否离京
+     */
+    @ApiModelProperty(value = "近14天是否离过打卡城市")
+    @TableField("`leave_city`")
+    private Integer leaveCity;
+    /**
      * 离京时间
      */
-    @ApiModelProperty(value = "离京时间")
+    @ApiModelProperty(value = "到达时间")
     private String leavetime;
+
     /**
      * 返京航班/车次
      */
