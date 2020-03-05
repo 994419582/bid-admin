@@ -258,7 +258,7 @@ public class WxClocklnCensusController extends BladeController {
 			}
 			if (c.getComfirmed() ==null || c.getComfirmed()!=2) {
 				//返京时间+14天 出隔离器时间
-				if (c.getLeave()==2 || c.getLeaveCity() ==2) {
+				if ((c.getLeave() != null && c.getLeave()==2) || (c.getLeaveCity() != null && c.getLeaveCity() ==2)) {
 					isolator++;
 				} else {
 					outisolator++;
