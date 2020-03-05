@@ -204,6 +204,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             throw new ApiException("用户不存在");
         }
         ArrayList<GroupTreeVo> treeRootList = new ArrayList<>();
+        //过滤掉非管理员的群组
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
         List<Group> groupList = list(queryWrapper);
         //遍历获取用户管理的所有群
@@ -218,6 +219,19 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             return false;
         }).collect(Collectors.toList());
+        //过滤掉子群组
+        ArrayList<Integer> removeIds = new ArrayList<>();
+        List<GroupTreeVo> groupAndParentListTemp = selectAllGroupAndParent();
+        for (Group group : filterList) {
+            for (Group groupTemp : filterList) {
+                if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupTemp.getId())) {
+                    removeIds.add(groupTemp.getId());
+                }
+            }
+        }
+        filterList.removeIf(group -> {
+            return removeIds.contains(group.getId());
+        });
         //获取群及其子群信息
         for (Group group : filterList) {
             GroupTreeVo groupTreeVo = new GroupTreeVo();
@@ -250,6 +264,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
             //没有管理权限则添加进列表，并设置Permission为false
             if (!isGroupManger(groupId, userId) && !isGroupCreater(groupId, userId)) {
+                //校验是否为其管理群的子群组
+                for (Group group : filterList) {
+                    if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
+                        continue;
+                    }
+                }
                 LambdaQueryWrapper<Group> groupQueryWrapper = Wrappers.<Group>lambdaQuery().
                         eq(Group::getId, groupId).
                         eq(Group::getStatus, Group.NORMAL);
