@@ -186,6 +186,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
             if (pId.equals(parentId)) {
                 List<GroupTreeVo> treeList = buildTree(groups, id);
+                //计算组织人数
+                for (GroupTreeVo groupTreeVo : treeList) {
+                    group.setUserAccount(group.getUserAccount() + groupTreeVo.getUserAccount());
+                }
                 group.setChildren(treeList);
                 group.setPermission(true);
                 tree.add(group);
@@ -200,9 +204,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             throw new ApiException("用户不存在");
         }
         ArrayList<GroupTreeVo> treeRootList = new ArrayList<>();
-        //查询所有群
-        List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
-
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
         List<Group> groupList = list(queryWrapper);
         //遍历获取用户管理的所有群
@@ -222,7 +223,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             GroupTreeVo groupTreeVo = new GroupTreeVo();
             BeanUtils.copyProperties(group, groupTreeVo);
             groupTreeVo.setPermission(true);
+            groupTreeVo.setUserAccount(0);
+            //查询所有群
+            List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
             List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId());
+            //计算当前群人数
+            for (GroupTreeVo treeVo : groupTreeVos) {
+                groupTreeVo.setUserAccount(groupTreeVo.getUserAccount() + treeVo.getUserAccount());
+            }
             groupTreeVo.setChildren(groupTreeVos);
             treeRootList.add(groupTreeVo);
         }
