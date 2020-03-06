@@ -156,6 +156,7 @@ public class HealthQrcodeController extends BladeController {
 				}
             }
             HealthQrcode healthQrcode = new HealthQrcode();
+            healthQrcode.setUserId(userId);
 			healthQrcode.setColor(colorString);
 			healthQrcode.setRecordDate(today);
 			healthQrcode.setCreateTime(LocalDateTime.now());
