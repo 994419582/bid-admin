@@ -197,7 +197,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         }
         Integer groupType = groupService.getGroupById(groupId).getGroupType();
         if (!Group.TYPE_PERSON.equals(groupType)) {
-            throw new ApiException("只能个人组织才能加人");
+            throw new ApiException("组织群不允许用户加入");
         }
         //用户只能加入一个群组
         LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
@@ -206,7 +206,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         if (!CollectionUtils.isEmpty(list)) {
             UserGroup joinUserGroup = list.get(0);
             Group group = groupService.getById(joinUserGroup.getGroupId());
-            throw new ApiException("用户已经加入" + group.getName() + "群组");
+            throw new ApiException("您已经加入到了" + group.getName() + "群组");
         }
         //检查用此群是否存在此用户,不存在则新增
         if (!existUserGroup(groupId, userId)) {
