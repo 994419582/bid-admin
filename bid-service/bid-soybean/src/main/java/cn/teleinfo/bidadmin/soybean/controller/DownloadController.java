@@ -1,10 +1,7 @@
 package cn.teleinfo.bidadmin.soybean.controller;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateField;
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
-import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.*;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.RowUtil;
@@ -20,6 +17,7 @@ import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
+import cn.teleinfo.bidadmin.system.entity.Dict;
 import cn.teleinfo.bidadmin.system.feign.IDictClient;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springblade.core.boot.ctrl.BladeController;
+import org.springblade.core.tool.api.R;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,11 +59,29 @@ public class DownloadController extends BladeController {
 
     private IDictClient dictClient;
 
+    private Map<String, String> cacheDict = new HashMap<>();
+
+    @GetMapping(value = "/refresh")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "刷新字典", notes = "刷新字典")
+    public boolean getValue(@RequestParam(name = "codes") List<String> codes) {
+        for (String code : codes) {
+            R<List<Dict>> a = dictClient.getList(code);
+            if (!a.isSuccess()) {
+                return false;
+            }
+            for (Dict dict : a.getData()) {
+                cacheDict.put(code + dict.getDictKey(), dict.getDictValue());
+            }
+        }
+        return true;
+    }
+
     /**
      * 附件
      */
-    @GetMapping(value = "/annex.xlsx", produces = "application/msexcel")
-    @ApiOperationSupport(order = 1)
+    @GetMapping(value = "/annex.xlsx")
+    @ApiOperationSupport(order = 2)
     @ApiOperation(value = "统计数据", notes = "统计数据")
     public void annex(@ApiParam(value = "群组表soybean_group的id") @RequestParam(name = "groupid") Integer groupid,
                       @RequestParam(required = false, name = "from") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
@@ -72,14 +89,32 @@ public class DownloadController extends BladeController {
                       @RequestParam(required = false, name = "test", defaultValue = "false") boolean test,
                       HttpServletResponse response) {
 
-        if (!dictClient.getList("transport").isSuccess()) {
-            return;
+        if (test || cacheDict.size() == 0) {
+            List<String> dicts = new ArrayList<>();
+            dicts.add("nobackreason");
+            dicts.add("transport");
+            dicts.add("healthy");
+            dicts.add("hospital");
+            dicts.add("wuhan");
+            dicts.add("jobstatus");
+            dicts.add("roomPerson");
+            dicts.add("roomCompany");
+            dicts.add("neighbor");
+
+            if (!getValue(dicts)) {
+                log.error("数据字典服务异常");
+                return;
+            }
         }
 
+
+        StopWatch sw = new StopWatch();
         Workbook workbook = WorkbookUtil.createBook(ResourceUtil.getStream("model/annex1.xlsx"), false);
         try {
+            sw.start("从mysql查询数据");
             Group group = groupService.getById(groupid);
             if (group == null) {
+                log.error("群组id不存在");
                 return;
             }
             from = from == null ? DateUtil.beginOfDay(DateUtil.date()) : DateUtil.beginOfDay(from);
@@ -88,14 +123,17 @@ public class DownloadController extends BladeController {
             UserBO ub = groupService.selectUserByParentId(groupid);
             List<UserVO> users = ub.getUsers();
             List<UserGroup> ug = ub.getUserGroups();
+            List<Group> groups = ub.getGroups();
 
             // 查出打卡记录，隔离记录
             List<ClocklnVO> clocklns = clocklnService.findByUserIdInAndCreatetimeBetween(users.stream().map(UserVO::getId).collect(Collectors.toList()), from, to);
             Map<String, List<ClocklnVO>> clocklnsGroup = clocklns.stream().collect(Collectors.groupingBy(item -> DateUtil.formatDate(Date.from(item.getCreateTime().atZone(ZoneId.systemDefault()).toInstant()))));
+            sw.stop();
 
             //----------------------------------分析数据--------------------------------
             List<DateTime> rangeDate = DateUtil.rangeToList(from, to, DateField.DAY_OF_YEAR);
             for (DateTime dateItem : rangeDate) {
+                sw.start("写入统计数据: " + DateUtil.formatDate(dateItem));
                 List<ClocklnVO> clocklnsToday = clocklnsGroup.getOrDefault(DateUtil.formatDate(dateItem), new ArrayList<>());
 
                 // 设置群组属性
@@ -166,7 +204,10 @@ public class DownloadController extends BladeController {
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 12).setCellValue(e3M);
 
                 }
+                sw.stop();
+
                 // 写入用户数据
+                sw.start("写入用户数据: " + DateUtil.formatDate(dateItem));
                 for (int i = 0; i < users.size(); i++) {
                     User userItem = users.get(i);
                     // 打卡表
@@ -174,7 +215,8 @@ public class DownloadController extends BladeController {
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 0).setCellValue(userItem.getName());
                     List<UserGroup> ggs = ug.stream().filter(item -> item.getUserId().equals(userItem.getId())).collect(Collectors.toList());
                     if (CollUtil.isNotEmpty(ggs)) {
-                        Collection<Group> groupUser = groupService.listByIds(ggs.stream().map(UserGroup::getGroupId).collect(Collectors.toList()));
+                        List<Integer> gids = ggs.stream().map(UserGroup::getGroupId).collect(Collectors.toList());
+                        Collection<Group> groupUser = groups.stream().filter(item -> CollUtil.contains(gids, item.getId())).collect(Collectors.toList());
                         CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 2).setCellValue(CollUtil.join(groupUser.stream().map(Group::getName).collect(Collectors.toList()), ","));
                     }
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 4).setCellValue(userItem.getPhone());
@@ -194,24 +236,24 @@ public class DownloadController extends BladeController {
                         if (clockln.getLeave() != 1) {
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 10).setCellValue("无");
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 11).setCellValue("无");
-                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 12).setCellValue(dictClient.getValue("transport", clockln.getTransport()).getData());
+                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 12).setCellValue(cacheDict.get("transport" + clockln.getTransport()));
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 13).setCellValue(clockln.getFlight());
                         }
 
                         CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 14).setCellValue(clockln.getLeaveCity() == 1 ? "否" : "是");
                         if (clockln.getLeaveCity() != 1) {
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 15).setCellValue("无");
-                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 16).setCellValue(dictClient.getValue("transport", clockln.getTransport()).getData());
+                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 16).setCellValue(cacheDict.get("transport" + clockln.getTransport()));
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 17).setCellValue(clockln.getFlight());
                         }
                         CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 18).setCellValue(clockln.getTemperature());
-                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 19).setCellValue(dictClient.getValue("healthy", clockln.getHealthy()).getData());
-                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 20).setCellValue(dictClient.getValue("hospital", clockln.getAdmitting()).getData());
-                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 21).setCellValue(dictClient.getValue("wuhan", clockln.getWuhan()).getData());
-                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 22).setCellValue(dictClient.getValue("jobstatus", clockln.getJobstatus()).getData());
-                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 23).setCellValue(dictClient.getValue("roomPerson", clockln.getRoomPerson()).getData());
-                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 24).setCellValue(dictClient.getValue("roomCompany", clockln.getRoomCompany()).getData());
-                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 25).setCellValue(dictClient.getValue("neighbor", clockln.getNeighbor()).getData());
+                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 19).setCellValue(cacheDict.get("healthy" + clockln.getHealthy()));
+                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 20).setCellValue(cacheDict.get("hospital" + clockln.getAdmitting()));
+                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 21).setCellValue(cacheDict.get("wuhan" + clockln.getWuhan()));
+                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 22).setCellValue(cacheDict.get("jobstatus" + clockln.getJobstatus()));
+                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 23).setCellValue(cacheDict.get("roomPerson" + clockln.getRoomPerson()));
+                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 24).setCellValue(cacheDict.get("roomCompany" + clockln.getRoomCompany()));
+                        CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 25).setCellValue(cacheDict.get("neighbor" + clockln.getNeighbor()));
                         CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 26).setCellValue(clockln.getRemarks());
 
                         // 无需导出字段，用于测试使用
@@ -221,8 +263,13 @@ public class DownloadController extends BladeController {
                     }
 
                 }
+                sw.stop();
             }
             response.setHeader("Content-Disposition", "attachment; filename=" + "annex1.xlsx");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("content-type", "application/octet-stream;charset=UTF-8");
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            log.info(sw.prettyPrint());
             WorkbookUtil.writeBook(workbook, response.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();

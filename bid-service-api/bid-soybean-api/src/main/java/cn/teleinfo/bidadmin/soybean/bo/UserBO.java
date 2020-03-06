@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.bo;
 
+import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
@@ -37,4 +38,5 @@ public class UserBO {
 
 	List<UserGroup> userGroups = new ArrayList<>();;
 
+	List<Group> groups;
 }
