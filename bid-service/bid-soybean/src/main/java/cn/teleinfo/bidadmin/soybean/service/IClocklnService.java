@@ -72,4 +72,11 @@ public interface IClocklnService extends IService<Clockln> {
 	List<ClocklnVO> findByUserIdInAndCreateTime(@RequestParam("ids") List<Integer> ids, @RequestParam("clockInTime") Date from);
 
     boolean saveIt(Clockln clockln);
+
+	/**
+	 *  查询用户最新一次打卡数据
+	 * @param userId
+	 * @return
+	 */
+    Clockln selectTopByUserIdOrderByCreateTimeDesc(Integer userId);
 }

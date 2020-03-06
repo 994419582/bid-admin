@@ -1,0 +1,44 @@
+/**
+ * Copyright (c) 2018-2028, Chill Zhuang 庄骞 (smallchill@163.com).
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package cn.teleinfo.bidadmin.soybean.vo;
+
+import cn.teleinfo.bidadmin.soybean.entity.HealthQrcode;
+import io.swagger.annotations.ApiModel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 视图实体类
+ *
+ * @author Blade
+ * @since 2020-02-21
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ApiModel(value = "HealthQrcodeDetailVO对象", description = "HealthQrcodeDetailVO对象")
+public class HealthQrcodeDetailVO extends HealthQrcode {
+	private static final long serialVersionUID = 1L;
+
+    private String realName;
+
+    private String phone;
+
+    private String idCard;
+
+    private String unit;
+
+    private String unitAddress;
+}

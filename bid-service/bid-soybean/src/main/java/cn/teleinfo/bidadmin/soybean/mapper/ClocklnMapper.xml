@@ -188,4 +188,12 @@
         </if>
     </select>
 
+    <select id="selectTopByUserIdOrderByCreateTimeDesc"
+            resultType="cn.teleinfo.bidadmin.soybean.entity.Clockln">
+        select * from soybean_clockln where
+        user_id = #{param1}
+        order by create_time desc
+        limit 1
+    </select>
+
 </mapper>
