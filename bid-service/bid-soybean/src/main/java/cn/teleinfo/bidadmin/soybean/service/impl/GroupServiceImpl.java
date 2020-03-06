@@ -180,7 +180,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      * @param parentId
      * @return
      */
-    public List<GroupTreeVo> buildUserTree(List<GroupTreeVo> groups, Integer parentId) {
+    public List<GroupTreeVo> buildUserTree(List<GroupTreeVo> groups, Integer parentId, Integer userId, boolean manageFlag,boolean dataManageFlag) {
         List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
 
         for (GroupTreeVo group : groups) {
@@ -190,13 +190,38 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             Integer pId = group.getParentId();
 
             if (pId.equals(parentId)) {
-                List<GroupTreeVo> treeList = buildUserTree(groups, id);
+                //如果用户是管理员，设置managerFlagTemp为true
+                boolean managerFlagTemp = false;
+                //如果用户是数据管理员，设置dataManageFlagTemp为true
+                boolean dataManageFlagTemp = false;
+                //查看用户是否为管理员
+                List<Integer> managers = Func.toIntList(group.getManagers());
+                Integer createUser = group.getCreateUser();
+                if (createUser != null && createUser.equals(userId)) {
+                    managerFlagTemp = true;
+                }
+                if (managers.contains(userId)) {
+                    managerFlagTemp = true;
+                }
+                if (manageFlag) {
+                    managerFlagTemp = true;
+                }
+                //查看用户是否为数据管理员
+                List<Integer> dataManagers = Func.toIntList(group.getManagers());
+                if (dataManagers.contains(userId)) {
+                    dataManageFlagTemp = true;
+                }
+                if (dataManageFlag) {
+                    dataManageFlagTemp = true;
+                }
+                List<GroupTreeVo> treeList = buildUserTree(groups, id, userId, managerFlagTemp, dataManageFlagTemp);
                 //计算组织人数
                 for (GroupTreeVo groupTreeVo : treeList) {
                     group.setUserAccount(group.getUserAccount() + groupTreeVo.getUserAccount());
                 }
                 group.setChildren(treeList);
-                group.setPermission(true);
+                group.setPermission(managerFlagTemp);
+                group.setDataPermission(dataManageFlagTemp);
                 tree.add(group);
             }
         }
@@ -216,10 +241,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<Group> filterList = groupList.stream().filter(group -> {
             List<Integer> managerList = Func.toIntList(group.getManagers());
             Integer createUser = group.getCreateUser();
+            List<Integer> dataManagerList = Func.toIntList(group.getDataManagers());
             if (managerList.contains(userId)) {
                 return true;
             }
             if (createUser != null && createUser.equals(userId)) {
+                return true;
+            }
+            if (dataManagerList.contains(userId)) {
                 return true;
             }
             return false;
@@ -241,15 +270,22 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         for (Group group : filterList) {
             GroupTreeVo groupTreeVo = new GroupTreeVo();
             BeanUtils.copyProperties(group, groupTreeVo);
-            groupTreeVo.setPermission(true);
             groupTreeVo.setUserAccount(0);
             //查询所有群
             List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
-            List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId());
+            boolean isManager = Func.toIntList(group.getManagers()).contains(userId);
+            Integer createUser = group.getCreateUser();
+            if (createUser != null && createUser.equals(userId)) {
+                isManager = true;
+            }
+            boolean isDataManager = Func.toIntList(group.getDataManagers()).contains(userId);
+            List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId(), userId, isManager,isDataManager);
             //计算当前群人数
             for (GroupTreeVo treeVo : groupTreeVos) {
                 groupTreeVo.setUserAccount(groupTreeVo.getUserAccount() + treeVo.getUserAccount());
             }
+            groupTreeVo.setPermission(isManager);
+            groupTreeVo.setDataPermission(isDataManager);
             groupTreeVo.setChildren(groupTreeVos);
             treeRootList.add(groupTreeVo);
         }
@@ -269,13 +305,21 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 continue;
             }
             //没有管理权限则添加进列表，并设置Permission为false
-            if (!isGroupManger(groupId, userId) && !isGroupCreater(groupId, userId)) {
-                //校验是否为其管理群的子群组
-                boolean flag = false;
-                for (Group group : filterList) {
-                    if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
-                        flag = true;
-                    }
+            Group checkGroup = getGroupById(groupId);
+            boolean isManager = Func.toIntList(checkGroup.getManagers()).contains(userId);
+            boolean isDataManager = Func.toIntList(checkGroup.getDataManagers()).contains(groupId);
+            Integer createUser = checkGroup.getCreateUser();
+            boolean isCreater = false;
+            if (createUser != null && createUser.equals(userId)) {
+                isCreater = true;
+            }
+            if (!isManager && !isDataManager && !isCreater ) {
+                        //校验是否为其管理群的子群组
+                        boolean flag = false;
+                        for (Group group : filterList) {
+                            if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
+                                flag = true;
+                            }
                 }
                 if (flag == true) {
                     continue;
@@ -287,6 +331,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 GroupTreeVo groupTreeVo = new GroupTreeVo();
                 BeanUtils.copyProperties(group,groupTreeVo);
                 groupTreeVo.setPermission(false);
+                groupTreeVo.setDataPermission(false);
                 treeRootList.add(groupTreeVo);
             }
         }

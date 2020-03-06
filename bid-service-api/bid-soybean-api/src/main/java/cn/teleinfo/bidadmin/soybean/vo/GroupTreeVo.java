@@ -59,6 +59,12 @@ public class GroupTreeVo implements Serializable {
     private boolean permission;
 
     /**
+     * 是否有管理员权限
+     */
+    @ApiModelProperty(value = "是否有数据管理权限")
+    private boolean dataPermission;
+
+    /**
      * 子群组
      */
     @ApiModelProperty(value = "子群组")
@@ -69,6 +75,12 @@ public class GroupTreeVo implements Serializable {
      */
     @ApiModelProperty(value = "群管理员")
     private String managers;
+
+    /**
+     * 数据管理员
+     */
+    @ApiModelProperty(value = "数据管理员")
+    private String dataManagers;
     /**
      * 群创建人
      */
