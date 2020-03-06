@@ -96,42 +96,29 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         //查询管操作人是否有权限
         Integer groupId = userGroup.getGroupId();
         Integer userId = userGroup.getUserId();
-        if (!groupService.existGroup(groupId)) {
-            throw new ApiException("群组不存在");
-        }
-        if (!groupService.existUser(userId)) {
-            throw new ApiException("用户不存在");
-        }
-		if (!existUserGroup(groupId, userId)) {
-			throw new ApiException("用户不在此群");
-		}
 		if (getUserGroupStatus(groupId, userId).equals(UserGroup.DELETE)) {
             throw new ApiException("用户已退群");
         }
-        if (groupService.isGroupManger(groupId, managerId) || groupService.isGroupCreater(groupId, managerId)) {
-            LambdaUpdateWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaUpdate().
-                    eq(UserGroup::getUserId, userId).
-                    eq(UserGroup::getGroupId, groupId)
-                    .set(UserGroup::getStatus, UserGroup.DELETE);
-            //更改群状态
-            this.update(queryWrapper);
-            //减少群人数
-            motifyUserAccount(groupId, -1);
-            //管理员退群, Group表里移除这个管理员
-            if (groupService.isGroupManger(groupId,userId)) {
-                Group group = groupService.getGroupById(groupId);
-                String managers = group.getManagers();
-                ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
-                //Group表移除此管理员
-                managerList.remove(userId);
-                String newManagers = StringUtils.join(managerList, ",");
-                group.setManagers(newManagers);
-                groupService.updateById(group);
-            }
-            groupLogService.addLog(groupId, managerId, GroupLog.MANAGER_DELETE_USER);
-        } else {
-            throw new ApiException("操作人无权限");
+        LambdaUpdateWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaUpdate().
+                eq(UserGroup::getUserId, userId).
+                eq(UserGroup::getGroupId, groupId)
+                .set(UserGroup::getStatus, UserGroup.DELETE);
+        //更改群状态
+        this.update(queryWrapper);
+        //减少群人数
+        motifyUserAccount(groupId, -1);
+        //管理员退群, Group表里移除这个管理员
+        if (groupService.isGroupManger(groupId,userId)) {
+            Group group = groupService.getGroupById(groupId);
+            String managers = group.getManagers();
+            ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
+            //Group表移除此管理员
+            managerList.remove(userId);
+            String newManagers = StringUtils.join(managerList, ",");
+            group.setManagers(newManagers);
+            groupService.updateById(group);
         }
+        groupLogService.addLog(groupId, managerId, GroupLog.MANAGER_DELETE_USER);
         return true;
     }
 

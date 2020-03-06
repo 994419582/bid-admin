@@ -40,6 +40,7 @@ import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -713,6 +714,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public boolean excelImport(Group topGroup, String excelFile) {
+        String fullName = "";
         try {
             HttpURLConnection connection = null;
             InputStream inputStream = null;
@@ -787,6 +789,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             for (Group group : groups) {
                 group.setCreateUser(topGroup.getCreateUser());
                 group.setStatus(Group.NORMAL);
+                fullName = group.getFullName();
                 save(group);
             }
             //组装一个包含一级组织的群组
@@ -821,10 +824,31 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 //保存中间表
                 parentGroupService.save(parentGroup);
             }
+        } catch (DuplicateKeyException e) {
+            throw new ApiException("群全称" + fullName + "已存在");
         } catch (Exception e) {
-            throw new ApiException(e.getMessage());
+            throw new ApiException("文件格式错误");
         }
         return true;
+    }
+
+    @Override
+    public List<Group> getUserManageGroups(Integer userId) {
+        //获取用户是管理员的群
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
+        List<Group> managerGroups = list(queryWrapper);
+        managerGroups.removeIf(group -> {
+            String managers = group.getManagers();
+            if (Func.toIntList(managers).contains(userId)) {
+                return false;
+            }
+            Integer createUser = group.getCreateUser();
+            if (createUser != null && createUser.equals(userId)) {
+                return false;
+            }
+            return true;
+        });
+        return managerGroups;
     }
 
     /**
