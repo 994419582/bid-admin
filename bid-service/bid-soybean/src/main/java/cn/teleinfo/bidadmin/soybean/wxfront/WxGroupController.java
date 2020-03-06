@@ -404,7 +404,7 @@ public class WxGroupController extends BladeController {
     @ApiOperation(value = "新增群管理员", notes = "新增群管理员，只有群组拥有者有权限，可以设置管理员）")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "managerId", value = "要设置的管理员ID", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "managerId", value = "准备设置为管理员的用户ID", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "userId", value = "用户ID", required = true, paramType = "query", dataType = "int")
     })
     public R manager(@RequestParam(name = "groupId", required = true) Integer groupId,
@@ -431,16 +431,6 @@ public class WxGroupController extends BladeController {
                 }
                 return true;
             });
-//            //获取用户管理的所有用户
-//            ArrayList<Integer> managerUserIds = new ArrayList<>();
-//            for (Group managerGroup : managerGroups) {
-//                List<Integer> userIds = groupService.selectUserIdByParentId(managerGroup.getId());
-//                managerUserIds.addAll(userIds);
-//            }
-//            //校验此用户是否有权限设置管理员
-//            if (!managerUserIds.contains(userId)) {
-//                throw new ApiException("没有权限");
-//            }
             //查看用户管理的群是否是用户要加入群的父群
             boolean flag = false;
             List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
@@ -478,25 +468,49 @@ public class WxGroupController extends BladeController {
     @ApiOperation(value = "移除管理员", notes = "移除管理员，只有群组拥有者有权限，可以移除管理员）")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "managerId", value = "管理员ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "userId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
+            @ApiImplicitParam(name = "managerId", value = "要被移除的管理员ID", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "userId", value = "用户ID", required = true, paramType = "query", dataType = "int")
     })
     public R removeManager(@RequestParam(name = "groupId", required = true) Integer groupId,
                            @RequestParam(name = "managerId", required = true) Integer managerId,
-                           @RequestParam(name = "userId", required = true) Integer creatorId) {
+                           @RequestParam(name = "userId", required = true) Integer userId) {
 
         try {
-            if (!groupService.isGroupCreater(groupId, creatorId)) {
-                throw new ApiException("不是群创建人");
+            //校验改群及其子群下是否有此用户
+            List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
+            if (!groupUserIds.contains(managerId)) {
+                throw new ApiException("改组织下未发现ID等于" + managerId + "的用户");
+            }
+            //获取用户是管理员的群
+            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
+            List<Group> managerGroups = groupService.list(queryWrapper);
+            managerGroups.removeIf(group -> {
+                String managers = group.getManagers();
+                if (Func.toIntList(managers).contains(userId)) {
+                    return false;
+                }
+                Integer createUser = group.getCreateUser();
+                if (createUser != null && createUser.equals(userId)) {
+                    return false;
+                }
+                return true;
+            });
+            //查看用户管理的群是否是要移除管理员群的父群，或者是同一个群
+            boolean flag = false;
+            List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
+            for (Group managerGroup : managerGroups) {
+                if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId) || managerGroup.getId().equals(groupId)) {
+                    flag = true;
+                }
+            }
+            if (flag == false) {
+                throw new ApiException("用户没有权限");
             }
             Group group = groupService.getGroupById(groupId);
             String managers = group.getManagers();
             ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
             if (!managerList.contains(managerId)) {
                 throw new ApiException("此用户不是管理员");
-            }
-            if (!userGroupService.existUserGroup(groupId, managerId)) {
-                throw new ApiException("群组未发现此用户");
             }
             //移除此管理员
             managerList.remove(managerId);

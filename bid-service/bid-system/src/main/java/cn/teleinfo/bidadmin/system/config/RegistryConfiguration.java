@@ -11,6 +11,7 @@ public class RegistryConfiguration {
     public SecureRegistry secureRegistry() {
         SecureRegistry secureRegistry = new SecureRegistry();
         secureRegistry.excludePathPatterns("/front/**");
+        secureRegistry.excludePathPatterns("/dict/**");
         return secureRegistry;
     }
 }
