@@ -23,6 +23,7 @@ import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.Api;
@@ -123,27 +124,27 @@ public class WxUserGroupController extends BladeController {
 			List<Group> userManageGroups = groupService.getUserManageGroups(userId);
 			//去除子群
 			ArrayList<Integer> removeUserManagerIds = new ArrayList<>();
-			for (Group managerGroup : userManageGroups) {
-				for (Group group : userManageGroups) {
-					if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), group.getId())) {
+			for (Group userManageGroup : userManageGroups) {
+				for (Group group : managerGroups) {
+					if (groupService.isChildrenGroup(groupAndParent, userManageGroup.getId(), group.getId())) {
 						removeUserManagerIds.add(group.getId());
 					}
 				}
 			}
 			userManageGroups.removeIf(group -> {
-				return removeManagerIds.contains(group.getId());
+				return removeUserManagerIds.contains(group.getId());
 			});
 			//校验用户管理的群是否为管理员的父群
-
-			//查看用户管理的群是否是用户要加入群的父群
 			boolean flag = false;
-			for (Group managerGroup : managerGroups) {
-				if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId) || managerGroup.getId().equals(groupId)) {
-					flag = true;
+			for (Group  managerGroup  : managerGroups) {
+				for (Group userManageGroup : userManageGroups) {
+					if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), userManageGroup.getId()) || managerGroup.getId().equals(userManageGroup.getId())) {
+						flag = true;
+					}
 				}
 			}
-			if (flag == false) {
-				throw new ApiException("用户没有权限");
+			if (!CollectionUtils.isEmpty(userManageGroups) && flag == false) {
+				throw new ApiException("您没有权限");
 			}
 			// 删除
 			return R.status(userGroupService.managerRemoveUser(userGroup));
