@@ -138,7 +138,7 @@ public class DownloadController extends BladeController {
 
                 // 设置群组属性
                 String destination = group.getAddressName();
-                Sheet sheet = this.createSheet(workbook, dateItem, group.getAddressName());
+                Sheet sheet = this.createSheet(workbook, dateItem, group.getAddressName(), rangeDate.indexOf(dateItem));
                 if (StrUtil.isBlank(destination)) {
                     log.warn("群组属性缺失[addressName]为空");
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 0), 0).setCellValue("群组属性缺失[addressName]为空");
@@ -265,6 +265,7 @@ public class DownloadController extends BladeController {
                 }
                 sw.stop();
             }
+            workbook.removeSheetAt(0);
             response.setHeader("Content-Disposition", "attachment; filename=" + "annex1.xlsx");
             response.setCharacterEncoding("UTF-8");
             response.setHeader("content-type", "application/octet-stream;charset=UTF-8");
@@ -276,8 +277,9 @@ public class DownloadController extends BladeController {
         }
     }
 
-    private Sheet createSheet(Workbook workbook, DateTime dateItem, String destination) {
-        Sheet sheet = workbook.getSheetAt(0);
+    private Sheet createSheet(Workbook workbook, DateTime dateItem, String destination, int index) {
+        Sheet sheet = workbook.cloneSheet(0);
+        workbook.setSheetName(index + 1, DateUtil.formatDate(dateItem));
         return sheet;
 //        List<int[]> tmps = new ArrayList<>();
 //        if (StrUtil.isNotBlank(destination)) {
