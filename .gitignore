@@ -25,6 +25,7 @@ Thumbs.db
 *.war
 *.ear
 /target
+*.factorypath
 
 bid-service/bid-app/src/test/resources/pic
 bid-service/bid-blockchain/src/test/resources/pic
