@@ -431,15 +431,26 @@ public class WxGroupController extends BladeController {
                 }
                 return true;
             });
-            //获取用户管理的所有用户
-            ArrayList<Integer> managerUserIds = new ArrayList<>();
+//            //获取用户管理的所有用户
+//            ArrayList<Integer> managerUserIds = new ArrayList<>();
+//            for (Group managerGroup : managerGroups) {
+//                List<Integer> userIds = groupService.selectUserIdByParentId(managerGroup.getId());
+//                managerUserIds.addAll(userIds);
+//            }
+//            //校验此用户是否有权限设置管理员
+//            if (!managerUserIds.contains(userId)) {
+//                throw new ApiException("没有权限");
+//            }
+            //查看用户管理的群是否是用户要加入群的父群
+            boolean flag = false;
+            List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
             for (Group managerGroup : managerGroups) {
-                List<Integer> userIds = groupService.selectUserIdByParentId(managerGroup.getId());
-                managerUserIds.addAll(userIds);
+                if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId) || managerGroup.getId().equals(groupId)) {
+                    flag = true;
+                }
             }
-            //校验此用户是否有权限设置管理员
-            if (!managerUserIds.contains(userId)) {
-                throw new ApiException("没有权限");
+            if (flag == false) {
+                throw new ApiException("用户没有权限");
             }
             Group group = groupService.getGroupById(groupId);
             String managers = group.getManagers();
@@ -468,11 +479,11 @@ public class WxGroupController extends BladeController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "managerId", value = "管理员ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "creatorId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
+            @ApiImplicitParam(name = "userId", value = "创建人ID", required = true, paramType = "query", dataType = "int")
     })
     public R removeManager(@RequestParam(name = "groupId", required = true) Integer groupId,
                            @RequestParam(name = "managerId", required = true) Integer managerId,
-                           @RequestParam(name = "creatorId", required = true) Integer creatorId) {
+                           @RequestParam(name = "userId", required = true) Integer creatorId) {
 
         try {
             if (!groupService.isGroupCreater(groupId, creatorId)) {

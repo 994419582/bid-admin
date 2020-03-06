@@ -476,8 +476,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
         List<User> userIPage = userService.list(userQueryWrapper);
 
+        List<Group> groups = groupMapper.selectBatchIds(userGroups.stream().map(UserGroup::getGroupId).collect(Collectors.toList()));
+        
         UserBO ub = new UserBO();
         ub.setUserGroups(userGroups);
+        ub.setGroups(groups);
         ub.setUsers(UserWrapper.build().listVO(userIPage));
         return ub;
     }
