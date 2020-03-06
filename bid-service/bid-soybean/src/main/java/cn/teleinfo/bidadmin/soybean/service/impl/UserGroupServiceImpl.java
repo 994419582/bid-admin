@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -214,8 +215,11 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         //用户只能加入一个群组
         LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
                 eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
-        if (count(userGroupQueryWrapper) > 0) {
-            throw new ApiException("用户只能加入一个群组");
+        List<UserGroup> list = list(userGroupQueryWrapper);
+        if (!CollectionUtils.isEmpty(list)) {
+            UserGroup joinUserGroup = list.get(0);
+            Group group = groupService.getById(joinUserGroup.getGroupId());
+            throw new ApiException("用户已经加入" + group.getName() + "群组");
         }
         //检查用此群是否存在此用户,不存在则新增
         if (!existUserGroup(groupId, userId)) {

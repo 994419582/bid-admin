@@ -115,13 +115,13 @@
             </when>
             <when test="region !=null and region==3">
                 <if test="city !=null and city !=''">
-                  and t.address LIKE contact('%',#{city},'%')
+                  and t.address LIKE CONCAT('%',#{city},'%')
                 </if>
             </when>
             <when test="region !=null and region==4">
                 and t.address NOT LIKE '%湖北%'
                 <if test="city !=null and city !=''">
-                    and t.address NOT LIKE contact('%',#{city},'%')
+                    and t.address NOT LIKE CONCAT('%',#{city},'%')
                 </if>
             </when>
         </choose>
@@ -131,10 +131,10 @@
                 and t.comfirmed =2
             </when>
             <when test="hospitalization !=null and hospitalization==2">
-                and t.comfirmed != 2 and (t.leave =2 OR leave_city =2)
+                and t.comfirmed != 2 and (t.leave =2 OR t.leave_city =2)
             </when>
             <when test="hospitalization !=null and hospitalization==3">
-                and t.comfirmed != 2 and and (t.leave !=2 OR leave_city !=2)
+                and t.comfirmed != 2 and  t.leave !=2 AND t.leave_city !=2
             </when>
         </choose>
 

@@ -113,6 +113,8 @@ public class WxInteractionController extends BladeController {
 				c.setPhone(user.getPhone());
 				c.setUserName(user.getName());
 				c.setAvatarUrl(user.getAvatarUrl());
+				c.setCompanyAddress(user.getCompanyAddress());
+				c.setCompanyDetailAddress(user.getCompanyDetailAddress());
 			}
 		}
 		return R.data(clocklnVOIPage);
@@ -188,6 +190,8 @@ public class WxInteractionController extends BladeController {
 				c.setPhone(user.getPhone());
 				c.setUserName(user.getName());
 				c.setAvatarUrl(user.getAvatarUrl());
+				c.setCompanyAddress(user.getCompanyAddress());
+				c.setCompanyDetailAddress(user.getCompanyDetailAddress());
 			}
 		}
 		return R.data(clocklnVOIPage);
