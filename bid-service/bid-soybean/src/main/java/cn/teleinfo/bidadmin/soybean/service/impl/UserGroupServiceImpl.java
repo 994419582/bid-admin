@@ -96,8 +96,8 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         //查询管操作人是否有权限
         Integer groupId = userGroup.getGroupId();
         Integer userId = userGroup.getUserId();
-		if (getUserGroupStatus(groupId, userId).equals(UserGroup.DELETE)) {
-            throw new ApiException("用户已退群");
+		if (!existUserGroup(groupId, userId)){
+            throw new ApiException("用户已移除");
         }
         LambdaUpdateWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaUpdate().
                 eq(UserGroup::getUserId, userId).
@@ -107,9 +107,9 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         this.update(queryWrapper);
         //减少群人数
         motifyUserAccount(groupId, -1);
-        //管理员退群, Group表里移除这个管理员
-        if (groupService.isGroupManger(groupId,userId)) {
-            Group group = groupService.getGroupById(groupId);
+        //删除用户拥有的所有管理员权限
+        List<Group> userManageGroups = groupService.getUserManageGroups(userId);
+        for (Group group : userManageGroups) {
             String managers = group.getManagers();
             ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
             //Group表移除此管理员
@@ -141,17 +141,14 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             throw new ApiException("用户不存在");
         }
 		if (!existUserGroup(groupId, userId)) {
-			throw new ApiException("用户不在此群");
+			throw new ApiException("用户已退群");
 		}
-        if (getUserGroupStatus(groupId, userId).equals(UserGroup.DELETE)) {
-            throw new ApiException("用户已退群");
-        }
         if (groupService.isGroupCreater(groupId, userId)) {
-            throw new ApiException("创建者不能退群,只能解散群");
+            throw new ApiException("创建者不能退群");
         }
-        //管理员退群, Group表里移除这个管理员
-        if (groupService.isGroupManger(groupId,userId)) {
-            Group group = groupService.getGroupById(groupId);
+        //删除用户拥有的所有管理员权限
+        List<Group> userManageGroups = groupService.getUserManageGroups(userId);
+        for (Group group : userManageGroups) {
             String managers = group.getManagers();
             ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
             //Group表移除此管理员
