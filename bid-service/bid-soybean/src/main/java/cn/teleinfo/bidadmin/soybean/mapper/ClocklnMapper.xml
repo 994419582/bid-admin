@@ -148,6 +148,9 @@
             <when test="jobstatus !=null and jobstatus==3">
                 AND t.jobstatus=3
             </when>
+            <when test="jobstatus !=null and jobstatus==4">
+                AND t.jobstatus=4
+            </when>
         </choose>
 
         ORDER BY t.comfirmed  DESC
