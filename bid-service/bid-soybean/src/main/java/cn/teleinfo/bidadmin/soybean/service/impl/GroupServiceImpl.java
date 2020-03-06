@@ -185,7 +185,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             Integer pId = group.getParentId();
 
             if (pId.equals(parentId)) {
-                List<GroupTreeVo> treeList = buildTree(groups, id);
+                List<GroupTreeVo> treeList = buildUserTree(groups, id);
                 //计算组织人数
                 for (GroupTreeVo groupTreeVo : treeList) {
                     group.setUserAccount(group.getUserAccount() + groupTreeVo.getUserAccount());
