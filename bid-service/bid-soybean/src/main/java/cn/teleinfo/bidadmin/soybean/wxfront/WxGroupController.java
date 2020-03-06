@@ -445,7 +445,7 @@ public class WxGroupController extends BladeController {
             boolean flag = false;
             List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
             for (Group managerGroup : managerGroups) {
-                if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId)) {
+                if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId) || managerGroup.getId().equals(groupId)) {
                     flag = true;
                 }
             }
