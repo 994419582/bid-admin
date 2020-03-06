@@ -93,7 +93,7 @@ public class WxUserGroupController extends BladeController {
 	 */
 	@PostMapping("/manager/remove")
 	@ApiOperationSupport(order = 4)
-	@ApiOperation(value = "群管理员踢除用户", notes = "传入用户ID，群组ID，操作人ID")
+	@ApiOperation(value = "群管理员踢除用户", notes = "传入要删除的用户userId，群组groupId，操作人managerId")
 	public R save(@Valid @RequestBody UserGroupVO userGroup) {
 		try {
 			Integer groupId = userGroup.getGroupId();
@@ -104,23 +104,39 @@ public class WxUserGroupController extends BladeController {
 			if (!groupUserIds.contains(userId)) {
 				throw new ApiException("改组织下未发现ID等于" + managerId + "的用户");
 			}
-			//获取用户是管理员的群
-			LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
-			List<Group> managerGroups = groupService.list(queryWrapper);
+			List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
+			//获取管理员管理的群
+			List<Group> managerGroups = groupService.getUserManageGroups(managerId);
+			//去除子群
+			ArrayList<Integer> removeManagerIds = new ArrayList<>();
+			for (Group managerGroup : managerGroups) {
+				for (Group group : managerGroups) {
+					if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), group.getId())) {
+						removeManagerIds.add(group.getId());
+					}
+				}
+			}
 			managerGroups.removeIf(group -> {
-				String managers = group.getManagers();
-				if (Func.toIntList(managers).contains(managerId)) {
-					return false;
-				}
-				Integer createUser = group.getCreateUser();
-				if (createUser != null && createUser.equals(managerId)) {
-					return false;
-				}
-				return true;
+				return removeManagerIds.contains(group.getId());
 			});
+			//获取被删除人管理的群
+			List<Group> userManageGroups = groupService.getUserManageGroups(userId);
+			//去除子群
+			ArrayList<Integer> removeUserManagerIds = new ArrayList<>();
+			for (Group managerGroup : userManageGroups) {
+				for (Group group : userManageGroups) {
+					if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), group.getId())) {
+						removeUserManagerIds.add(group.getId());
+					}
+				}
+			}
+			userManageGroups.removeIf(group -> {
+				return removeManagerIds.contains(group.getId());
+			});
+			//校验用户管理的群是否为管理员的父群
+
 			//查看用户管理的群是否是用户要加入群的父群
 			boolean flag = false;
-			List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
 			for (Group managerGroup : managerGroups) {
 				if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId) || managerGroup.getId().equals(groupId)) {
 					flag = true;

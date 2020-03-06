@@ -35,6 +35,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
@@ -45,9 +46,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -715,9 +719,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Transactional
     public boolean excelImport(Group topGroup, String excelFile) {
         String fullName = "";
+        HttpURLConnection connection = null;
+        InputStream inputStream = null;
         try {
-            HttpURLConnection connection = null;
-            InputStream inputStream = null;
             // 创建远程url连接对象
             URL url = new URL(excelFile);
             // 通过远程url连接对象打开一个连接，强转成httpURLConnection类
@@ -826,8 +830,23 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }
         } catch (DuplicateKeyException e) {
             throw new ApiException("群全称" + fullName + "已存在");
-        } catch (Exception e) {
-            throw new ApiException("文件格式错误");
+        } catch (ProtocolException e) {
+            throw new ApiException("读取文件异常");
+        } catch (MalformedURLException e) {
+            throw new ApiException("文件读取失败");
+        } catch (IOException e) {
+            throw new ApiException("文件读取失败");
+        } finally {
+            // 关闭资源
+            if (null != inputStream) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    throw new ApiException("断开与Excel资源连接异常");
+                }
+            }
+            // 断开与远程地址url的连接
+            connection.disconnect();
         }
         return true;
     }
