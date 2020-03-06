@@ -215,9 +215,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         //用户只能加入一个群组
         LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
                 eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
-        UserGroup joinGroup = list(userGroupQueryWrapper).get(0);
-        if (joinGroup != null) {
-            Group group = groupService.getById(joinGroup.getGroupId());
+        List<UserGroup> list = list(userGroupQueryWrapper);
+        if (!CollectionUtils.isEmpty(list)) {
+            UserGroup joinUserGroup = list.get(0);
+            Group group = groupService.getById(joinUserGroup.getGroupId());
             throw new ApiException("用户已经加入" + group.getName() + "群组");
         }
         //检查用此群是否存在此用户,不存在则新增
