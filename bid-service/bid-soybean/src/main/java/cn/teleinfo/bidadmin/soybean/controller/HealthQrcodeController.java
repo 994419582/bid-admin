@@ -165,7 +165,7 @@ public class HealthQrcodeController extends BladeController {
 		}
 		String base64 = "";
 		try {
-			base64 = QrCodeUtil.encode("https://www.guokezhixing.com/wxHealthycode?userId=" + userId, color);
+			base64 = QrCodeUtil.encode("功能正在建设中，敬请期待！", color);
 		} catch (Exception e) {
 			return R.fail("生成健康码失败，请联系管理员");
 		}
