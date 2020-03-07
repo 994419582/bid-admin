@@ -183,4 +183,11 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	List<Group> getUserManageGroups(Integer userId);
+
+	/**
+	 * 获取用户拥有的所有数据管理员权限的组织
+	 * @param userId
+	 * @return
+	 */
+	List<Group> getUserDataManageGroups(Integer userId);
 }

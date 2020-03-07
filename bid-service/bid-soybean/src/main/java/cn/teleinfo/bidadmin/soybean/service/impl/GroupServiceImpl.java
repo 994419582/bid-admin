@@ -915,6 +915,21 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return managerGroups;
     }
 
+    @Override
+    public List<Group> getUserDataManageGroups(Integer userId) {
+        //获取用户是管理员的群
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
+        List<Group> dataManagerGroups = list(queryWrapper);
+        dataManagerGroups.removeIf(group -> {
+            String dataManagers = group.getDataManagers();
+            if (Func.toIntList(dataManagers).contains(userId)) {
+                return false;
+            }
+            return true;
+        });
+        return dataManagerGroups;
+    }
+
     /**
      * 临时解决Integer为null时, 返回前台为-1的问题
      */
