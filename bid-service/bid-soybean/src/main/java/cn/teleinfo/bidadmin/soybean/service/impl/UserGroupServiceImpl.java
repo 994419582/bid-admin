@@ -185,10 +185,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
                 eq(UserGroup::getGroupId, groupId).
                 set(UserGroup::getStatus, UserGroup.DELETE);
         this.update(userGroupLambdaQueryWrapper);
-        //减少群人数
-        motifyUserAccount(groupId, -1);
         //添加日志
         groupLogService.addLog(groupId, userId, GroupLog.DELETE_USER);
+        //减少群人数
+        motifyUserAccount(groupId, -1);
         return true;
     }
 
@@ -235,10 +235,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             newUserGroup.setGroupId(groupId);
             newUserGroup.setStatus(UserGroup.NORMAL);
             this.save(newUserGroup);
-            //增加群人数
-            motifyUserAccount(groupId, 1);
             //添加日志
             groupLogService.addLog(groupId, userId, GroupLog.NEW_USER);
+            //增加群人数
+            motifyUserAccount(groupId, 1);
             return true;
         }
         Integer userGroupStatus = getUserGroupStatus(groupId, userId);
