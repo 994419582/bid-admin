@@ -19,6 +19,8 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.NullSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -92,6 +94,7 @@ public class Group implements Serializable {
      * 群人数
      */
     @ApiModelProperty(value = "群人数", required = false)
+    @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer userAccount;
     /**
      * 群管理员
@@ -102,6 +105,7 @@ public class Group implements Serializable {
      * 群创建人
      */
     @ApiModelProperty(value = "群创建人")
+    @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer createUser;
 
     /**
@@ -115,6 +119,7 @@ public class Group implements Serializable {
      * 更新人
      */
     @ApiModelProperty(value = "更新人")
+    @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer updateUser;
     /**
      * 更新时间
@@ -143,6 +148,7 @@ public class Group implements Serializable {
      * 公司地址ID（只有公司和社区需要）
      */
     @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
+    @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer addressId;
     /**
      * 公司地址名称
@@ -167,9 +173,15 @@ public class Group implements Serializable {
     @ApiModelProperty(value = "数据管理员",required = false)
     private String dataManagers;
 
-    @ApiModelProperty(value = "父群主")
+//    @ApiModelProperty(value = "父群主ID,后台管理使用")
     @TableField(exist = false)
-    private String parentGroups;
+    @JsonSerialize(nullsUsing = NullSerializer.class)
+    private Integer parentId;
+
+//    @ApiModelProperty(value = "排序")
+    @TableField(exist = false)
+    @JsonSerialize(nullsUsing = NullSerializer.class)
+    private Integer sort;
 
     /**
      * 父群组名称
