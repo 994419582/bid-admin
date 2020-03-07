@@ -288,7 +288,8 @@ public class WxGroupController extends BladeController {
                     throw new ApiException("用户ID和群创建人ID不一致");
                 }
             }
-            return R.status(groupService.removeGroupByIds(ids));
+//            return R.status(groupService.removeGroupByIds(ids));
+            return R.data("暂时不提供不能删除功能");
         } catch (ApiException e) {
             return R.fail(e.getMessage());
         }

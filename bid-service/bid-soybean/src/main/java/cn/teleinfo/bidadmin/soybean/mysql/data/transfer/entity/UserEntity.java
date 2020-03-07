@@ -30,4 +30,9 @@ public class UserEntity implements Serializable {
     String plan_beijing;
     String return_date;
     String traffic;
+
+    String private_key;
+    String company_name;
+    String bid_address;
+
 }

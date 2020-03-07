@@ -7,6 +7,8 @@ import cn.teleinfo.bidadmin.soybean.mysql.data.transfer.util.JsonUtils;
 
 import java.util.List;
 
+import static cn.teleinfo.bidadmin.soybean.mysql.data.transfer.util.DatabaseUtils.userGroupUpdate;
+
 public class MainClass {
 
     private static String userPath = "/Users/shanpengfei/work/idea/bif/github/bid-admin/bid-service/bid-soybean/src/main/java/cn/teleinfo/bidadmin/soybean/mysql/data/transfer/file/database_export-user_info.json";
@@ -21,6 +23,7 @@ public class MainClass {
 ////        for (UserEntity user : userJsonList) {
 ////            DatabaseUtils.userInsert(user);
 ////        }
+////        userGroupUpdate();
 //
 //
 //

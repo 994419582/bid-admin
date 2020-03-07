@@ -13,6 +13,8 @@ public class DatabaseUtils {
 //    private static String groupTableName = "spf_soybean_user_group";
 //    private static String clocklnTableName = "spf_soybean_clockln";
 
+    private static String groupTN = "soybean_group";
+
     private static String userTableName = "soybean_user";
     private static String groupTableName = "soybean_user_group";
     private static String clocklnTableName = "soybean_clockln";
@@ -26,6 +28,8 @@ public class DatabaseUtils {
         ResultSet rs=null;
         PreparedStatement select_ps=null;
         ResultSet select_rs = null;
+        PreparedStatement select_ps_g=null;
+        ResultSet select_rs_g = null;
         int id = 0;//存放数据库返回的用户注册过后的id
         try {
             String select_sql = "select id from "+userTableName+" where wechat_id = ?";
@@ -39,7 +43,7 @@ public class DatabaseUtils {
             String sql = "insert into "+userTableName+" (" +
                     "`wechat_id`, `nickname`,`name`,`phone`,`id_type`,`id_number`,`create_time`,`update_time`,`status`," +
                     "`remarks`,`gender`,`country`,`province`,`city`,`avatar_url`,`home_id`,`home_address`," +
-                    "`detail_address`,`is_deleted`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "`detail_address`,`is_deleted`,`company_name`,`bid_address`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             ps=con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             ps.setString(1, u.get_openid());// wechat_id
@@ -53,7 +57,7 @@ public class DatabaseUtils {
             } else if("军官证".equals(u.getCertificate_type())) {
                 ps.setInt(5, 3); // id_type
             } else {
-                ps.setInt(5, -1); // id_type
+                ps.setInt(5, 1); // id_type
             }
 
             ps.setString(6, u.getCertificate_number());// id_number
@@ -72,6 +76,8 @@ public class DatabaseUtils {
             ps.setString(17, u.getHome_district());// home_address
             ps.setString(18, u.getHome_detail());//detail_address
             ps.setInt(19, 0);
+            ps.setString(20, u.getCompany_name());
+            ps.setString(21, u.getBid_address());
             ps.executeUpdate();
             rs=ps.getGeneratedKeys();//这一句代码就是得到插入的记录的id
             if(rs.next()){
@@ -82,7 +88,28 @@ public class DatabaseUtils {
             ps_g=con.prepareStatement(sql_g, Statement.RETURN_GENERATED_KEYS);
 
             ps_g.setInt(1, id);// user_id
-            ps_g.setInt(2, 236);// group_id
+
+
+            String select_sql_g = "select id from "+groupTN+" where full_name = ?";
+            select_ps_g = con.prepareStatement(select_sql_g);
+
+            String cd = u.getCompany_department().trim().replace(" ", "_");
+
+
+            select_ps_g.setString(1, cd);
+            select_rs_g = select_ps_g.executeQuery();
+            if(select_rs_g.next()) {
+                int groupId = select_rs_g.getInt(1);
+                System.out.println("cd:===:"+cd);
+                System.out.println("groupId:===:"+groupId);
+                ps_g.setInt(2, groupId);// group_id
+            } else {
+                System.out.println(id);
+                System.out.println(cd);
+                ps_g.setInt(2, -1);// group_id
+            }
+
+
             ps_g.setInt(3, 0);// status
             ps_g.executeUpdate();
         } catch (Exception e) {
@@ -91,8 +118,18 @@ public class DatabaseUtils {
         }finally{
 
             try {
-                select_rs.close();
-                select_ps.close();
+                if (select_rs_g != null) {
+                    select_rs_g.close();
+                }
+                if (select_ps_g != null) {
+                    select_ps_g.close();
+                }
+                if (select_rs != null) {
+                    select_rs.close();
+                }
+                if (select_ps != null) {
+                    select_ps.close();
+                }
                 if (ps_g != null) {
                     ps_g.close();
                 }
@@ -102,6 +139,34 @@ public class DatabaseUtils {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static int userGroupUpdate() {
+        Connection con = JDBCUtils.getConnection();
+        PreparedStatement ps=null;
+        String sql = "UPDATE "+groupTableName+" SET group_id = NULL where group_id = -1";
+        try {
+            ps=con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            return ps.executeUpdate();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }finally {
+
+            try {
+                if (ps != null) {
+                    ps.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return 0;
     }
 
     public static Integer clocklnInsert(ClocklnEntity c) {
@@ -128,7 +193,9 @@ public class DatabaseUtils {
                     "`gobacktime`,`remarks`,`create_time`,`quarantine`,`reason`," +
                     "`temperature`,`nobackreason`,`comfirmed`,`admitting`,`leave`," +
                     "`leavetime`,`flight`,`otherhealthy`,`hubei`," +
-                    "`beijing`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "`beijing`,`transport`,`jobstatus`,`room_person`,`room_person_other`," +
+                    "`room_company`,`room_company_other`,`neighbor`,`neighbor_other`," +
+                    "`leave_city`,`temperature_flag`,`temperature_remark`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             ps=con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             ps.setInt(1, userId);// user_id
@@ -149,7 +216,8 @@ public class DatabaseUtils {
             ps.setInt(12, 1+Integer.parseInt((c.getNoGoBackFlag()==null||"".equals(c.getNoGoBackFlag()))?"-2":c.getNoGoBackFlag()));// nobackreason
             ps.setInt(13, Integer.parseInt("1".equals(c.getIsQueZhenFlag())?"1":"2"));// comfirmed
             ps.setInt(14, Integer.parseInt("1".equals(c.getGoHospitalFlag())?"1":"2"));// admitting
-            ps.setInt(15, 1+Integer.parseInt((c.getIsLeaveBjFlag()==null||"".equals(c.getIsLeaveBjFlag()))?"0":c.getIsLeaveBjFlag()));// leave
+            ps.setInt(15, Integer.parseInt("1".equals(c.getIsLeaveBjFlag())?"1":"2"));// leave
+//            ps.setInt(15, 1+Integer.parseInt((c.getIsLeaveBjFlag()==null||"".equals(c.getIsLeaveBjFlag()))?"0":c.getIsLeaveBjFlag()));// leave
             ps.setString(16, c.getLeavedate());// leavetime
             ps.setString(17, c.getTrainnumber());// flight
             ps.setString(18, c.getBodystatusotherremark());//otherhealthy
@@ -163,9 +231,60 @@ public class DatabaseUtils {
             } else {
                 ps.setInt(20, 0);
             }
+            if (c.getTrafficToolStatusFlag() != null && !"".equals(c.getTrafficToolStatusFlag())) {
+                if ("0".equals(c.getTrafficToolStatusFlag())) {
+                    ps.setInt(21, 1);//transport
+                } else if ("1".equals(c.getTrafficToolStatusFlag())) {
+                    ps.setInt(21, 2);//transport
+                } else if ("2".equals(c.getTrafficToolStatusFlag())) {
+                    ps.setInt(21, 8);//transport
+                } else if ("3".equals(c.getTrafficToolStatusFlag())) {
+                    ps.setInt(21, 0);//transport
+                } else {
+                    ps.setInt(21, -1);//transport
+                }
+            } else {
+                ps.setInt(21, -1);//transport
+            }
+
+            ps.setInt(22, 1+Integer.parseInt((c.getWorkStatusFlag()==null||"".equals(c.getWorkStatusFlag()))?"-2":c.getWorkStatusFlag()));//jobstatus
+            if (c.getRoommateHealthyStatusFlag() != null && !"".equals(c.getRoommateHealthyStatusFlag())) {
+                if ("2".equals(c.getRoommateHealthyStatusFlag())) {
+                    ps.setInt(23, 0);//room_person
+                } else {
+                    ps.setInt(23, 1+Integer.parseInt(c.getRoommateHealthyStatusFlag()));//room_person
+                }
+            } else {
+                ps.setInt(23, -1);
+            }
+            ps.setString(24, c.getRoHealthystatusotherremark());//room_person_other
+            if (c.getRoommateCompanyDiagStatusFlag() != null && !"".equals(c.getRoommateCompanyDiagStatusFlag())) {
+                if ("3".equals(c.getRoommateCompanyDiagStatusFlag())) {
+                    ps.setInt(25, 0);//room_company
+                } else {
+                    ps.setInt(25, 1+Integer.parseInt(c.getRoommateCompanyDiagStatusFlag()));//room_person
+                }
+            } else {
+                ps.setInt(25, -1);
+            }
+            ps.setString(26, c.getRoMaCoDistatusotherremark());//room_company_other
+            if (c.getResidentAreaStatusFlag() != null && !"".equals(c.getResidentAreaStatusFlag())) {
+                if ("3".equals(c.getResidentAreaStatusFlag())) {
+                    ps.setInt(27, 0);//neighbor
+                } else {
+                    ps.setInt(27, 1+Integer.parseInt(c.getResidentAreaStatusFlag()));//neighbor
+                }
+            } else {
+                ps.setInt(27, -1);
+            }
+            ps.setString(28, c.getReArstatusotherremark());//neighbor_other
+            ps.setInt(29, -1);//leave_city
+            ps.setInt(30, Integer.parseInt((c.getTemperStatusFlag()==null||"".equals(c.getTemperStatusFlag()))?"-1":c.getTemperStatusFlag()));
+            ps.setString(31, c.getTemperotherremark());
             ps.executeUpdate();
         } catch (Exception e) {
             // TODO Auto-generated catch block
+            System.out.println(c.get_id());
             e.printStackTrace();
         }finally{
             try {

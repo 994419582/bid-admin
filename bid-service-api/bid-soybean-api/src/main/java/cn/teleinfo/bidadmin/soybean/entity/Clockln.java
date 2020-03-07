@@ -179,4 +179,6 @@ public class Clockln implements Serializable {
     @ApiModelProperty(value = "其他，居住小区是否有疑似病例、确诊病例")
     private String neighborOther;
 
+    @ApiModelProperty(value = "城市")
+    private String city;
 }
