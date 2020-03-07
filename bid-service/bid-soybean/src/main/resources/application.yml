@@ -6,6 +6,9 @@ server:
 wx:
   miniapp:
     configs:
+      - appid: wx9f50de1f1b6b94c6
+        secret: b00d3a0dac225c6fe40e5060572180f6
+        msgDataFormat: JSON
       - appid: wxd69df881f0c947dc
         secret: 1b13f6d4d5bae3a536291457497584eb
         msgDataFormat: JSON
