@@ -593,16 +593,16 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         checkParentGroupAndManager(group);
         //设置群人数为1
-        group.setUserAccount(1);
+        group.setUserAccount(0);
         //新增群
         group.setStatus(Group.NORMAL);
         save(group);
         //设置为群第一个用户
-        UserGroup userGroup = new UserGroup();
-        userGroup.setGroupId(group.getId());
-        userGroup.setUserId(group.getCreateUser());
-        userGroup.setStatus(UserGroup.NORMAL);
-        userGroupService.save(userGroup);
+//        UserGroup userGroup = new UserGroup();
+//        userGroup.setGroupId(group.getId());
+//        userGroup.setUserId(group.getCreateUser());
+//        userGroup.setStatus(UserGroup.NORMAL);
+//        userGroupService.save(userGroup);
         //保存中间表
         String parentGroups = group.getParentGroups();
         for (Integer parentId : Func.toIntList(parentGroups)) {
