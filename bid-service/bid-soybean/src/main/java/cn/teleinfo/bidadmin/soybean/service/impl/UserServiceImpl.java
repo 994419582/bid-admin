@@ -132,7 +132,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 			}
 		}
 		//删除所有用户
-		removeByIds(ids);
-		return true;
+		return  removeByIds(ids);
     }
 }
