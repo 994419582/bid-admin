@@ -96,42 +96,40 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         //查询管操作人是否有权限
         Integer groupId = userGroup.getGroupId();
         Integer userId = userGroup.getUserId();
-        if (!groupService.existGroup(groupId)) {
-            throw new ApiException("群组不存在");
+		if (!existUserGroup(groupId, userId)){
+            throw new ApiException("用户已移除");
         }
-        if (!groupService.existUser(userId)) {
-            throw new ApiException("用户不存在");
+        LambdaUpdateWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaUpdate().
+                eq(UserGroup::getUserId, userId).
+                eq(UserGroup::getGroupId, groupId)
+                .set(UserGroup::getStatus, UserGroup.DELETE);
+        //更改群状态
+        this.update(queryWrapper);
+        //减少群人数
+        motifyUserAccount(groupId, -1);
+        //删除用户拥有的所有管理员权限
+        List<Group> userManageGroups = groupService.getUserManageGroups(userId);
+        for (Group group : userManageGroups) {
+            String managers = group.getManagers();
+            ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
+            //Group表移除此管理员
+            managerList.remove(userId);
+            String newManagers = StringUtils.join(managerList, ",");
+            group.setManagers(newManagers);
+            groupService.updateById(group);
         }
-		if (!existUserGroup(groupId, userId)) {
-			throw new ApiException("用户不在此群");
-		}
-		if (getUserGroupStatus(groupId, userId).equals(UserGroup.DELETE)) {
-            throw new ApiException("用户已退群");
+        //删除用户拥有的所有组织数据管理员权限
+        List<Group> userDataManageGroups = groupService.getUserDataManageGroups(userId);
+        for (Group group : userDataManageGroups) {
+            String dataManagers = group.getDataManagers();
+            ArrayList<Integer> dataManagerList = new ArrayList<>(Func.toIntList(dataManagers));
+            //Group表移除此管理员
+            dataManagerList.remove(userId);
+            String newDataManagers = StringUtils.join(dataManagerList, ",");
+            group.setDataManagers(newDataManagers);
+            groupService.updateById(group);
         }
-        if (groupService.isGroupManger(groupId, managerId) || groupService.isGroupCreater(groupId, managerId)) {
-            LambdaUpdateWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaUpdate().
-                    eq(UserGroup::getUserId, userId).
-                    eq(UserGroup::getGroupId, groupId)
-                    .set(UserGroup::getStatus, UserGroup.DELETE);
-            //更改群状态
-            this.update(queryWrapper);
-            //减少群人数
-            motifyUserAccount(groupId, -1);
-            //管理员退群, Group表里移除这个管理员
-            if (groupService.isGroupManger(groupId,userId)) {
-                Group group = groupService.getGroupById(groupId);
-                String managers = group.getManagers();
-                ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
-                //Group表移除此管理员
-                managerList.remove(userId);
-                String newManagers = StringUtils.join(managerList, ",");
-                group.setManagers(newManagers);
-                groupService.updateById(group);
-            }
-            groupLogService.addLog(groupId, managerId, GroupLog.MANAGER_DELETE_USER);
-        } else {
-            throw new ApiException("操作人无权限");
-        }
+        groupLogService.addLog(groupId, managerId, GroupLog.MANAGER_DELETE_USER);
         return true;
     }
 
@@ -154,17 +152,14 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             throw new ApiException("用户不存在");
         }
 		if (!existUserGroup(groupId, userId)) {
-			throw new ApiException("用户不在此群");
+			throw new ApiException("用户已退群");
 		}
-        if (getUserGroupStatus(groupId, userId).equals(UserGroup.DELETE)) {
-            throw new ApiException("用户已退群");
-        }
         if (groupService.isGroupCreater(groupId, userId)) {
-            throw new ApiException("创建者不能退群,只能解散群");
+            throw new ApiException("创建者不能退群");
         }
-        //管理员退群, Group表里移除这个管理员
-        if (groupService.isGroupManger(groupId,userId)) {
-            Group group = groupService.getGroupById(groupId);
+        //删除用户拥有的所有管理员权限
+        List<Group> userManageGroups = groupService.getUserManageGroups(userId);
+        for (Group group : userManageGroups) {
             String managers = group.getManagers();
             ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
             //Group表移除此管理员
@@ -173,16 +168,27 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             group.setManagers(newManagers);
             groupService.updateById(group);
         }
+        //删除用户拥有的所有组织数据管理员权限
+        List<Group> userDataManageGroups = groupService.getUserDataManageGroups(userId);
+        for (Group group : userDataManageGroups) {
+            String dataManagers = group.getDataManagers();
+            ArrayList<Integer> dataManagerList = new ArrayList<>(Func.toIntList(dataManagers));
+            //Group表移除此管理员
+            dataManagerList.remove(userId);
+            String newDataManagers = StringUtils.join(dataManagerList, ",");
+            group.setDataManagers(newDataManagers);
+            groupService.updateById(group);
+        }
         //更新状态为已删除
         LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
                 eq(UserGroup::getUserId, userId).
                 eq(UserGroup::getGroupId, groupId).
                 set(UserGroup::getStatus, UserGroup.DELETE);
         this.update(userGroupLambdaQueryWrapper);
-        //减少群人数
-        motifyUserAccount(groupId, -1);
         //添加日志
         groupLogService.addLog(groupId, userId, GroupLog.DELETE_USER);
+        //减少群人数
+        motifyUserAccount(groupId, -1);
         return true;
     }
 
@@ -210,7 +216,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         }
         Integer groupType = groupService.getGroupById(groupId).getGroupType();
         if (!Group.TYPE_PERSON.equals(groupType)) {
-            throw new ApiException("只能个人组织才能加人");
+            throw new ApiException("组织群不允许用户加入");
         }
         //用户只能加入一个群组
         LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
@@ -219,7 +225,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         if (!CollectionUtils.isEmpty(list)) {
             UserGroup joinUserGroup = list.get(0);
             Group group = groupService.getById(joinUserGroup.getGroupId());
-            throw new ApiException("用户已经加入" + group.getName() + "群组");
+            if (group == null) {
+                throw new ApiException("数据异常，请联系管理员");
+            }
+            throw new ApiException("您已经加入到了" + group.getName() + "群组");
         }
         //检查用此群是否存在此用户,不存在则新增
         if (!existUserGroup(groupId, userId)) {
@@ -229,10 +238,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             newUserGroup.setGroupId(groupId);
             newUserGroup.setStatus(UserGroup.NORMAL);
             this.save(newUserGroup);
-            //增加群人数
-            motifyUserAccount(groupId, 1);
             //添加日志
             groupLogService.addLog(groupId, userId, GroupLog.NEW_USER);
+            //增加群人数
+            motifyUserAccount(groupId, 1);
             return true;
         }
         Integer userGroupStatus = getUserGroupStatus(groupId, userId);

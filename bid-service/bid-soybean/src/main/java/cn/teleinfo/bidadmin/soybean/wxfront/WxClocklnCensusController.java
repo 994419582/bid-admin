@@ -138,7 +138,7 @@ public class WxClocklnCensusController extends BladeController {
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
 			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query"),
-			@ApiImplicitParam(name = "jobstatus", value = "在岗状态:1已在岗，2远程办公，3未复工", paramType = "query")
+			@ApiImplicitParam(name = "jobstatus", value = "在岗状态:1在岗办公，2居家办公，3居家隔离,4监督隔离", paramType = "query")
 	})
 	public R<IPage<ClocklnVO>> job(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,@RequestParam("jobstatus") Integer jobstatus, Query query) {
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
@@ -248,6 +248,8 @@ public class WxClocklnCensusController extends BladeController {
 		double awayJobPer = 0.0;
 		double haveNoJob = 0.0;
 		double haveNoJobPer = 0.0;
+		double superviseJob = 0.0;
+		double superviseJobPer = 0.0;
 
 		int gobackBeijing=0;
 
@@ -305,6 +307,9 @@ public class WxClocklnCensusController extends BladeController {
 
 			if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains(province)){
 				beijing++;
+				if (c.getLeave() != null && c.getLeave()==2){
+					gobackBeijing++;
+				}
 			}else if(!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("湖北")){
 				if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("武汉")){
 					wuhan++;
@@ -322,6 +327,8 @@ public class WxClocklnCensusController extends BladeController {
 					awayJob++;
 				} else if (c.getJobstatus() == 3) {
 					haveNoJob++;
+				}else if (c.getJobstatus() ==4){
+					superviseJob++;
 				}
 			}
 		}
@@ -339,6 +346,7 @@ public class WxClocklnCensusController extends BladeController {
 			onJobPer =onJob/list.size() *100;
 			awayJobPer =awayJob/list.size() *100;
 			haveNoJobPer =haveNoJob/list.size() *100;
+			superviseJobPer =superviseJob/list.size() *100;
 		}
 		StringBuffer buffer=new StringBuffer("{");
 		//写入总体统计数据
@@ -348,11 +356,12 @@ public class WxClocklnCensusController extends BladeController {
 				"\"clockIn\":"+list.size()+"," +
 				"\"unClockIn\":"+(ids.size()-list.size())+"," +
 				"\"notInbeijing\":"+new Double(list.size()-beijing).intValue()+ "," +
-				"\"goBackBeijing\":"+new Double(isolator+outisolator).intValue()+"," +
+				"\"goBackBeijing\":"+gobackBeijing+"," +
 				"\"abnormalbody\":"+new Double(list.size()-healthy).intValue()+"," +
 				"\"diagnosis\":"+new Double(diagnosis).intValue()+"," +
 				"\"onJob\":"+new Double(onJob).intValue()+"," +
 				"\"awayJob\":"+new Double(awayJob).intValue()+"," +
+				"\"superviseJob\":"+new Double(superviseJob).intValue()+"," +
 				"\"haveNoJob\":"+new Double(haveNoJob).intValue()+
 			"},"
 		);
@@ -389,9 +398,10 @@ public class WxClocklnCensusController extends BladeController {
 		//计算并写入第四张饼图数据
 		buffer.append(
 			"\"fugong\":[" +
-				"{\"name\":\"已在岗\",\"value\":"+new Double(onJob).intValue()+",\"percent\":"+format(+onJobPer)+"}," +
-				"{\"name\":\"远程办公\",\"value\":"+new Double(awayJob).intValue()+",\"percent\":"+format(awayJobPer)+"}," +
-				"{\"name\":\"未复工\",\"value\":"+new Double(haveNoJob).intValue()+",\"percent\":"+format(haveNoJobPer)+"}" +
+				"{\"name\":\"在岗办公\",\"value\":"+new Double(onJob).intValue()+",\"percent\":"+format(+onJobPer)+"}," +
+				"{\"name\":\"居家办公\",\"value\":"+new Double(awayJob).intValue()+",\"percent\":"+format(awayJobPer)+"}," +
+				"{\"name\":\"居家隔离\",\"value\":"+new Double(haveNoJob).intValue()+",\"percent\":"+format(haveNoJobPer)+"}" +
+				"{\"name\":\"监督隔离\",\"value\":"+new Double(superviseJob).intValue()+",\"percent\":"+format(superviseJobPer)+"}" +
 			"]}"
 		);
 

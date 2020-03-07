@@ -20,8 +20,10 @@ import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupLogService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
+import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.Api;
@@ -41,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  控制器
+ * 控制器
  *
  * @author Blade
  * @since 2020-02-21
@@ -52,97 +54,113 @@ import java.util.List;
 @Api(value = "", tags = "微信用户群组接口")
 public class WxUserGroupController extends BladeController {
 
-	private IUserGroupService userGroupService;
+    private IUserGroupService userGroupService;
 
-	private IGroupService groupService;
+    private IGroupService groupService;
 
-	private IGroupLogService groupLogService;
+    private IGroupLogService groupLogService;
 
-	/**
-	* 用户加群
-	*/
-	@PostMapping("/save")
+    /**
+     * 用户加群
+     */
+    @PostMapping("/save")
     @ApiOperationSupport(order = 4)
-	@ApiOperation(value = "用户加群", notes = "传入userGroup")
-	public R save(@Valid @RequestBody UserGroup userGroup) {
-		try {
-			return R.status(userGroupService.saveUserGroup(userGroup));
-		} catch (Exception e) {
-			return R.fail(e.getMessage());
-		}
-	}
+    @ApiOperation(value = "用户加群", notes = "传入userGroup")
+    public R save(@Valid @RequestBody UserGroup userGroup) {
+        try {
+            return R.status(userGroupService.saveUserGroup(userGroup));
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
 
-	/**
-	 * 用户退群
-	 */
-	@PostMapping("/quit")
-	@ApiOperationSupport(order = 4)
-	@ApiOperation(value = "用户退群", notes = "传入用户ID和群ID")
-	public R remove(@Valid @RequestBody UserGroup userGroup) {
-		try {
-			return R.status(userGroupService.quitGroup(userGroup));
-		} catch (Exception e) {
-			return R.fail(e.getMessage());
-		}
-	}
+    /**
+     * 用户退群
+     */
+    @PostMapping("/quit")
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "用户退群", notes = "传入用户ID和群ID")
+    public R remove(@Valid @RequestBody UserGroup userGroup) {
+        try {
+            return R.status(userGroupService.quitGroup(userGroup));
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
 
 
-	/**
-	 * 管理员删除群用户
-	 */
-	@PostMapping("/manager/remove")
-	@ApiOperationSupport(order = 4)
-	@ApiOperation(value = "群管理员踢除用户", notes = "传入用户ID，群组ID，操作人ID")
-	public R save(@Valid @RequestBody UserGroupVO userGroup) {
-		try {
-
-			//校验改群及其子群下是否有此用户
-			List<Integer> groupUserIds = groupService.selectUserIdByParentId(userGroup.getGroupId());
-			if (!groupUserIds.contains(userGroup.getManagerId())) {
-				throw new ApiException("改组织下未发现ID等于" + userGroup.getManagerId() + "的用户");
+    /**
+     * 管理员删除群用户
+     */
+    @PostMapping("/manager/remove")
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "群管理员踢除用户", notes = "传入要删除的用户userId，群组groupId，操作人managerId")
+    public R save(@Valid @RequestBody UserGroupVO userGroup) {
+        try {
+            Integer groupId = userGroup.getGroupId();
+            Integer userId = userGroup.getUserId();
+            Integer managerId = userGroup.getManagerId();
+            if (!userGroupService.existUserGroup(groupId, userId)) {
+                throw new ApiException("用户已退群");
+            }
+            List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
+            //获取管理员管理的群
+            List<Group> managerGroups = groupService.getUserManageGroups(managerId);
+            //去除子群
+            ArrayList<Integer> removeManagerIds = new ArrayList<>();
+            for (Group managerGroup : managerGroups) {
+                for (Group group : managerGroups) {
+                    if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), group.getId())) {
+                        removeManagerIds.add(group.getId());
+                    }
+                }
+            }
+            managerGroups.removeIf(group -> {
+                return removeManagerIds.contains(group.getId());
+            });
+            //获取被删除人管理的群
+            List<Group> userManageGroups = groupService.getUserManageGroups(userId);
+            //去除子群
+            ArrayList<Integer> removeUserManagerIds = new ArrayList<>();
+            for (Group userManageGroup : userManageGroups) {
+                for (Group group : managerGroups) {
+                    if (groupService.isChildrenGroup(groupAndParent, userManageGroup.getId(), group.getId())) {
+                        removeUserManagerIds.add(group.getId());
+                    }
+                }
+            }
+            userManageGroups.removeIf(group -> {
+                return removeUserManagerIds.contains(group.getId());
+            });
+            //校验用户管理的群是否为管理员的父群，false代表是用户管理的群不是管理员管理群的父群
+            boolean flag = false;
+            for (Group userManageGroup : userManageGroups) {
+                for (Group managerGroup : managerGroups) {
+                    if (groupService.isChildrenGroup(groupAndParent, userManageGroup.getId(), managerGroup.getId()) || userManageGroup.getId().equals(managerGroup.getId())) {
+                        flag = true;
+                    }
+                }
+            }
+			//当用户管理的群是管理员管理器的父群或者同群时
+			if (flag == true ) {
+				throw new ApiException("您没有权限");
 			}
-			//获取用户是管理员的群
-			LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
-			List<Group> managerGroups = groupService.list(queryWrapper);
-			managerGroups.removeIf(group -> {
-				String managers = group.getManagers();
-				if (Func.toIntList(managers).contains(userGroup.getUserId())) {
-					return false;
-				}
-				Integer createUser = group.getCreateUser();
-				if (createUser != null && createUser.equals(userGroup.getUserId())) {
-					return false;
-				}
-				return true;
-			});
-			//获取用户管理的所有用户
-			ArrayList<Integer> managerUserIds = new ArrayList<>();
+			//校验用户加入的群是否为管理员管理的子群，false代表不是子群
+			boolean childFlag = false;
 			for (Group managerGroup : managerGroups) {
-				List<Integer> userIds = groupService.selectUserIdByParentId(managerGroup.getId());
-				managerUserIds.addAll(userIds);
-			}
-			//校验此用户是否有权限设置管理员
-			if (managerUserIds.contains(userGroup.getUserId())) {
-				// 删除
-				userGroup.setStatus(UserGroup.DELETE);
-				boolean flag = userGroupService.updateById(userGroup);
-				if (flag) {
-					Group group = groupService.getById(userGroup.getGroupId());
-					int count = group.getUserAccount();
-					count--;
-					group.setUserAccount(count);
-					return R.status(groupService.updateById(group));
-				} else {
-					return R.fail("群人数减1失败");
+				if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId) || managerGroup.getId().equals(groupId)) {
+					childFlag = true;
 				}
-			} else {
-				// 不能删除
-				return R.fail("没有删除权限");
 			}
-
-		} catch (Exception e) {
-			return R.fail(e.getMessage());
-		}
-	}
+			//用户加入的群不是管理员管理的子群时，提示没有权限
+			if (childFlag == false) {
+				throw new ApiException("您没有权限");
+			}
+            // 删除
+            return R.status(userGroupService.managerRemoveUser(userGroup));
+        } catch (Exception e) {
+            return R.fail(e.getMessage());
+        }
+    }
 
 }

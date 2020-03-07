@@ -35,18 +35,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -175,7 +180,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
      * @param parentId
      * @return
      */
-    public List<GroupTreeVo> buildUserTree(List<GroupTreeVo> groups, Integer parentId) {
+    public List<GroupTreeVo> buildUserTree(List<GroupTreeVo> groups, Integer parentId, Integer userId, boolean manageFlag,boolean dataManageFlag) {
         List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
 
         for (GroupTreeVo group : groups) {
@@ -185,13 +190,38 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             Integer pId = group.getParentId();
 
             if (pId.equals(parentId)) {
-                List<GroupTreeVo> treeList = buildUserTree(groups, id);
+                //如果用户是管理员，设置managerFlagTemp为true
+                boolean managerFlagTemp = false;
+                //如果用户是数据管理员，设置dataManageFlagTemp为true
+                boolean dataManageFlagTemp = false;
+                //查看用户是否为管理员
+                List<Integer> managers = Func.toIntList(group.getManagers());
+                Integer createUser = group.getCreateUser();
+                if (createUser != null && createUser.equals(userId)) {
+                    managerFlagTemp = true;
+                }
+                if (managers.contains(userId)) {
+                    managerFlagTemp = true;
+                }
+                if (manageFlag) {
+                    managerFlagTemp = true;
+                }
+                //查看用户是否为数据管理员
+                List<Integer> dataManagers = Func.toIntList(group.getManagers());
+                if (dataManagers.contains(userId)) {
+                    dataManageFlagTemp = true;
+                }
+                if (dataManageFlag) {
+                    dataManageFlagTemp = true;
+                }
+                List<GroupTreeVo> treeList = buildUserTree(groups, id, userId, managerFlagTemp, dataManageFlagTemp);
                 //计算组织人数
                 for (GroupTreeVo groupTreeVo : treeList) {
                     group.setUserAccount(group.getUserAccount() + groupTreeVo.getUserAccount());
                 }
                 group.setChildren(treeList);
-                group.setPermission(true);
+                group.setPermission(managerFlagTemp);
+                group.setDataPermission(dataManageFlagTemp);
                 tree.add(group);
             }
         }
@@ -211,10 +241,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<Group> filterList = groupList.stream().filter(group -> {
             List<Integer> managerList = Func.toIntList(group.getManagers());
             Integer createUser = group.getCreateUser();
+            List<Integer> dataManagerList = Func.toIntList(group.getDataManagers());
             if (managerList.contains(userId)) {
                 return true;
             }
             if (createUser != null && createUser.equals(userId)) {
+                return true;
+            }
+            if (dataManagerList.contains(userId)) {
                 return true;
             }
             return false;
@@ -236,15 +270,22 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         for (Group group : filterList) {
             GroupTreeVo groupTreeVo = new GroupTreeVo();
             BeanUtils.copyProperties(group, groupTreeVo);
-            groupTreeVo.setPermission(true);
             groupTreeVo.setUserAccount(0);
             //查询所有群
             List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
-            List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId());
+            boolean isManager = Func.toIntList(group.getManagers()).contains(userId);
+            Integer createUser = group.getCreateUser();
+            if (createUser != null && createUser.equals(userId)) {
+                isManager = true;
+            }
+            boolean isDataManager = Func.toIntList(group.getDataManagers()).contains(userId);
+            List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId(), userId, isManager,isDataManager);
             //计算当前群人数
             for (GroupTreeVo treeVo : groupTreeVos) {
                 groupTreeVo.setUserAccount(groupTreeVo.getUserAccount() + treeVo.getUserAccount());
             }
+            groupTreeVo.setPermission(isManager);
+            groupTreeVo.setDataPermission(isDataManager);
             groupTreeVo.setChildren(groupTreeVos);
             treeRootList.add(groupTreeVo);
         }
@@ -264,13 +305,21 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 continue;
             }
             //没有管理权限则添加进列表，并设置Permission为false
-            if (!isGroupManger(groupId, userId) && !isGroupCreater(groupId, userId)) {
-                //校验是否为其管理群的子群组
-                boolean flag = false;
-                for (Group group : filterList) {
-                    if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
-                        flag = true;
-                    }
+            Group checkGroup = getGroupById(groupId);
+            boolean isManager = Func.toIntList(checkGroup.getManagers()).contains(userId);
+            boolean isDataManager = Func.toIntList(checkGroup.getDataManagers()).contains(groupId);
+            Integer createUser = checkGroup.getCreateUser();
+            boolean isCreater = false;
+            if (createUser != null && createUser.equals(userId)) {
+                isCreater = true;
+            }
+            if (!isManager && !isDataManager && !isCreater ) {
+                        //校验是否为其管理群的子群组
+                        boolean flag = false;
+                        for (Group group : filterList) {
+                            if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
+                                flag = true;
+                            }
                 }
                 if (flag == true) {
                     continue;
@@ -282,6 +331,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 GroupTreeVo groupTreeVo = new GroupTreeVo();
                 BeanUtils.copyProperties(group,groupTreeVo);
                 groupTreeVo.setPermission(false);
+                groupTreeVo.setDataPermission(false);
                 treeRootList.add(groupTreeVo);
             }
         }
@@ -476,8 +526,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
         List<User> userIPage = userService.list(userQueryWrapper);
 
+        List<Group> groups = groupMapper.selectBatchIds(userGroups.stream().map(UserGroup::getGroupId).collect(Collectors.toList()));
+        
         UserBO ub = new UserBO();
         ub.setUserGroups(userGroups);
+        ub.setGroups(groups);
         ub.setUsers(UserWrapper.build().listVO(userIPage));
         return ub;
     }
@@ -540,16 +593,16 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         checkParentGroupAndManager(group);
         //设置群人数为1
-        group.setUserAccount(1);
+        group.setUserAccount(0);
         //新增群
         group.setStatus(Group.NORMAL);
         save(group);
         //设置为群第一个用户
-        UserGroup userGroup = new UserGroup();
-        userGroup.setGroupId(group.getId());
-        userGroup.setUserId(group.getCreateUser());
-        userGroup.setStatus(UserGroup.NORMAL);
-        userGroupService.save(userGroup);
+//        UserGroup userGroup = new UserGroup();
+//        userGroup.setGroupId(group.getId());
+//        userGroup.setUserId(group.getCreateUser());
+//        userGroup.setStatus(UserGroup.NORMAL);
+//        userGroupService.save(userGroup);
         //保存中间表
         String parentGroups = group.getParentGroups();
         for (Integer parentId : Func.toIntList(parentGroups)) {
@@ -710,9 +763,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public boolean excelImport(Group topGroup, String excelFile) {
+        String fullName = "";
+        HttpURLConnection connection = null;
+        InputStream inputStream = null;
         try {
-            HttpURLConnection connection = null;
-            InputStream inputStream = null;
             // 创建远程url连接对象
             URL url = new URL(excelFile);
             // 通过远程url连接对象打开一个连接，强转成httpURLConnection类
@@ -784,6 +838,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             for (Group group : groups) {
                 group.setCreateUser(topGroup.getCreateUser());
                 group.setStatus(Group.NORMAL);
+                fullName = group.getFullName();
                 save(group);
             }
             //组装一个包含一级组织的群组
@@ -818,10 +873,61 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 //保存中间表
                 parentGroupService.save(parentGroup);
             }
-        } catch (Exception e) {
-            throw new ApiException(e.getMessage());
+        } catch (DuplicateKeyException e) {
+            throw new ApiException("群全称" + fullName + "已存在");
+        } catch (ProtocolException e) {
+            throw new ApiException("读取文件异常");
+        } catch (MalformedURLException e) {
+            throw new ApiException("文件读取失败");
+        } catch (IOException e) {
+            throw new ApiException("文件读取失败");
+        } finally {
+            // 关闭资源
+            if (null != inputStream) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    throw new ApiException("断开与Excel资源连接异常");
+                }
+            }
+            // 断开与远程地址url的连接
+            connection.disconnect();
         }
         return true;
+    }
+
+    @Override
+    public List<Group> getUserManageGroups(Integer userId) {
+        //获取用户是管理员的群
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
+        List<Group> managerGroups = list(queryWrapper);
+        managerGroups.removeIf(group -> {
+            String managers = group.getManagers();
+            if (Func.toIntList(managers).contains(userId)) {
+                return false;
+            }
+            Integer createUser = group.getCreateUser();
+            if (createUser != null && createUser.equals(userId)) {
+                return false;
+            }
+            return true;
+        });
+        return managerGroups;
+    }
+
+    @Override
+    public List<Group> getUserDataManageGroups(Integer userId) {
+        //获取用户是管理员的群
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
+        List<Group> dataManagerGroups = list(queryWrapper);
+        dataManagerGroups.removeIf(group -> {
+            String dataManagers = group.getDataManagers();
+            if (Func.toIntList(dataManagers).contains(userId)) {
+                return false;
+            }
+            return true;
+        });
+        return dataManagerGroups;
     }
 
     /**

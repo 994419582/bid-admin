@@ -15,14 +15,16 @@
  */
 package cn.teleinfo.bidadmin.soybean.mapper;
 
-import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
-import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
+import cn.teleinfo.bidadmin.soybean.entity.Clockln;
+import cn.teleinfo.bidadmin.soybean.entity.HealthQrcode;
+import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,21 +33,7 @@ import java.util.List;
  * @author Blade
  * @since 2020-02-21
  */
-public interface GroupMapper extends BaseMapper<Group> {
+public interface HealthQrcodeMapper extends BaseMapper<HealthQrcode> {
 
-	/**
-	 * 自定义分页
-	 *
-	 * @param page
-	 * @param group
-	 * @return
-	 */
-	List<GroupVO> selectGroupPage(IPage page, GroupVO group);
-
-	/**
-	 * 群组下拉树
-	 * @return
-	 */
-	@Select("select s.id,s.name,p.parent_id as parentId,s.logo, s.managers, s.data_managers as dataManagers ,s.create_user createUser,s.user_account as userAccount, s.group_type as groupType  from soybean_group s, soybean_parent_group p where s.status = 0 and s.id = p.group_id order by p.parent_id")
-	List<GroupTreeVo> tree();
+	HealthQrcode findTopByUserIdAndRecordDateBeforeOrderByRecordDateDesc(@RequestParam("userId") Integer userId, @RequestParam("recordDate") LocalDate recordDate);
 }

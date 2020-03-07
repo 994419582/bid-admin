@@ -148,6 +148,9 @@
             <when test="jobstatus !=null and jobstatus==3">
                 AND t.jobstatus=3
             </when>
+            <when test="jobstatus !=null and jobstatus==4">
+                AND t.jobstatus=4
+            </when>
         </choose>
 
         ORDER BY t.comfirmed  DESC
@@ -183,6 +186,14 @@
         <if test="clockInTime !=null">
             AND TO_DAYS(t.create_time) =TO_DAYS(#{clockInTime})
         </if>
+    </select>
+
+    <select id="selectTopByUserIdOrderByCreateTimeDesc"
+            resultType="cn.teleinfo.bidadmin.soybean.entity.Clockln">
+        select * from soybean_clockln where
+        user_id = #{param1}
+        order by create_time desc
+        limit 1
     </select>
 
 </mapper>

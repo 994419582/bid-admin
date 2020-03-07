@@ -13,17 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.bo;
+package cn.teleinfo.bidadmin.soybean.dto;
 
-import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
+import cn.teleinfo.bidadmin.soybean.entity.HealthQrcode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 数据传输对象实体类
@@ -32,11 +26,8 @@ import java.util.List;
  * @since 2020-02-21
  */
 @Data
-public class UserBO {
+@EqualsAndHashCode(callSuper = true)
+public class HealthQrcodeDTO extends HealthQrcode {
+	private static final long serialVersionUID = 1L;
 
-	List<UserVO> users = new ArrayList<>();
-
-	List<UserGroup> userGroups = new ArrayList<>();;
-
-	List<Group> groups;
 }

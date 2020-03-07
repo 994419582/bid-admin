@@ -13,30 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.bo;
+package cn.teleinfo.bidadmin.soybean.vo;
 
-import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
+import cn.teleinfo.bidadmin.soybean.entity.HealthQrcode;
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * 数据传输对象实体类
+ * 视图实体类
  *
  * @author Blade
  * @since 2020-02-21
  */
 @Data
-public class UserBO {
+@EqualsAndHashCode(callSuper = true)
+@ApiModel(value = "HealthQrcodeDetailVO对象", description = "HealthQrcodeDetailVO对象")
+public class HealthQrcodeDetailVO extends HealthQrcode {
+	private static final long serialVersionUID = 1L;
 
-	List<UserVO> users = new ArrayList<>();
+    private String realName;
 
-	List<UserGroup> userGroups = new ArrayList<>();;
+    private String phone;
 
-	List<Group> groups;
+    private String idCard;
+
+    private String unit;
+
+    private String unitAddress;
 }

@@ -43,6 +43,7 @@ public class RegistryConfiguration implements WebMvcConfigurer {
 		secureRegistry.excludePathPatterns("/user/**");
 		secureRegistry.excludePathPatterns("/group/**");
 		secureRegistry.excludePathPatterns("/download/**");
+		secureRegistry.excludePathPatterns("/healthQrcode/**");
 		return secureRegistry;
 	}
 

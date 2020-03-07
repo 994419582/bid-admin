@@ -13,30 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.bo;
+package cn.teleinfo.bidadmin.soybean.service;
 
-import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import cn.teleinfo.bidadmin.soybean.entity.HealthQrcode;
+import com.baomidou.mybatisplus.extension.service.IService;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
- * 数据传输对象实体类
+ *  服务类
  *
  * @author Blade
  * @since 2020-02-21
  */
-@Data
-public class UserBO {
+public interface IHealthQrcodeService extends IService<HealthQrcode> {
 
-	List<UserVO> users = new ArrayList<>();
-
-	List<UserGroup> userGroups = new ArrayList<>();;
-
-	List<Group> groups;
+	HealthQrcode findTopByUserIdAndRecordDateBeforeOrderByRecordDateDesc(Integer userId, LocalDate recordDate);
 }

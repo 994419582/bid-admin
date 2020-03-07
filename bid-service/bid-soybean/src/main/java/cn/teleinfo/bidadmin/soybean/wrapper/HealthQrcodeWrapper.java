@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.bo;
+package cn.teleinfo.bidadmin.soybean.wrapper;
 
-import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-import java.util.ArrayList;
-import java.util.List;
+import cn.teleinfo.bidadmin.soybean.entity.HealthQrcode;
+import cn.teleinfo.bidadmin.soybean.vo.HealthQrcodeVO;
+import org.springblade.core.mp.support.BaseEntityWrapper;
+import org.springblade.core.tool.utils.BeanUtil;
 
 /**
- * 数据传输对象实体类
+ * 包装类,返回视图层所需的字段
  *
  * @author Blade
  * @since 2020-02-21
  */
-@Data
-public class UserBO {
+public class HealthQrcodeWrapper extends BaseEntityWrapper<HealthQrcode, HealthQrcodeVO>  {
 
-	List<UserVO> users = new ArrayList<>();
+    public static HealthQrcodeWrapper build() {
+        return new HealthQrcodeWrapper();
+    }
 
-	List<UserGroup> userGroups = new ArrayList<>();;
+	@Override
+	public HealthQrcodeVO entityVO(HealthQrcode healthQrcode) {
+		HealthQrcodeVO healthQrcodeVO = BeanUtil.copy(healthQrcode, HealthQrcodeVO.class);
 
-	List<Group> groups;
+		return healthQrcodeVO;
+	}
+
 }

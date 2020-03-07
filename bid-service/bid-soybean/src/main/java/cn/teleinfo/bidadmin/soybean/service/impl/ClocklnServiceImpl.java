@@ -87,4 +87,9 @@ public class ClocklnServiceImpl extends ServiceImpl<ClocklnMapper, Clockln> impl
 		clockln.setHubei(hubei ? 1 : 0);
         return this.save(clockln);
     }
+
+    @Override
+    public Clockln selectTopByUserIdOrderByCreateTimeDesc(Integer userId) {
+        return baseMapper.selectTopByUserIdOrderByCreateTimeDesc(userId);
+    }
 }

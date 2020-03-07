@@ -176,4 +176,18 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	boolean excelImport(Group group, String excelFile);
+
+	/**
+	 * 获取用户管理的群
+	 * @param userId 用户ID
+	 * @return
+	 */
+	List<Group> getUserManageGroups(Integer userId);
+
+	/**
+	 * 获取用户拥有的所有数据管理员权限的组织
+	 * @param userId
+	 * @return
+	 */
+	List<Group> getUserDataManageGroups(Integer userId);
 }
