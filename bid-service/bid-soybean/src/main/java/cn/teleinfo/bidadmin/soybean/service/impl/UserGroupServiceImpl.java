@@ -225,6 +225,9 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         if (!CollectionUtils.isEmpty(list)) {
             UserGroup joinUserGroup = list.get(0);
             Group group = groupService.getById(joinUserGroup.getGroupId());
+            if (group == null) {
+                throw new ApiException("数据异常，请联系管理员");
+            }
             throw new ApiException("您已经加入到了" + group.getName() + "群组");
         }
         //检查用此群是否存在此用户,不存在则新增
