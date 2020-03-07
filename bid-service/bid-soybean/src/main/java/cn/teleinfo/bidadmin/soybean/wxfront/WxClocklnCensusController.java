@@ -207,7 +207,10 @@ public class WxClocklnCensusController extends BladeController {
 			return ("该群组不存在,请输入正确的群组ID");
 		}
 		String province=group.getAddressName();
-		String city=province.substring(0,province.lastIndexOf("，"));
+		String city=province;
+		if (province.contains("，")) {
+			city = province.substring(0, province.lastIndexOf("，"));
+		}
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		List<Clockln> list =new ArrayList<>();
 		if (ids.size() >0){
@@ -303,13 +306,13 @@ public class WxClocklnCensusController extends BladeController {
 				other++;
 			}
 
-			if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains(city)){
+			if (!StringUtil.isEmpty(c.getCity()) && c.getCity().contains(city)){
 				beijing++;
 				if (c.getLeave() != null && c.getLeave()==2){
 					gobackBeijing++;
 				}
-			}else if(!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("湖北")){
-				if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains("武汉")){
+			}else if(!StringUtil.isEmpty(c.getCity()) && c.getCity().contains("湖北")){
+				if (!StringUtil.isEmpty(c.getCity()) && c.getCity().contains("武汉")){
 					wuhan++;
 				}else {
 					hubei++;
@@ -374,7 +377,10 @@ public class WxClocklnCensusController extends BladeController {
 			"],"
 		);
 
-		String city1=city.substring(city.indexOf("，"),city.length());
+		String city1=city;
+		if (city.contains("，")) {
+			 city1 = city.substring(city.indexOf("，"), city.length());
+		}
 		//计算并写入第二张饼图数据
 		buffer.append(
 			"\"region\":[" +

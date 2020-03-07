@@ -108,20 +108,20 @@
 
         <choose>
             <when test="region !=null and region==1">
-                and t.address LIKE '%武汉%'
+                and t.city LIKE '%武汉%'
             </when>
             <when test="region !=null and region==2">
-                and t.address LIKE '%湖北%' AND t.address not like '%武汉%'
+                and t.city LIKE '%湖北%' AND t.city not like '%武汉%'
             </when>
             <when test="region !=null and region==3">
                 <if test="city !=null and city !=''">
-                  and t.address LIKE CONCAT('%',#{city},'%')
+                  and #{city}  LIKE CONCAT('%',t.city,'%')
                 </if>
             </when>
             <when test="region !=null and region==4">
-                and t.address NOT LIKE '%湖北%'
+                and #{city} NOT LIKE '%湖北%'
                 <if test="city !=null and city !=''">
-                    and t.address NOT LIKE CONCAT('%',#{city},'%')
+                        and (#{city} NOT LIKE CONCAT('%',t.city,'%') OR t.city is null)
                 </if>
             </when>
         </choose>
