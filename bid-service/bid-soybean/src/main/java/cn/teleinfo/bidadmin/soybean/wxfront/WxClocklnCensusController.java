@@ -15,7 +15,6 @@
  */
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
-import cn.teleinfo.bidadmin.common.constant.Province;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
@@ -43,7 +42,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  *  控制器
@@ -199,7 +197,6 @@ public class WxClocklnCensusController extends BladeController {
 		String pattern ="\\d{4}(\\-|\\/|.)\\d{1,2}\\1\\d{1,2}";
 		LocalDate today = LocalDate.now();
 
-		List<Province> provinces= Province.getPrivince();
 
 		if (groupId == null){
 			return ("群组ID不能为空");
@@ -382,7 +379,7 @@ public class WxClocklnCensusController extends BladeController {
 				"{\"name\":\"武汉\",\"value\":"+new Double(wuhan).intValue()+",\"percent\":"+format(wuhanPer)+"}," +
 				"{\"name\":\"湖北\",\"value\":"+new Double(hubei).intValue()+",\"percent\":"+format(hubeiPer)+"}," +
 				"{\"name\":\"其他地区\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}," +
-				"{\"name\":\"查看人单位所在城市\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
+				"{\"name\":\""+province+"\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
 			"],"
 		);
 
