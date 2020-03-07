@@ -379,7 +379,7 @@ public class WxClocklnCensusController extends BladeController {
 
 		String city1=city;
 		if (city.contains("，")) {
-			 city1 = city.substring(city.indexOf("，"), city.length());
+			 city1 = city.substring(city.indexOf("，")+1, city.length());
 		}
 		//计算并写入第二张饼图数据
 		buffer.append(

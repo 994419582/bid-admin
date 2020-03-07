@@ -82,17 +82,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 	@Transactional
     public boolean removeUserByIds(List<Integer> ids) {
 		//删除所有用户
-		removeByIds(ids);
-		//查询用户加入的群组
-		for (Integer userId : ids) {
-			LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
-					eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
-			List<UserGroup> userGroups = userGroupService.list(queryWrapper);
-			//用户退群
-			for (UserGroup userGroup : userGroups) {
-				userGroupService.quitGroup(userGroup);
+		if (removeByIds(ids)) {
+			//查询用户加入的群组
+			for (Integer userId : ids) {
+				LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
+						eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
+				List<UserGroup> userGroups = userGroupService.list(queryWrapper);
+				//用户退群
+				for (UserGroup userGroup : userGroups) {
+					userGroupService.quitGroup(userGroup);
+				}
 			}
+			return true;
 		}
-		return true;
+		return false;
     }
 }
