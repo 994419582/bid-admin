@@ -8,7 +8,8 @@ import java.sql.Statement;
 
 public class JDBCUtils {
     
-    private static final String connectionURL = "jdbc:mysql://39.99.132.122:3306/bidadmin?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&tinyInt1isBit=false&allowMultiQueries=true&serverTimezone=GMT%2B8";
+//    private static final String connectionURL = "jdbc:mysql://39.99.132.122:3306/bidadmin?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&tinyInt1isBit=false&allowMultiQueries=true&serverTimezone=GMT%2B8";
+    private static final String connectionURL = "jdbc:mysql://39.99.132.122:3306/bidadmin-test?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&tinyInt1isBit=false&allowMultiQueries=true&serverTimezone=GMT%2B8";
     private static final String username = "root";
     private static final String password = "bif123*()";
     

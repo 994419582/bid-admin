@@ -38,5 +38,17 @@ public class ClocklnEntity implements Serializable {
     String leavedate;
     String trainnumber;
     String bodystatusotherremark;
+
+    String trafficToolStatusFlag;//交通工具, 0飞机  1火车  2轮船 3其他
+    String workStatusFlag;//个人状态，0在岗办公 1居家办公 2居家隔离 3监督隔离
+    String roommateHealthyStatusFlag;//共同居住人员亲属（含合租人员）健康状况, 0健康 1有发热、咳嗽等症状 2其他症状
+    String roHealthystatusotherremark; //共同居住人员亲属（含合租人员）健康状况为其他的值
+    String roommateCompanyDiagStatusFlag;//共同居住人员亲属（含合租人员）所在单位/公司是否有疑似病例、确诊病例, 0有确诊病例 1有疑似病例 2都无 3其他
+    String roMaCoDistatusotherremark;//共同居住人员亲属（含合租人员）所在单位/公司是否有疑似病例、确诊病例为其他时的值
+    String residentAreaStatusFlag;//居住小区是否有疑似病例、确诊病例,0有确诊病例 1有疑似病例 2都无 3其他
+    String reArstatusotherremark;//居住小区是否有疑似病例、确诊病例为其他时的取值
+
+    String temperotherremark;//temperStatusFlag=0:正常；temperStatusFlag=1：具体温度值
+    String temperStatusFlag;//体温，0正常 1表示37.3以上
     List<UserEntity> userinfo;
 }
