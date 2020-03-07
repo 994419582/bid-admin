@@ -207,6 +207,7 @@ public class WxClocklnCensusController extends BladeController {
 			return ("该群组不存在,请输入正确的群组ID");
 		}
 		String province=group.getAddressName();
+		String city=province.substring(0,province.lastIndexOf("，"));
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		List<Clockln> list =new ArrayList<>();
 		if (ids.size() >0){
@@ -302,7 +303,7 @@ public class WxClocklnCensusController extends BladeController {
 				other++;
 			}
 
-			if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains(province)){
+			if (!StringUtil.isEmpty(c.getAddress()) && c.getAddress().contains(city)){
 				beijing++;
 				if (c.getLeave() != null && c.getLeave()==2){
 					gobackBeijing++;
@@ -373,13 +374,14 @@ public class WxClocklnCensusController extends BladeController {
 			"],"
 		);
 
+		String city1=city.substring(city.indexOf("，"),city.length());
 		//计算并写入第二张饼图数据
 		buffer.append(
 			"\"region\":[" +
 				"{\"name\":\"武汉\",\"value\":"+new Double(wuhan).intValue()+",\"percent\":"+format(wuhanPer)+"}," +
 				"{\"name\":\"湖北\",\"value\":"+new Double(hubei).intValue()+",\"percent\":"+format(hubeiPer)+"}," +
 				"{\"name\":\"其他地区\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}," +
-				"{\"name\":\""+province+"\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
+				"{\"name\":\""+city1+"\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
 			"],"
 		);
 
