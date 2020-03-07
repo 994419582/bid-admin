@@ -94,4 +94,11 @@ public interface IUserGroupService extends IService<UserGroup> {
      */
     boolean existUserGroup(Integer groupId,Integer userId);
 
+    /**
+     * 修改群人数
+     *
+     * @param groupId
+     * @param addAccount
+     */
+    void motifyUserAccount(Integer groupId, Integer addAccount);
 }

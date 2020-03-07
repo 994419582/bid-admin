@@ -15,21 +15,28 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
+import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.entity.GroupLog;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
+import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import cn.teleinfo.bidadmin.soybean.mapper.UserMapper;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.base.BaseServiceImpl;
+import org.springblade.core.tool.utils.Func;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,6 +50,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 	@Autowired
 	private IUserGroupService userGroupService;
+
+	@Autowired
+	private IGroupService groupService;
 
 	@Override
 	public IPage<User> selectUserPage(IPage<User> page, User user) {
@@ -81,20 +91,48 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
 	@Transactional
     public boolean removeUserByIds(List<Integer> ids) {
-		//删除所有用户
-		if (removeByIds(ids)) {
-			//查询用户加入的群组
-			for (Integer userId : ids) {
-				LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
-						eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
-				List<UserGroup> userGroups = userGroupService.list(queryWrapper);
-				//用户退群
-				for (UserGroup userGroup : userGroups) {
-					userGroupService.quitGroup(userGroup);
+		//查询用户加入的群组
+		for (Integer userId : ids) {
+			LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
+					eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
+			List<UserGroup> userGroups = userGroupService.list(queryWrapper);
+			//用户退群
+			for (UserGroup userGroup : userGroups) {
+				Integer groupId = userGroup.getGroupId();
+				//删除用户拥有的所有组织的管理员权限
+				List<Group> userManageGroups = groupService.getUserManageGroups(userId);
+				for (Group group : userManageGroups) {
+					String managers = group.getManagers();
+					ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
+					//Group表移除此管理员
+					managerList.remove(userId);
+					String newManagers = StringUtils.join(managerList, ",");
+					group.setManagers(newManagers);
+					groupService.updateById(group);
 				}
+				//删除用户拥有的所有组织数据管理员权限
+				List<Group> userDataManageGroups = groupService.getUserDataManageGroups(userId);
+				for (Group group : userDataManageGroups) {
+					String dataManagers = group.getDataManagers();
+					ArrayList<Integer> dataManagerList = new ArrayList<>(Func.toIntList(dataManagers));
+					//Group表移除此管理员
+					dataManagerList.remove(userId);
+					String newDataManagers = StringUtils.join(dataManagerList, ",");
+					group.setDataManagers(newDataManagers);
+					groupService.updateById(group);
+				}
+				//更新状态为已删除
+				LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
+						eq(UserGroup::getUserId, userId).
+						eq(UserGroup::getGroupId, groupId).
+						set(UserGroup::getStatus, UserGroup.DELETE);
+				userGroupService.update(userGroupLambdaQueryWrapper);
+				//减少群人数
+				userGroupService.motifyUserAccount(groupId, -1);
 			}
-			return true;
 		}
-		return false;
+		//删除所有用户
+		removeByIds(ids);
+		return true;
     }
 }
