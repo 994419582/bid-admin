@@ -119,7 +119,7 @@
                 </if>
             </when>
             <when test="region !=null and region==4">
-                and #{city} NOT LIKE '%湖北%'
+                and t.city NOT LIKE '%湖北%'
                 <if test="city !=null and city !=''">
                         and (#{city} NOT LIKE CONCAT('%',t.city,'%') OR t.city is null)
                 </if>
