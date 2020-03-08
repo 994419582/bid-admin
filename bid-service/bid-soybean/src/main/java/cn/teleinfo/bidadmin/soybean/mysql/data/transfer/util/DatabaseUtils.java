@@ -1,5 +1,6 @@
 package cn.teleinfo.bidadmin.soybean.mysql.data.transfer.util;
 
+import cn.teleinfo.bidadmin.soybean.mysql.data.transfer.config.TransferConfig;
 import cn.teleinfo.bidadmin.soybean.mysql.data.transfer.entity.ClocklnEntity;
 import cn.teleinfo.bidadmin.soybean.mysql.data.transfer.entity.UserEntity;
 
@@ -7,19 +8,9 @@ import java.sql.*;
 import java.time.LocalDateTime;
 
 public class DatabaseUtils {
-    private static String oldStr = "function getHours() { [native code] }";
+    private static final String oldStr = "function getHours() { [native code] }";
 
-//    private static String userTableName = "spf_soybean_user";
-//    private static String groupTableName = "spf_soybean_user_group";
-//    private static String clocklnTableName = "spf_soybean_clockln";
-
-    private static String groupTN = "soybean_group";
-
-    private static String userTableName = "soybean_user";
-    private static String groupTableName = "soybean_user_group";
-    private static String clocklnTableName = "soybean_clockln";
-
-    private static LocalDateTime now = LocalDateTime.now();
+    private static final LocalDateTime now = LocalDateTime.now();
 
     public static void userInsert(UserEntity u) {
         Connection con = JDBCUtils.getConnection();
@@ -32,7 +23,7 @@ public class DatabaseUtils {
         ResultSet select_rs_g = null;
         int id = 0;//存放数据库返回的用户注册过后的id
         try {
-            String select_sql = "select id from "+userTableName+" where wechat_id = ?";
+            String select_sql = "select id from "+ TransferConfig.userTableName+" where wechat_id = ?";
             select_ps = con.prepareStatement(select_sql);
             select_ps.setString(1, u.get_openid());
             select_rs = select_ps.executeQuery();
@@ -40,7 +31,7 @@ public class DatabaseUtils {
                 return;
             }
 
-            String sql = "insert into "+userTableName+" (" +
+            String sql = "insert into "+TransferConfig.userTableName+" (" +
                     "`wechat_id`, `nickname`,`name`,`phone`,`id_type`,`id_number`,`create_time`,`update_time`,`status`," +
                     "`remarks`,`gender`,`country`,`province`,`city`,`avatar_url`,`home_id`,`home_address`," +
                     "`detail_address`,`is_deleted`,`company_name`,`bid_address`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -50,7 +41,7 @@ public class DatabaseUtils {
             ps.setString(2, u.getName());//nickname
             ps.setString(3, u.getName());
             ps.setString(4, u.getPhone());
-            if ("大陆身份证".equals(u.getCertificate_type())) {
+            if ("大陆身份证".equals(u.getCertificate_type()) || "身份证号".equals(u.getCertificate_type())) {
                 ps.setInt(5, 1); // id_type
             } else if("护照".equals(u.getCertificate_type())) {
                 ps.setInt(5, 2); // id_type
@@ -73,7 +64,7 @@ public class DatabaseUtils {
             ps.setString(14, "");// city
             ps.setString(15, "");// avatar_url
             ps.setInt(16, -1);// home_id
-            ps.setString(17, (u.getHome_district()==null||"".equals(u.getHome_district()))?"":u.getHome_district().trim().replace(" ", "-"));// home_address
+            ps.setString(17, (u.getHome_district()==null||"".equals(u.getHome_district()))?"北京市-北京市-海淀区":u.getHome_district().trim().replace(" ", "-"));// home_address
             ps.setString(18, u.getHome_detail());//detail_address
             ps.setInt(19, 0);
             ps.setString(20, u.getCompany_name());
@@ -84,13 +75,13 @@ public class DatabaseUtils {
                 id=rs.getInt(1);
             }
 
-            String sql_g = "insert into "+groupTableName+" (`user_id`, `group_id`,`status`) values (?,?,?)";
+            String sql_g = "insert into "+TransferConfig.groupTableName+" (`user_id`, `group_id`,`status`) values (?,?,?)";
             ps_g=con.prepareStatement(sql_g, Statement.RETURN_GENERATED_KEYS);
 
             ps_g.setInt(1, id);// user_id
 
 
-            String select_sql_g = "select id from "+groupTN+" where full_name = ?";
+            String select_sql_g = "select id from "+TransferConfig.groupTN+" where full_name = ?";
             select_ps_g = con.prepareStatement(select_sql_g);
 
             String cd = u.getCompany_department().trim().replace(" ", "_");
@@ -144,7 +135,7 @@ public class DatabaseUtils {
     public static int userGroupUpdate() {
         Connection con = JDBCUtils.getConnection();
         PreparedStatement ps=null;
-        String sql = "UPDATE "+groupTableName+" SET group_id = NULL where group_id = -1";
+        String sql = "UPDATE "+TransferConfig.groupTableName+" SET group_id = NULL where group_id = -1";
         try {
             ps=con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             return ps.executeUpdate();
@@ -178,7 +169,7 @@ public class DatabaseUtils {
         int id = 0;//存放数据库返回的用户注册过后的id
         try {
             int userId = 0;
-            String select_sql = "select id from "+userTableName+" where wechat_id = ?";
+            String select_sql = "select id from "+TransferConfig.userTableName+" where wechat_id = ?";
             select_ps = con.prepareStatement(select_sql);
 //            select_ps.setString(1, c.getUserinfo().get(0).get_openid());
             select_ps.setString(1, c.get_openid());
@@ -188,7 +179,7 @@ public class DatabaseUtils {
             }
 
 
-            String sql = "insert into "+clocklnTableName+" (" +
+            String sql = "insert into "+TransferConfig.clocklnTableName+" (" +
                     "`user_id`,`address`,`healthy`,`hospital`,`wuhan`," +
                     "`gobacktime`,`remarks`,`create_time`,`quarantine`,`reason`," +
                     "`temperature`,`nobackreason`,`comfirmed`,`admitting`,`leave`," +
