@@ -133,6 +133,12 @@ public class User implements Serializable {
     private String bidAddress;
 
     /**
+     * 公司ID
+     */
+    @ApiModelProperty(value = "公司ID")
+    private Integer companyId;
+
+    /**
      * 公司名称
      */
     @ApiModelProperty(value = "公司名称")

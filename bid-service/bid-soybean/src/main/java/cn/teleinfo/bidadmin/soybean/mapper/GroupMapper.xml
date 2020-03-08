@@ -24,6 +24,7 @@
         <result column="contact" property="contact"/>
         <result column="phone" property="phone"/>
         <result column="data_managers" property="dataManagers"/>
+        <result column="group_code" property="groupCode"/>
     </resultMap>
 
 

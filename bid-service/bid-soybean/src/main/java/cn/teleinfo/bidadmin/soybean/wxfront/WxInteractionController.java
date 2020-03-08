@@ -260,9 +260,9 @@ public class WxInteractionController extends BladeController {
 		} else {
 			QueryWrapper<Clockln> clocklnLastQueryWrapper = new QueryWrapper<>();
 			clocklnLastQueryWrapper.eq("user_id", clockln.getUserId());
-			clocklnLastQueryWrapper.between("create_time", DateUtil.offsetDay(DateUtil.beginOfDay(DateUtil.date()), -28), DateUtil.endOfDay(DateUtil.date()));
+			clocklnLastQueryWrapper.between("create_time", DateUtil.offsetDay(DateUtil.beginOfDay(DateUtil.date()), -2), DateUtil.endOfDay(DateUtil.date()));
 			List<Clockln> lastlist = clocklnService.list(clocklnLastQueryWrapper);
-			boolean hubei = lastlist.stream().anyMatch(item -> StrUtil.contains(item.getAddress(), "湖北"));
+			boolean hubei = lastlist.stream().anyMatch(item -> StrUtil.contains(item.getHubei()+"", "1"));
 			clockln.setHubei(hubei ? 1 : 0);
 		}
 

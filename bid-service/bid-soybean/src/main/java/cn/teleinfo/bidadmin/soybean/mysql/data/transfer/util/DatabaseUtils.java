@@ -73,7 +73,7 @@ public class DatabaseUtils {
             ps.setString(14, "");// city
             ps.setString(15, "");// avatar_url
             ps.setInt(16, -1);// home_id
-            ps.setString(17, u.getHome_district());// home_address
+            ps.setString(17, (u.getHome_district()==null||"".equals(u.getHome_district()))?"":u.getHome_district().trim().replace(" ", "-"));// home_address
             ps.setString(18, u.getHome_detail());//detail_address
             ps.setInt(19, 0);
             ps.setString(20, u.getCompany_name());

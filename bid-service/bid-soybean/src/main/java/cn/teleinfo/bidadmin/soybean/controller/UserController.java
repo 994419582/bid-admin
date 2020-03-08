@@ -15,25 +15,35 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
+import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.User;
+import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
+import cn.teleinfo.bidadmin.soybean.service.IGroupService;
+import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.bifj.crypto.Keys;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
+import org.springblade.core.tool.utils.StringUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +60,8 @@ import java.util.UUID;
 public class UserController extends BladeController {
 
     private IUserService userService;
+    private IUserGroupService userGroupService;
+    private IGroupService groupService;
 
     /**
      * 是否存在
@@ -116,12 +128,22 @@ public class UserController extends BladeController {
      */
     @PostMapping("/save")
     @ApiOperationSupport(order = 4)
-    @ApiOperation(value = "新增", notes = "传入user")
+    @ApiOperation(value = "新增", notes = "传入user(对象), companyId(整型)")
     public R save(@Valid @RequestBody User user) {
         String uuid = UUID.randomUUID().toString();
         String bid = Keys.createBID(uuid);
         user.setBidAddress(bid);
-        return R.status(userService.save(user));
+
+        boolean flag = userService.save(user);
+        if (!StringUtil.isEmpty(user.getPhone())) {
+            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                    eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
+            Group detail = groupService.getOne(queryWrapper, false);
+            if (detail != null) {
+                return joinGroup(user, detail);
+            }
+        }
+        return R.status(flag);
     }
 
     /**
@@ -139,12 +161,22 @@ public class UserController extends BladeController {
      */
     @PostMapping("/submit")
     @ApiOperationSupport(order = 6)
-    @ApiOperation(value = "新增或修改", notes = "传入user")
+    @ApiOperation(value = "新增或修改", notes = "传入user(对象), companyId(整型)")
     public R submit(@Valid @RequestBody User user) {
         String uuid = UUID.randomUUID().toString();
         String bid = Keys.createBID(uuid);
         user.setBidAddress(bid);
-        return R.status(userService.saveOrUpdate(user));
+
+        boolean flag = userService.saveOrUpdate(user);
+        if (!StringUtil.isEmpty(user.getPhone())) {
+            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                    eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
+            Group detail = groupService.getOne(queryWrapper, false);
+            if (detail != null) {
+                return joinGroup(user, detail);
+            }
+        }
+        return R.status(flag);
     }
 
     /**
@@ -152,12 +184,63 @@ public class UserController extends BladeController {
      */
     @PostMapping("/saveOrUpdate")
     @ApiOperationSupport(order = 6)
-    @ApiOperation(value = "新增或修改", notes = "传入user")
+    @ApiOperation(value = "新增或修改", notes = "传入user(对象), companyId(整型)")
     public R saveOrUpdate(@Valid @RequestBody User user) {
         String uuid = UUID.randomUUID().toString();
         String bid = Keys.createBID(uuid);
         user.setBidAddress(bid);
-        return R.status(userService.submit(user));
+        boolean flag = userService.submit(user);
+        if (!StringUtil.isEmpty(user.getPhone())) {
+            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                    eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
+            Group detail = groupService.getOne(queryWrapper, false);
+            if (detail != null) {
+                return joinGroup(user, detail);
+            }
+        }
+        return R.status(flag);
+    }
+
+    private R joinGroup(User user, Group group) {
+        if (user.getId() == null) {
+            user = userService.findByWechatId(user.getWechatId());
+        }
+
+        UserGroup userGroup = new UserGroup();
+        userGroup.setGroupId(group.getId());
+        userGroup.setUserId(user.getId());
+        boolean flag = userGroupService.saveUserGroup(userGroup);// 用户加入群组
+        if(flag) {
+            String managers = group.getManagers();
+            ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
+            if (managerList.contains(user.getId())) {
+                throw new ApiException("管理员已存在");
+            }
+            managerList.add(user.getId());
+            String newManagers = StringUtils.join(managerList, ",");
+            group.setManagers(newManagers);
+            return R.status(groupService.updateById(group));
+        }
+        return R.status(flag);
+       /* Group group = groupService.getById(companyId);
+        if (group != null
+                && group.getPhone() != null
+                && !"".equals(group.getPhone())
+                && group.getPhone().equals(user.getPhone())) // 手机号相同则设为管理员
+        {
+            String managers = group.getManagers();
+            ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
+            if (managerList.contains(user.getId())) {
+                throw new ApiException("管理员已存在");
+            }
+            managerList.add(user.getId());
+            String newManagers = StringUtils.join(managerList, ",");
+            group.setManagers(newManagers);
+            return R.status(groupService.updateById(group));
+        } else {
+            return R.status(flag);
+        }
+*/
     }
 
 

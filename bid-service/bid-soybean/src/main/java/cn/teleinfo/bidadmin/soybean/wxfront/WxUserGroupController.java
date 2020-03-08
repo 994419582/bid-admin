@@ -23,20 +23,17 @@ import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import lombok.AllArgsConstructor;
+import org.apache.ibatis.exceptions.TooManyResultsException;
+import org.mybatis.spring.MyBatisSystemException;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.tool.api.R;
-import org.springblade.core.tool.utils.Func;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -71,6 +68,27 @@ public class WxUserGroupController extends BladeController {
             return R.status(userGroupService.saveUserGroup(userGroup));
         } catch (Exception e) {
             return R.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * 获取用户已加入的群
+     */
+    @GetMapping("/user/currentGroup")
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "获取用户已加入的群", notes = "获取用户已加入的群")
+    public R<Group> save(@Valid @RequestParam(name = "userId", required = true) Integer userId) {
+        LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
+        try {
+            UserGroup userGroup = userGroupService.getOne(queryWrapper);
+            if (userGroup == null) {
+                return R.data(null);
+            } else {
+                return R.data(groupService.getById(userGroup.getGroupId()));
+            }
+        } catch (MyBatisSystemException e) {
+            return R.fail("数据异常, 请联系管理员");
         }
     }
 
@@ -141,21 +159,21 @@ public class WxUserGroupController extends BladeController {
                     }
                 }
             }
-			//当用户管理的群是管理员管理器的父群或者同群时
-			if (flag == true ) {
-				throw new ApiException("您没有权限");
-			}
-			//校验用户加入的群是否为管理员管理的子群，false代表不是子群
-			boolean childFlag = false;
-			for (Group managerGroup : managerGroups) {
-				if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId) || managerGroup.getId().equals(groupId)) {
-					childFlag = true;
-				}
-			}
-			//用户加入的群不是管理员管理的子群时，提示没有权限
-			if (childFlag == false) {
-				throw new ApiException("您没有权限");
-			}
+            //当用户管理的群是管理员管理器的父群或者同群时
+            if (flag == true) {
+                throw new ApiException("您没有权限");
+            }
+            //校验用户加入的群是否为管理员管理的子群，false代表不是子群
+            boolean childFlag = false;
+            for (Group managerGroup : managerGroups) {
+                if (groupService.isChildrenGroup(groupAndParent, managerGroup.getId(), groupId) || managerGroup.getId().equals(groupId)) {
+                    childFlag = true;
+                }
+            }
+            //用户加入的群不是管理员管理的子群时，提示没有权限
+            if (childFlag == false) {
+                throw new ApiException("您没有权限");
+            }
             // 删除
             return R.status(userGroupService.managerRemoveUser(userGroup));
         } catch (Exception e) {

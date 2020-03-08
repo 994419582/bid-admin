@@ -157,8 +157,8 @@ public class DownloadController extends BladeController {
                     long e3B = leaveClocklnsToday.stream().filter(item -> StrUtil.contains(item.getAddress(), destination) && DateUtil.today().equals(item.getGobacktime())).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 1).setCellValue(e3B);
 
-                    // 来京人员累计总数(含当日新增) -----> 已离过京 + 当天打卡地在北京
-                    long e3C = leaveClocklnsToday.stream().filter(item -> StrUtil.contains(item.getAddress(), destination)).count();
+                    // 在京人员累计总数(含当日新增) -----> 当天打卡地在北京
+                    long e3C = clocklnsToday.stream().filter(item -> StrUtil.contains(item.getAddress(), destination)).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 2).setCellValue(e3C);
 
                     // 从湖北省或途径湖北来京员工人数 人数合计(B) -----> 已离过京 + 途径湖北
@@ -234,15 +234,15 @@ public class DownloadController extends BladeController {
 
                         CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 9).setCellValue(clockln.getLeave() == 1 ? "否" : "是");
                         if (clockln.getLeave() != 1) {
-                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 10).setCellValue("无");
-                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 11).setCellValue("无");
+                            // CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 10).setCellValue("无");
+                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 11).setCellValue(clockln.getLeavetime());
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 12).setCellValue(cacheDict.get("transport" + clockln.getTransport()));
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 13).setCellValue(clockln.getFlight());
                         }
 
                         CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 14).setCellValue(clockln.getLeaveCity() == 1 ? "否" : "是");
                         if (clockln.getLeaveCity() != 1) {
-                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 15).setCellValue("无");
+                            CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 15).setCellValue(clockln.getLeavetime());
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 16).setCellValue(cacheDict.get("transport" + clockln.getTransport()));
                             CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 5 + i), 17).setCellValue(clockln.getFlight());
                         }
