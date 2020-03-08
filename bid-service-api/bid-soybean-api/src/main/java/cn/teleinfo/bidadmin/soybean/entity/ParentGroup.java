@@ -41,17 +41,17 @@ public class ParentGroup implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //群状态(0:正常，1:已审核，2:删除)
+    //部门状态(0:正常，1:已审核，2:删除)
     public static final Integer NORMAL = 0;
     public static final Integer APPROVAL_PENDING = 1;
     public static final Integer DELETE = 2;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
-    @ApiModelProperty(value = "父群ID")
+    @ApiModelProperty(value = "上级部门ID")
     private Integer parentId;
 
-    @ApiModelProperty(value = "子群ID")
+    @ApiModelProperty(value = "部门ID")
     private Integer groupId;
 
     @ApiModelProperty(value = "状态（0:未读，1:已读，2:删除）")

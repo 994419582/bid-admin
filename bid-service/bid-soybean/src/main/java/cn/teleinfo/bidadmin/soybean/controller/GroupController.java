@@ -199,7 +199,7 @@ public class GroupController extends BladeController {
 	@ApiOperation(value = "新增", notes = "传入group")
 	public R save(@Valid @RequestBody Group group) {
 		if (StringUtils.isEmpty(group.getParentId())) {
-			throw new ApiException("父群组不能为空");
+			throw new ApiException("上级部门不能为空");
 		}
 		return R.status(groupService.saveGroup(group));
 	}
@@ -216,11 +216,11 @@ public class GroupController extends BladeController {
 			throw new ApiException("主键Id不能为空");
 		}
 		if (!groupService.existGroup(group.getId())) {
-			throw new ApiException("群组不存在");
+			throw new ApiException("部门不存在");
 		}
 		//不提供人数修改功能
 		if (group.getUserAccount() != null) {
-			throw new ApiException("群人数不能更新");
+			throw new ApiException("部门人数不能更新");
 		}
 		return R.status(groupService.updateGroup(group));
 	}

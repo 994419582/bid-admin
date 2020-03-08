@@ -45,7 +45,7 @@ public class GroupLogServiceImpl extends ServiceImpl<GroupLogMapper, GroupLog> i
 			throw new ApiException("用户ID不能为空");
 		}
 		if (userId == null) {
-			throw new ApiException("群组ID不能为空");
+			throw new ApiException("部门ID不能为空");
 		}
 		GroupLog groupLog = new GroupLog();
 		groupLog.setUserId(groupId);

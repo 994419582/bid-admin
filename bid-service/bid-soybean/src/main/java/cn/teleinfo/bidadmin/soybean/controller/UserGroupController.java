@@ -123,7 +123,7 @@ public class UserGroupController extends BladeController {
 	@ApiOperation(value = "新增或修改", notes = "传入userGroup")
 	public R submit(@Valid @RequestBody UserGroup userGroup) {
 		if (userGroup.getId() != null) {
-			throw new ApiException("群组不允许修改, 请把ID设置为空");
+			throw new ApiException("部门不允许修改, 请把ID设置为空");
 		}
 		return R.status(userGroupService.saveUserGroup(userGroup));
 	}
