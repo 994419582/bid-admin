@@ -396,7 +396,7 @@ public class WxClocklnCensusController extends BladeController {
 			"\"hospitalization\":[" +
 				"{\"name\":\"确诊隔离\",\"value\":"+new Double(diagnosis).intValue()+",\"percent\":"+format(+diagnosisPer)+"}," +
 				"{\"name\":\"一般隔离\",\"value\":"+new Double(isolator).intValue()+",\"percent\":"+format(isolatorPer)+"}," +
-				"{\"name\":\"非隔离期\",\"value\":"+new Double(outisolator).intValue()+",\"percent\":"+format(outisolatorPer)+"}," +
+				"{\"name\":\"非隔离期\",\"value\":"+new Double(outisolator).intValue()+",\"percent\":"+format(outisolatorPer)+"}" +
 			"],"
 		);
 
@@ -405,7 +405,7 @@ public class WxClocklnCensusController extends BladeController {
 			"\"fugong\":[" +
 				"{\"name\":\"在岗办公\",\"value\":"+new Double(onJob).intValue()+",\"percent\":"+format(+onJobPer)+"}," +
 				"{\"name\":\"居家办公\",\"value\":"+new Double(awayJob).intValue()+",\"percent\":"+format(awayJobPer)+"}," +
-				"{\"name\":\"居家隔离\",\"value\":"+new Double(haveNoJob).intValue()+",\"percent\":"+format(haveNoJobPer)+"}" +
+				"{\"name\":\"居家隔离\",\"value\":"+new Double(haveNoJob).intValue()+",\"percent\":"+format(haveNoJobPer)+"}," +
 				"{\"name\":\"监督隔离\",\"value\":"+new Double(superviseJob).intValue()+",\"percent\":"+format(superviseJobPer)+"}" +
 			"]}"
 		);
@@ -418,11 +418,11 @@ public class WxClocklnCensusController extends BladeController {
 	}
 
 	private String format(double in){
-		DecimalFormat df = new DecimalFormat("#.00");
+//		DecimalFormat df = new DecimalFormat("#.00");
 		if (in==0){
 			return "0";
 		}
-		return df.format(in);
+		return String.format("%.2f",in);
 	}
 	
 }
