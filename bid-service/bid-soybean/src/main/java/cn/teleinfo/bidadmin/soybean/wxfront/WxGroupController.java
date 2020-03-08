@@ -59,7 +59,7 @@ import java.util.stream.Collectors;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/wx/group")
-@Api(value = "", tags = "微信群组接口")
+@Api(value = "", tags = "微信部门接口")
 public class WxGroupController extends BladeController {
 
     private IGroupService groupService;
@@ -79,7 +79,7 @@ public class WxGroupController extends BladeController {
     public R<GroupVO> detail(Group group) {
         try {
             if (group.getId() == null) {
-                throw new ApiException("群组id不能为空");
+                throw new ApiException("部门id不能为空");
             }
             Group detail = groupService.getGroupById(group.getId());
             return R.data(GroupWrapper.build().entityVO(detail));
@@ -132,7 +132,7 @@ public class WxGroupController extends BladeController {
         try {
             Group detail = groupService.getGroupById(groupId);
             if (detail == null) {
-                throw new ApiException("群组不存在");
+                throw new ApiException("部门不存在");
             }
             return R.data(true);
         } catch (ApiException e) {
@@ -269,11 +269,11 @@ public class WxGroupController extends BladeController {
                 throw new ApiException("主键Id不能为空");
             }
             if (!groupService.existGroup(groupId)) {
-                throw new ApiException("群组不存在");
+                throw new ApiException("部门不存在");
             }
             //权限校验
             if (!groupService.isGroupCreater(groupId, userId)) {
-                throw new ApiException("用户ID和群创建人ID不一致");
+                throw new ApiException("用户ID和部门创建人ID不一致");
             }
             //不提供管理员修改功能
             if (group.getManagers() != null) {
@@ -281,11 +281,11 @@ public class WxGroupController extends BladeController {
             }
             //不提供父群组修改功能
             if (group.getParentId() != null) {
-                throw new ApiException("此接口不提供父群组修改功能");
+                throw new ApiException("此接口不提供父部门修改功能");
             }
             //不提供人数修改功能
             if (group.getUserAccount() != null) {
-                throw new ApiException("群人数不能更新");
+                throw new ApiException("部门人数不能更新");
             }
             return R.status(groupService.updateById(group));
         } catch (ApiException e) {
@@ -309,10 +309,10 @@ public class WxGroupController extends BladeController {
             //查询用户Id和创建人是否一致
             for (Integer id : Func.toIntList(ids)) {
                 if (!groupService.existGroup(id)) {
-                    throw new ApiException("群不存在");
+                    throw new ApiException("部门不存在");
                 }
                 if (!groupService.isGroupCreater(id, userId)) {
-                    throw new ApiException("用户ID和群创建人ID不一致");
+                    throw new ApiException("用户ID和部门创建人ID不一致");
                 }
             }
 //            return R.status(groupService.removeGroupByIds(ids));
@@ -338,13 +338,13 @@ public class WxGroupController extends BladeController {
                       @RequestParam(name = "transferId", required = true) Integer transferId) {
         try {
             if (!groupService.isGroupCreater(groupId, userId)) {
-                throw new ApiException("用户不是群组创建人");
+                throw new ApiException("用户不是部门创建人");
             }
             if (!groupService.existUser(userId)) {
                 throw new ApiException("用户不存在");
             }
             if (!userGroupService.existUserGroup(groupId, transferId)) {
-                throw new ApiException("用户进群后才能任命为管理员");
+                throw new ApiException("用户进入部门后才能任命为管理员");
             }
             Group group = new Group();
             group.setId(groupId);
@@ -376,13 +376,13 @@ public class WxGroupController extends BladeController {
 
         try {
             if (!groupService.existUser(creatorId)) {
-                throw new ApiException("父群创建人不存在");
+                throw new ApiException("上级部门创建人不存在");
             }
             if (!groupService.existGroup(groupId)) {
-                throw new ApiException("子群组不存在");
+                throw new ApiException("部门不存在");
             }
             if (!groupService.isGroupCreater(parentGroupId, creatorId)) {
-                throw new ApiException("改用户不是创建人");
+                throw new ApiException("您不是创建人");
             }
             ParentGroup parentGroup = new ParentGroup();
             parentGroup.setParentId(parentGroupId);
@@ -391,7 +391,7 @@ public class WxGroupController extends BladeController {
 //        parentGroup.setStatus(ParentGroup.DELETE);
             ParentGroup parent = parentGroupService.getOne(Condition.getQueryWrapper(parentGroup));
             if (parent == null) {
-                throw new ApiException("子群不存在");
+                throw new ApiException("下级部门不存在");
             }
             parentGroup.setId(parent.getId());
             parentGroup.setSort(sort);
@@ -443,7 +443,7 @@ public class WxGroupController extends BladeController {
             //校验改群及其子群下是否有此用户
             List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
             if (!groupUserIds.contains(managerId)) {
-                throw new ApiException("改组织下未发现ID等于" + managerId + "的用户");
+                throw new ApiException("改部门下未发现ID等于" + managerId + "的用户");
             }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
@@ -507,7 +507,7 @@ public class WxGroupController extends BladeController {
             //校验改群及其子群下是否有此用户
             List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
             if (!groupUserIds.contains(managerId)) {
-                throw new ApiException("改组织下未发现ID等于" + managerId + "的用户");
+                throw new ApiException("改部门下未发现ID等于" + managerId + "的用户");
             }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
@@ -569,7 +569,7 @@ public class WxGroupController extends BladeController {
             //校验改群及其子群下是否有此用户
             List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
             if (!groupUserIds.contains(managerId)) {
-                throw new ApiException("改组织下未发现ID等于" + managerId + "的用户");
+                throw new ApiException("改部门下未发现ID等于" + managerId + "的用户");
             }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
@@ -631,7 +631,7 @@ public class WxGroupController extends BladeController {
             //校验改群及其子群下是否有此用户
             List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
             if (!groupUserIds.contains(managerId)) {
-                throw new ApiException("改组织下未发现ID等于" + managerId + "的用户");
+                throw new ApiException("改部门下未发现ID等于" + managerId + "的用户");
             }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);

@@ -96,7 +96,7 @@ public class WxClocklnCensusController extends BladeController {
 		Group group= groupService.getById(groupId);
 
 		if (group==null){
-			return R.fail("该群组不存在,请输入正确的群组ID");
+			return R.fail("该部门不存在,请输入正确的部门ID");
 		}
 		String province=group.getAddressName();
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
@@ -162,11 +162,11 @@ public class WxClocklnCensusController extends BladeController {
 	})
 	public R<IPage<UserVO>> list(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime, Query query) {
 		if (groupId == null){
-			return R.fail("群组ID不能为空");
+			return R.fail("部门ID不能为空");
 		}
 		Group group= groupService.getById(groupId);
 		if (group==null){
-			return R.fail("该群组不存在,请输入正确的群组ID");
+			return R.fail("该部门不存在,请输入正确的部门ID");
 		}
 		IPage<UserVO> users=groupService.selectUserPageByParentId(groupId,Condition.getPage(query));
 		users.getRecords().forEach(x ->{
@@ -202,12 +202,12 @@ public class WxClocklnCensusController extends BladeController {
 
 
 		if (groupId == null){
-			return ("群组ID不能为空");
+			return ("部门ID不能为空");
 		}
 		Group group= groupService.getById(groupId);
 
 		if (group==null){
-			return ("该群组不存在,请输入正确的群组ID");
+			return ("该部门不存在,请输入正确的部门ID");
 		}
 		String province=group.getAddressName();
 		String city=province;
