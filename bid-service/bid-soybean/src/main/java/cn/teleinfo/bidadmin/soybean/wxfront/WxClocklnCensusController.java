@@ -101,6 +101,9 @@ public class WxClocklnCensusController extends BladeController {
 		String province=group.getAddressName();
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
+			if (!StringUtil.isEmpty(province) && province.contains("，")){
+				province=province.substring(0,province.lastIndexOf("，"));
+			}
 			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, region, null, null,province);
 			return R.data(pages);
 		}

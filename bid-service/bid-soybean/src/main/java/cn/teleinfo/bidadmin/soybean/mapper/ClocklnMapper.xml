@@ -119,10 +119,10 @@
                 </if>
             </when>
             <when test="region !=null and region==4">
-                and t.city NOT LIKE '%湖北%'
-                <if test="city !=null and city !=''">
-                        and (#{city} NOT LIKE CONCAT('%',t.city,'%') OR t.city is null)
+                and( (t.city NOT LIKE '%湖北%'
+                <if test="city !=null and city !=''">and t.city NOT LIKE CONCAT( '%',#{city},'%')
                 </if>
+                ) OR t.city is null)
             </when>
         </choose>
 
