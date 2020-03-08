@@ -12,7 +12,6 @@ import static cn.teleinfo.bidadmin.soybean.mysql.data.transfer.util.DatabaseUtil
 
 public class MainClass {
 
-
 //    public static void main(String[] args) {
 ////      用户表的数据
 //        List<? extends UserEntity> userJsonList = JsonUtils.filePathToEntity(TransferConfig.userPath, new UserEntity().getClass());

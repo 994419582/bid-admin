@@ -34,19 +34,23 @@ public class DatabaseUtils {
             String sql = "insert into "+TransferConfig.userTableName+" (" +
                     "`wechat_id`, `nickname`,`name`,`phone`,`id_type`,`id_number`,`create_time`,`update_time`,`status`," +
                     "`remarks`,`gender`,`country`,`province`,`city`,`avatar_url`,`home_id`,`home_address`," +
-                    "`detail_address`,`is_deleted`,`company_name`,`bid_address`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "`detail_address`,`is_deleted`,`company_name`,`company_address`,`company_detail_address`,`bid_address`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             ps=con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             ps.setString(1, u.get_openid());// wechat_id
             ps.setString(2, u.getName());//nickname
             ps.setString(3, u.getName());
             ps.setString(4, u.getPhone());
-            if ("大陆身份证".equals(u.getCertificate_type()) || "身份证号".equals(u.getCertificate_type())) {
+            if (u.getCertificate_number().length() < 8) {
+                ps.setInt(5, 4); // id_type
+            } else if ("大陆身份证".equals(u.getCertificate_type()) || "身份证号".equals(u.getCertificate_type())) {
                 ps.setInt(5, 1); // id_type
             } else if("护照".equals(u.getCertificate_type())) {
                 ps.setInt(5, 2); // id_type
             } else if("军官证".equals(u.getCertificate_type())) {
                 ps.setInt(5, 3); // id_type
+            } else if("员工号".equals(u.getCertificate_type())) {
+                ps.setInt(5, 4); // id_type
             } else {
                 ps.setInt(5, 1); // id_type
             }
@@ -68,7 +72,9 @@ public class DatabaseUtils {
             ps.setString(18, u.getHome_detail());//detail_address
             ps.setInt(19, 0);
             ps.setString(20, u.getCompany_name());
-            ps.setString(21, u.getBid_address());
+            ps.setString(21, (u.getCompany_district()==null||"".equals(u.getCompany_district()))?"北京市-北京市-海淀区":u.getCompany_district().trim().replace(" ", "-"));
+            ps.setString(22, u.getCompany_detail());
+            ps.setString(23, u.getBid_address());
             ps.executeUpdate();
             rs=ps.getGeneratedKeys();//这一句代码就是得到插入的记录的id
             if(rs.next()){
@@ -186,7 +192,7 @@ public class DatabaseUtils {
                     "`leavetime`,`flight`,`otherhealthy`,`hubei`," +
                     "`beijing`,`transport`,`jobstatus`,`room_person`,`room_person_other`," +
                     "`room_company`,`room_company_other`,`neighbor`,`neighbor_other`," +
-                    "`leave_city`,`temperature_flag`,`temperature_remark`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    "`leave_city`,`temperature_flag`,`temperature_remark`,`city`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             ps=con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             ps.setInt(1, userId);// user_id
@@ -272,6 +278,7 @@ public class DatabaseUtils {
             ps.setInt(29, -1);//leave_city
             ps.setInt(30, Integer.parseInt((c.getTemperStatusFlag()==null||"".equals(c.getTemperStatusFlag()))?"-1":c.getTemperStatusFlag()));
             ps.setString(31, c.getTemperotherremark());
+            ps.setString(32, "");
             ps.executeUpdate();
         } catch (Exception e) {
             // TODO Auto-generated catch block
