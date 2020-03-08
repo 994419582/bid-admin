@@ -33,7 +33,7 @@ public class RegistryConfiguration implements WebMvcConfigurer {
 	public SecureRegistry secureRegistry() {
 		SecureRegistry secureRegistry = new SecureRegistry();
 
-		secureRegistry.excludePathPatterns("/wx/**");
+		secureRegistry.excludePathPatterns("/front/**");
 		return secureRegistry;
 	}
 

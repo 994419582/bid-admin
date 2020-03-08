@@ -190,12 +190,14 @@ public class UserController extends BladeController {
         String bid = Keys.createBID(uuid);
         user.setBidAddress(bid);
         boolean flag = userService.submit(user);
-        if (!StringUtil.isEmpty(user.getPhone())) {
-            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
-                    eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
-            Group detail = groupService.getOne(queryWrapper, false);
-            if (detail != null) {
-                return joinGroup(user, detail);
+        if (user.getId() == null || user.getId() <0) {
+            if (!StringUtil.isEmpty(user.getPhone())) {
+                LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                        eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
+                Group detail = groupService.getOne(queryWrapper, false);
+                if (detail != null) {
+                    return joinGroup(user, detail);
+                }
             }
         }
         return R.status(flag);
