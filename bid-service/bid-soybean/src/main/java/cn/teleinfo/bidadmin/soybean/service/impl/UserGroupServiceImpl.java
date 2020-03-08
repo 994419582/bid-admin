@@ -154,9 +154,6 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 		if (!existUserGroup(groupId, userId)) {
 			throw new ApiException("用户已退群");
 		}
-        if (groupService.isGroupCreater(groupId, userId)) {
-            throw new ApiException("创建者不能退群");
-        }
         //删除用户拥有的所有管理员权限
         List<Group> userManageGroups = groupService.getUserManageGroups(userId);
         for (Group group : userManageGroups) {
