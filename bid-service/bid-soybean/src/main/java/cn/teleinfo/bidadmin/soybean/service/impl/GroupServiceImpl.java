@@ -97,7 +97,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //新增群组
         if (group.getId() == null) {
             if (org.springframework.util.StringUtils.isEmpty(group.getParentId())) {
-                throw new ApiException("父群组不能为空");
+                throw new ApiException("上级部门不能为空");
             }
             saveGroup(group);
         } else {
@@ -106,11 +106,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 throw new ApiException("主键Id不能为空");
             }
             if (!existGroup(group.getId())) {
-                throw new ApiException("群组不存在");
+                throw new ApiException("部门不存在");
             }
             //不提供人数修改功能
             if (group.getUserAccount() != null) {
-                throw new ApiException("群人数不能更新");
+                throw new ApiException("部门人数不能更新");
             }
             updateGroup(group);
         }
@@ -120,7 +120,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public boolean close(Integer groupId, Integer creatorId) {
         if (!isGroupCreater(groupId, creatorId)) {
-            throw new ApiException("不是群创建人");
+            throw new ApiException("不是部门创建人");
         }
         //逻辑删除群
         Group group = new Group();
@@ -339,14 +339,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     private boolean isGroupMangerOrCreater(Integer groupId, Integer userId) {
         if (groupId == null) {
-            throw new ApiException("群ID不能为null");
+            throw new ApiException("部门ID不能为null");
         }
         if (userId == null) {
             throw new ApiException("用户ID不能为null");
         }
         Group group = this.getGroupById(groupId);
         if (group == null) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("部门不存在");
         }
         User user = userService.getById(userId);
         if (user == null) {
@@ -366,14 +366,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public boolean isGroupManger(Integer groupId, Integer userId) {
         if (groupId == null) {
-            throw new ApiException("群ID不能为null");
+            throw new ApiException("部门ID不能为null");
         }
         if (userId == null) {
             throw new ApiException("用户ID不能为null");
         }
         Group group = this.getGroupById(groupId);
         if (group == null) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("部门不存在");
         }
         User user = userService.getById(userId);
         if (user == null) {
@@ -389,14 +389,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public boolean isGroupCreater(Integer groupId, Integer userId) {
         if (groupId == null) {
-            throw new ApiException("群ID不能为null");
+            throw new ApiException("部门ID不能为null");
         }
         if (userId == null) {
             throw new ApiException("用户ID不能为null");
         }
         Group group = this.getGroupById(groupId);
         if (group == null) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("部门组不存在");
         }
         User user = userService.getById(userId);
         if (user == null) {
@@ -412,7 +412,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public boolean existGroup(Integer groupId) {
         if (groupId == null) {
-            throw new ApiException("群组ID不能为空");
+            throw new ApiException("部门ID不能为空");
         }
         Group group = getGroupById(groupId);
         if (group == null) {
@@ -435,7 +435,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     public Group getGroupById(Integer groupId) {
         if (groupId == null) {
-            throw new ApiException("群ID不能为Null");
+            throw new ApiException("部门ID不能为Null");
         }
         Group group = new Group();
         group.setId(groupId);
@@ -462,7 +462,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public IPage<UserVO> selectUserPageByParentId(Integer parentId, IPage<User> page) {
         if (!existGroup(parentId)) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("部门不存在");
         }
 
         List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
@@ -496,7 +496,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public UserBO selectUserByParentId(Integer parentId) {
         if (!existGroup(parentId)) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("部门不存在");
         }
 
         List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
@@ -537,7 +537,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     public List<Integer> selectUserIdByParentId(Integer parentId) {
         if (!existGroup(parentId)) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("部门不存在");
         }
 
         List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
@@ -584,13 +584,13 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Transactional
     public boolean saveGroup(Group group) {
         if (group.getId() != null) {
-            throw new ApiException("群主键ID只能为空");
+            throw new ApiException("部门主键ID只能为空");
         }
         if (group.getUserAccount() != null) {
-            throw new ApiException("群人数只能为空");
+            throw new ApiException("部门人数只能为空");
         }
         if (group.getStatus() != null) {
-            throw new ApiException("群状态只能为空");
+            throw new ApiException("部门状态只能为空");
         }
         checkParentGroupAndManager(group);
         //设置群人数为0
@@ -615,16 +615,16 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             group.setParentId(Group.TOP_PARENT_ID);
         } else {
                 if (!existGroup(parentId)) {
-                    throw new ApiException("父群组不存在");
+                    throw new ApiException("上级部门不存在");
                 }
                 if (groupId != null) {
                     if (groupId.equals(parentId)) {
-                        throw new ApiException("不能指定自己为父群组");
+                        throw new ApiException("不能指定自己为上级部门");
                     }
                     List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
                     //校验是否为子群组
                     if (isChildrenGroup(groupAndParentList, groupId, parentId)) {
-                        throw new ApiException("不能指定当前的子群组为父群组");
+                        throw new ApiException("不能指定当前的下级部门为上级部门");
                     }
                 }
         }
@@ -786,17 +786,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             }).collect(Collectors.toList());
             for (Group group : groups) {
                 if (StringUtils.isBlank(group.getName())) {
-                    throw new ApiException("组织名称不能为空");
+                    throw new ApiException("部门名称不能为空");
                 }
                 if (StringUtils.isBlank(group.getParentName())) {
-                    throw new ApiException("父组织名称不能为空");
+                    throw new ApiException("上级部门名称不能为空");
                 }
                 //去除空格
                 group.setName(group.getName().trim());
                 group.setParentName(group.getParentName().trim());
                 Integer groupType = group.getGroupType();
                 if (!groupType.equals(Group.TYPE_ORGANIZATION) && !groupType.equals(Group.TYPE_PERSON)) {
-                    throw new ApiException("组织类型错误");
+                    throw new ApiException("部门类型错误");
                 }
                 //设置全称,全称不能重复
                 group.setFullName(group.getParentName() + "_" +group.getName());
@@ -818,7 +818,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
                     eq(Group::getName, topGroup.getName()).eq(Group::getStatus, Group.NORMAL);
             if (count(groupLambdaQueryWrapper) > 0) {
-                throw new ApiException("一级组织名称不能重名");
+                throw new ApiException("一级部门名称不能重名");
             }
             //查询一级组织父组织名称
             String topParentName = getGroupById(Group.TOP_PARENT_ID).getName();
@@ -861,20 +861,20 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 List<Group> groupList = allGroups.stream().filter(filterGroup -> {
                 String name = filterGroup.getName();
                 if (name == null) {
-                    throw new ApiException("组织名称不能为空");
+                    throw new ApiException("部门名称不能为空");
                 } else {
                     return name.equals(group.getParentName());
                 }
                 }).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(groupList)) {
-                    throw new ApiException("未发现"+group.getName()+"的父群组");
+                    throw new ApiException("未发现"+group.getName()+"的上级部门");
                 }
                 if (groupList.size() > 1) {
-                    throw new ApiException("一个组织只能有一个父群组");
+                    throw new ApiException("一个部门只能有一个上级部门");
                 }
                 //个人群不能是其他群的父群
                 if (groupList.get(0).getGroupType().equals(Group.TYPE_PERSON)) {
-                    throw new ApiException("父组织群不能是个人群");
+                    throw new ApiException("上级部门类型不能为个人类型");
                 }
                 //设置父ID
                 parentGroup.setParentId(groupList.get(0).getId());
@@ -882,7 +882,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 parentGroupService.save(parentGroup);
             }
         } catch (DuplicateKeyException e) {
-            throw new ApiException("群全称" + fullName + "已存在");
+            throw new ApiException("部门全称" + fullName + "已存在");
         } catch (ProtocolException e) {
             throw new ApiException("读取文件异常");
         } catch (MalformedURLException e) {

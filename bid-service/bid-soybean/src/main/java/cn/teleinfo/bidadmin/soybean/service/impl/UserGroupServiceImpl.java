@@ -82,7 +82,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 				eq(UserGroup::getUserId, userGroup.getUserId()).
 				eq(UserGroup::getStatus, UserGroup.NORMAL));
         if (!CollectionUtils.isEmpty(userGroups)) {
-            throw new ApiException("用户已添加此群组");
+            throw new ApiException("用户已添加此部门");
         }
     }
 
@@ -146,7 +146,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         Integer groupId = userGroup.getGroupId();
         Integer userId = userGroup.getUserId();
         if (!groupService.existGroup(groupId)) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("部门不存在");
         }
         if (!groupService.existUser(userId)) {
             throw new ApiException("用户不存在");
@@ -154,9 +154,6 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 		if (!existUserGroup(groupId, userId)) {
 			throw new ApiException("用户已退群");
 		}
-        if (groupService.isGroupCreater(groupId, userId)) {
-            throw new ApiException("创建者不能退群");
-        }
         //删除用户拥有的所有管理员权限
         List<Group> userManageGroups = groupService.getUserManageGroups(userId);
         for (Group group : userManageGroups) {
@@ -206,7 +203,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         Integer groupId = userGroup.getGroupId();
         Integer userId = userGroup.getUserId();
         if (!groupService.existGroup(groupId)) {
-            throw new ApiException("群组不存在");
+            throw new ApiException("部门不存在");
         }
         if (!groupService.existUser(userId)) {
             throw new ApiException("用户不存在");
@@ -216,7 +213,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         }
         Integer groupType = groupService.getGroupById(groupId).getGroupType();
         if (!Group.TYPE_PERSON.equals(groupType)) {
-            throw new ApiException("组织群不允许用户加入");
+            throw new ApiException("此部门不允许用户加入");
         }
         //用户只能加入一个群组
         LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
@@ -228,7 +225,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             if (group == null) {
                 throw new ApiException("数据异常，请联系管理员");
             }
-            throw new ApiException("您已经加入到了" + group.getName() + "群组");
+            throw new ApiException("您已经加入到了" + group.getName() + "部门");
         }
         //检查用此群是否存在此用户,不存在则新增
         if (!existUserGroup(groupId, userId)) {
