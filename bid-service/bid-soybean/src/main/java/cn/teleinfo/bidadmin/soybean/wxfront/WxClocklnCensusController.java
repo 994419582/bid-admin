@@ -375,9 +375,9 @@ public class WxClocklnCensusController extends BladeController {
 		buffer.append(
 			"\"healthy\":[" +
 				"{\"name\":\"发烧，咳嗽\",\"value\":"+new Double(ferver).intValue()+",\"percent\":"+format(ferverPer)+"}," +
-				"{\"name\":\"其他症状\",\"value\":"+new Double(other).intValue()+",\"percent\":"+format(otherPer)+"}," +
-				"{\"name\":\"健康\",\"value\":"+ new Double(healthy).intValue()+",\"percent\":"+format(healthyPer)+"}" +
-			"],"
+				"{\"name\":\"健康\",\"value\":"+ new Double(healthy).intValue()+",\"percent\":"+format(healthyPer)+"}," +
+				"{\"name\":\"其他症状\",\"value\":"+new Double(other).intValue()+",\"percent\":"+format(otherPer)+"}" +
+					"],"
 		);
 
 		String city1=city;
@@ -389,9 +389,9 @@ public class WxClocklnCensusController extends BladeController {
 			"\"region\":[" +
 				"{\"name\":\"武汉市\",\"value\":"+new Double(wuhan).intValue()+",\"percent\":"+format(wuhanPer)+"}," +
 				"{\"name\":\"湖北其他\",\"value\":"+new Double(hubei).intValue()+",\"percent\":"+format(hubeiPer)+"}," +
-				"{\"name\":\"全国其他\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}," +
-				"{\"name\":\""+city1+"\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}" +
-			"],"
+				"{\"name\":\""+city1+"\",\"value\":"+new Double(beijing).intValue()+",\"percent\":"+format(+beijingPer)+"}," +
+				"{\"name\":\"全国其他\",\"value\":"+new Double(otherRegion).intValue()+",\"percent\":"+format(otherRegionPer)+"}" +
+					"],"
 		);
 
 		//计算并写入第三张饼图数据
