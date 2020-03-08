@@ -98,7 +98,8 @@ public class WxGroupController extends BladeController {
         if (phone == null) {
             throw new ApiException("电话不能为空");
         }
-        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getPhone, phone);
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                eq(Group::getPhone, phone).eq(Group::getGroupType, Group.TYPE_PERSON);
         Group detail = groupService.getOne(queryWrapper, false);
         return R.data(GroupWrapper.build().entityVO(detail));
     }

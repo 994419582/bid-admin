@@ -801,7 +801,18 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 //设置全称,全称不能重复
                 group.setFullName(group.getParentName() + "_" +group.getName());
                 //设置地址
-                group.setAddressName(topGroup.getAddressName());
+                String addressName = group.getAddressName();
+                if (StringUtils.isBlank(addressName)) {
+                    addressName = topGroup.getAddressName();
+                    group.setAddressName(addressName);
+                }
+                //校验地址格式
+                if (!StringUtils.isBlank(addressName)) {
+                    String[] split = addressName.split("，");
+                    if (split.length != 3) {
+                        throw new ApiException("单位地址格式错误");
+                    }
+                }
             }
             //一级组织名称不能重复
             LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
@@ -826,7 +837,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             for (Group group : groups) {
                 group.setCreateUser(topGroup.getCreateUser());
                 group.setStatus(Group.NORMAL);
-                LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getPhone, group.getPhone());
+                //校验管理员电话是否重复
+                LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                        eq(Group::getPhone, group.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
                 int count = count(queryWrapper);
                 if (count != 0) {
                     group.setContact(null);
