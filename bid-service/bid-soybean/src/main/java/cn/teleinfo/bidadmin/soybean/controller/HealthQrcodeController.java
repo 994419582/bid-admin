@@ -159,8 +159,8 @@ public class HealthQrcodeController extends BladeController {
 								colorString = "GREEN";
 							}else {
 								//异常
-								color = new Color(230, 56, 6);
-								colorString = "RED";
+								color = new Color(246, 172, 50);
+								colorString = "YELLOW";
 							}
 						}
 					}
