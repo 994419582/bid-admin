@@ -175,7 +175,7 @@ public interface IGroupService extends IService<Group> {
 	 * @param excelFile
 	 * @return
 	 */
-	boolean excelImport(Group group, String excelFile);
+	String excelImport(Group group, String excelFile);
 
 	/**
 	 * 获取用户管理的群

@@ -88,6 +88,36 @@ public class WxGroupController extends BladeController {
         }
     }
 
+    /**
+     * 根据电话查看群组详情
+     */
+    @GetMapping("/phone")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "根据ID查看群信息", notes = "传入主键Id")
+    public R<GroupVO> phone(String phone) {
+        if (phone == null) {
+            throw new ApiException("电话不能为空");
+        }
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getPhone, phone);
+        Group detail = groupService.getOne(queryWrapper, false);
+        return R.data(GroupWrapper.build().entityVO(detail));
+    }
+
+    /**
+     * 根据唯一码查看群组详情
+     */
+    @GetMapping("/groupCode")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "根据唯一码查看群信息", notes = "传入唯一码")
+    public R<GroupVO> groupCode(String groupCode) {
+        if (groupCode == null) {
+            throw new ApiException("唯一码不能为空");
+        }
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getGroupCode, groupCode);
+        Group detail = groupService.getOne(queryWrapper, false);
+        return R.data(GroupWrapper.build().entityVO(detail));
+    }
+
 
     /**
      * 群组是否存在
@@ -390,7 +420,7 @@ public class WxGroupController extends BladeController {
 //        group.setPhone(phone);
 //        group.setCreateUser(userId);
 //        group.setAddressName(addressName);
-        return R.status(groupService.excelImport(group, excelGroupVo.getExcelFile()));
+        return R.data(groupService.excelImport(group, excelGroupVo.getExcelFile()));
     }
 
     /**
@@ -469,8 +499,8 @@ public class WxGroupController extends BladeController {
             @ApiImplicitParam(name = "userId", value = "用户ID", required = true, paramType = "query", dataType = "int")
     })
     public R dataManager(@RequestParam(name = "groupId", required = true) Integer groupId,
-                     @RequestParam(name = "managerId", required = true) Integer managerId,
-                     @RequestParam(name = "userId", required = true) Integer userId) {
+                         @RequestParam(name = "managerId", required = true) Integer managerId,
+                         @RequestParam(name = "userId", required = true) Integer userId) {
 
         try {
             //校验改群及其子群下是否有此用户
@@ -593,8 +623,8 @@ public class WxGroupController extends BladeController {
             @ApiImplicitParam(name = "userId", value = "用户ID", required = true, paramType = "query", dataType = "int")
     })
     public R removeDataManager(@RequestParam(name = "groupId", required = true) Integer groupId,
-                           @RequestParam(name = "managerId", required = true) Integer managerId,
-                           @RequestParam(name = "userId", required = true) Integer userId) {
+                               @RequestParam(name = "managerId", required = true) Integer managerId,
+                               @RequestParam(name = "userId", required = true) Integer userId) {
 
         try {
             //校验改群及其子群下是否有此用户

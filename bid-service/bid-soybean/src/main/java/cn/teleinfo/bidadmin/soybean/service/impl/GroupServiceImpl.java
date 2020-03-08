@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
@@ -52,7 +53,9 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -745,10 +748,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Override
     @Transactional
-    public boolean excelImport(Group topGroup, String excelFile) {
+    public String excelImport(Group topGroup, String excelFile) {
         String fullName = "";
         HttpURLConnection connection = null;
         InputStream inputStream = null;
+        String topCode = generateGroupCode();
         try {
             // 创建远程url连接对象
             URL url = new URL(excelFile);
@@ -811,6 +815,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             topGroup.setStatus(Group.NORMAL);
             topGroup.setFullName(topParentName + "_" + topGroup.getName());
             topGroup.setGroupType(Group.TYPE_ORGANIZATION);
+            topGroup.setGroupCode(topCode);
             save(topGroup);
             //维护一级组织中间表
             ParentGroup topParentGroup = new ParentGroup();
@@ -821,6 +826,13 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             for (Group group : groups) {
                 group.setCreateUser(topGroup.getCreateUser());
                 group.setStatus(Group.NORMAL);
+                LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getPhone, group.getPhone());
+                int count = count(queryWrapper);
+                if (count != 0) {
+                    group.setContact(null);
+                    group.setPhone(null);
+                }
+                group.setGroupCode(generateGroupCode());
                 fullName = group.getFullName();
                 save(group);
             }
@@ -834,12 +846,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 parentGroup.setGroupId(group.getId());
                 //查询父Id
                 List<Group> groupList = allGroups.stream().filter(filterGroup -> {
-                    String name = filterGroup.getName();
-                    if (name == null) {
-                        throw new ApiException("组织名称不能为空");
-                    } else {
-                        return name.equals(group.getParentName());
-                    }
+                String name = filterGroup.getName();
+                if (name == null) {
+                    throw new ApiException("组织名称不能为空");
+                } else {
+                    return name.equals(group.getParentName());
+                }
                 }).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(groupList)) {
                     throw new ApiException("未发现"+group.getName()+"的父群组");
@@ -876,7 +888,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             // 断开与远程地址url的连接
             connection.disconnect();
         }
-        return true;
+        return topCode;
     }
 
     @Override
@@ -935,6 +947,22 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 }
             }
         }
+    }
+
+    public String generateGroupCode() {
+        String data = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String[] split = data.split("");
+        String code = "";
+        while (true) {
+            Set<String> groupCodeSet = RandomUtil.randomEleSet(Arrays.asList(split), 4);
+            code = StringUtils.join(groupCodeSet, "");
+            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getGroupCode, code);
+            int count = count(queryWrapper);
+            if (count == 0) {
+                break;
+            }
+        }
+        return code;
     }
 }
 

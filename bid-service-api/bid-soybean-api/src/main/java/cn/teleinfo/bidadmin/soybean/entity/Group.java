@@ -154,31 +154,35 @@ public class Group implements Serializable {
      * 公司地址名称
      */
     @ApiModelProperty(value = "公司地址名称")
+    @Excel(name = "单位地址")
     private String addressName;
     /**
      * 详细地址
      */
     @ApiModelProperty(value = "详细地址")
+    @Excel(name = "单位详细地址")
     private String detailAddress;
 
     /**
      * 联系人
      */
     @ApiModelProperty(value = "联系人",required = false)
+    @Excel(name = "管理员姓名")
     private String contact;
 
     @ApiModelProperty(value = "联系电话",required = false)
+    @Excel(name = "管理员电话")
     private String phone;
 
     @ApiModelProperty(value = "数据管理员",required = false)
     private String dataManagers;
 
-//    @ApiModelProperty(value = "父群主ID,后台管理使用")
+    @ApiModelProperty(value = "父群主ID, 管理后台使用")
     @TableField(exist = false)
     @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer parentId;
 
-//    @ApiModelProperty(value = "排序")
+    @ApiModelProperty(value = "排序, 管理后台使用")
     @TableField(exist = false)
     @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer sort;
@@ -190,4 +194,7 @@ public class Group implements Serializable {
     @TableField(exist = false)
     @Excel(name = "父组织名称")
     private String parentName;
+
+    @ApiModelProperty(value = "组织唯一码")
+    private String groupCode;
 }

@@ -77,7 +77,7 @@ public class WxUserGroupController extends BladeController {
     @GetMapping("/user/currentGroup")
     @ApiOperationSupport(order = 4)
     @ApiOperation(value = "获取用户已加入的群", notes = "获取用户已加入的群")
-    public R<Group> save(@Valid @RequestParam Integer userId) {
+    public R<Group> save(@Valid @RequestParam(name = "userId", required = true) Integer userId) {
         LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
                 eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
         try {
