@@ -34,6 +34,7 @@ import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -127,6 +128,23 @@ public class GroupController extends BladeController {
 	}
 
 	/**
+	 * 包含顶级节点的下拉树
+	 */
+	@GetMapping("/tree/top")
+	@ApiOperationSupport(order = 2)
+	@ApiOperation(value = "包含顶级节点的下拉树字典", notes = "包含顶级节点的下拉树")
+	public R<List<GroupTreeVo>> treeTop() {
+		Group topGroup = groupService.getGroupById(Group.TOP_PARENT_ID);
+		GroupTreeVo groupTreeVo = new GroupTreeVo();
+		BeanUtils.copyProperties(topGroup, groupTreeVo);
+		List<GroupTreeVo> tree = groupService.treeChildren(Group.TOP_PARENT_ID);
+		groupTreeVo.setChildren(tree);
+		ArrayList<GroupTreeVo> groupTreeVos = new ArrayList<>();
+		groupTreeVos.add(groupTreeVo);
+		return R.data(groupTreeVos);
+	}
+
+	/**
 	 * 根据父群组查询子群组
 	 * @return
 	 */
@@ -180,7 +198,7 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入group")
 	public R save(@Valid @RequestBody Group group) {
-		if (StringUtils.isEmpty(group.getParentGroups())) {
+		if (StringUtils.isEmpty(group.getParentId())) {
 			throw new ApiException("父群组不能为空");
 		}
 		return R.status(groupService.saveGroup(group));

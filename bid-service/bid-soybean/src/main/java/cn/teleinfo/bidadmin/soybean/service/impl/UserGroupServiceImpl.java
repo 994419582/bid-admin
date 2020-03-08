@@ -270,18 +270,26 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             }
             Integer groupId = userGroup.getGroupId();
             Integer userId = userGroup.getUserId();
-            if (groupService.isGroupCreater(groupId, userId)) {
-                throw new ApiException("不能移除群创建人");
-            }
-            //管理员退群, Group表里移除这个管理员
-            if (groupService.isGroupManger(groupId, userId)) {
-                Group group = groupService.getGroupById(groupId);
+            //删除用户拥有的所有管理员权限
+            List<Group> userManageGroups = groupService.getUserManageGroups(userId);
+            for (Group group : userManageGroups) {
                 String managers = group.getManagers();
                 ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
                 //Group表移除此管理员
                 managerList.remove(userId);
                 String newManagers = StringUtils.join(managerList, ",");
                 group.setManagers(newManagers);
+                groupService.updateById(group);
+            }
+            //删除用户拥有的所有组织数据管理员权限
+            List<Group> userDataManageGroups = groupService.getUserDataManageGroups(userId);
+            for (Group group : userDataManageGroups) {
+                String dataManagers = group.getDataManagers();
+                ArrayList<Integer> dataManagerList = new ArrayList<>(Func.toIntList(dataManagers));
+                //Group表移除此管理员
+                dataManagerList.remove(userId);
+                String newDataManagers = StringUtils.join(dataManagerList, ",");
+                group.setDataManagers(newDataManagers);
                 groupService.updateById(group);
             }
             //修改状态

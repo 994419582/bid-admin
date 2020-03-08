@@ -23,7 +23,6 @@ import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
-import cn.teleinfo.bidadmin.soybean.utils.ExcelUtils;
 import cn.teleinfo.bidadmin.soybean.vo.ExcelGroupVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
@@ -45,11 +44,8 @@ import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -253,7 +249,7 @@ public class WxGroupController extends BladeController {
                 throw new ApiException("此接口不提供管理员修改功能");
             }
             //不提供父群组修改功能
-            if (group.getParentGroups() != null) {
+            if (group.getParentId() != null) {
                 throw new ApiException("此接口不提供父群组修改功能");
             }
             //不提供人数修改功能
