@@ -115,7 +115,7 @@
             </when>
             <when test="region !=null and region==3">
                 <if test="city !=null and city !=''">
-                  and #{city}  LIKE CONCAT('%',t.city,'%')
+                  and ( #{city}  LIKE CONCAT('%',t.city,'%') and (t.city !='' and t.city is NOT NULL) )
                 </if>
             </when>
             <when test="region !=null and region==4">
