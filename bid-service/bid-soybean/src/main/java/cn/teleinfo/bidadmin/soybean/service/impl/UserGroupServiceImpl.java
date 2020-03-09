@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.GroupLog;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
+import cn.teleinfo.bidadmin.soybean.mapper.GroupMapper;
 import cn.teleinfo.bidadmin.soybean.mapper.UserGroupMapper;
 import cn.teleinfo.bidadmin.soybean.service.IGroupLogService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
@@ -30,19 +31,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Id;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +53,9 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 
     @Autowired
     private IGroupService groupService;
+
+    @Autowired
+    private GroupMapper groupMapper;
 
     @Autowired
     private IGroupLogService groupLogService;
@@ -135,9 +134,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
 
     @Transactional
     public void motifyUserAccount(Integer groupId, Integer addAccount) {
-        Group group = groupService.getGroupById(groupId);
-        group.setUserAccount(group.getUserAccount() + addAccount);
-        groupService.updateById(group);
+//        Group group = groupService.getGroupById(groupId);
+//        group.setUserAccount(group.getUserAccount() + addAccount);
+//        groupService.updateById(group);
+        groupMapper.motifyUserAccount(groupId, addAccount);
     }
 
     @Override
