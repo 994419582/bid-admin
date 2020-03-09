@@ -153,7 +153,7 @@
             </when>
         </choose>
 
-        ORDER BY t.comfirmed  DESC
+        ORDER BY t.comfirmed ,t.create_time  DESC
     </select>
 
     <select id="findByUserIdInAndCreatetimeBetween" resultMap="clocklnResultVOMap">
