@@ -43,7 +43,7 @@ import java.util.Map;
  * @since 2018-09-29
  */
 @RestController
-@RequestMapping("wx/notice")
+@RequestMapping("/front/notice")
 @AllArgsConstructor
 @Api(value = "前端用户通知接口", tags = "博客接口")
 public class WXNoticeController extends BladeController implements CacheNames {
