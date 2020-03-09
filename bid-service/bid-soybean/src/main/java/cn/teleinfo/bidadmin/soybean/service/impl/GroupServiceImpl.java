@@ -44,6 +44,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.FileSystemUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -773,17 +774,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 throw new ApiException("获取文件异常");
             }
             List<Group> metaGroups = ExcelUtils.importExcel(inputStream, 0,1, false, Group.class);
-            //模板校验
-            if (CollectionUtils.isEmpty(metaGroups)) {
-                throw new ApiException("模板格式错误，或者数据为空");
-            }
             //过滤空数据
             List<Group> groups = metaGroups.stream().filter(group -> {
-                if (group.getName() == null && group.getGroupType() == null && group.getParentName() == null) {
-                    return false;
+                if (!StringUtils.isBlank(group.getName()) && !StringUtils.isBlank(group.getParentName())) {
+                    return true;
                 }
-                return true;
+                return false;
             }).collect(Collectors.toList());
+            //模板校验
+            if (CollectionUtils.isEmpty(groups)) {
+                throw new ApiException("模板格式错误，或者数据为空");
+            }
             for (Group group : groups) {
                 if (StringUtils.isBlank(group.getName())) {
                     throw new ApiException("部门名称不能为空");
@@ -794,11 +795,19 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 //去除空格
                 group.setName(group.getName().trim());
                 group.setParentName(group.getParentName().trim());
-                Integer groupType = group.getGroupType();
-                if (!groupType.equals(Group.TYPE_ORGANIZATION) && !groupType.equals(Group.TYPE_PERSON)) {
-                    throw new ApiException("部门类型错误");
+                if (!StringUtils.isBlank(group.getAddressName())) {
+                    group.setAddressName(group.getAddressName().trim());
                 }
-                //设置全称,全称不能重复
+                if (!StringUtils.isBlank(group.getPhone())) {
+                    group.setPhone(group.getPhone().trim());
+                }
+                if (!StringUtils.isBlank(group.getContact())) {
+                    group.setContact(group.getContact().trim());
+                }
+                if (!StringUtils.isBlank(group.getDetailAddress())) {
+                    group.setDetailAddress(group.getDetailAddress().trim());
+                }
+                //设置全称
                 group.setFullName(group.getParentName() + "_" +group.getName());
                 //设置地址
                 String addressName = group.getAddressName();
@@ -812,6 +821,20 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     if (split.length != 3) {
                         throw new ApiException("单位地址格式错误");
                     }
+                }
+                //校验部门是否是末级组织
+                boolean lastGroup = true;
+                for (Group parentGroup : groups) {
+                    if (parentGroup.getParentName().equals(group.getName())) {
+                        lastGroup = false;
+                        break;
+                    }
+                }
+                //设置部门类型
+                if (lastGroup) {
+                    group.setGroupType(Group.TYPE_PERSON);
+                } else {
+                    group.setGroupType(Group.TYPE_ORGANIZATION);
                 }
             }
             //一级组织名称不能重复
@@ -871,10 +894,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 }
                 if (groupList.size() > 1) {
                     throw new ApiException("一个部门只能有一个上级部门");
-                }
-                //个人群不能是其他群的父群
-                if (groupList.get(0).getGroupType().equals(Group.TYPE_PERSON)) {
-                    throw new ApiException("上级部门类型不能为个人类型");
                 }
                 //设置父ID
                 parentGroup.setParentId(groupList.get(0).getId());

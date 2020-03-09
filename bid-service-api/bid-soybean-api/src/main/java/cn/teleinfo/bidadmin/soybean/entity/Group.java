@@ -72,7 +72,7 @@ public class Group implements Serializable {
     @ApiModelProperty(value = "群组名", required = true)
     @NotBlank(message = "名称不能为空")
     @Pattern(regexp = "^(?!null).*", message = "名称不能包含字符串null")
-    @Excel(name = "组织名称")
+    @Excel(name = "下级机构*")
     private String name;
     /**
      * 群组名全称
@@ -139,9 +139,8 @@ public class Group implements Serializable {
      */
     @ApiModelProperty(value = "群组类型（组织0，个人1）",required = true)
     @NotNull(message = "群组类型不能为空")
-    @Excel(name = "组织类型", replace = {"组织_0", "个人_1"})
-    @Min(value = 0, message = "组织类型只能是0或者1")
-    @Max(value = 1,message = "组织类型只能是0或者1")
+    @Min(value = 0, message = "机构类型只能是0或者1")
+    @Max(value = 1,message = "机构类型只能是0或者1")
     private Integer groupType;
 
     /**
@@ -167,11 +166,11 @@ public class Group implements Serializable {
      * 联系人
      */
     @ApiModelProperty(value = "联系人",required = false)
-    @Excel(name = "管理员姓名")
+    @Excel(name = "管理员")
     private String contact;
 
     @ApiModelProperty(value = "联系电话",required = false)
-    @Excel(name = "管理员电话")
+    @Excel(name = "联系电话")
     private String phone;
 
     @ApiModelProperty(value = "数据管理员",required = false)
@@ -192,7 +191,7 @@ public class Group implements Serializable {
      */
     @JsonIgnore
     @TableField(exist = false)
-    @Excel(name = "父组织名称")
+    @Excel(name = "上级机构*")
     private String parentName;
 
     @ApiModelProperty(value = "组织唯一码")

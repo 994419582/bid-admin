@@ -14,9 +14,11 @@ public class MainClass {
 
 //    public static void main(String[] args) {
 ////      用户表的数据
+//        int countUser = 0;
 //        List<? extends UserEntity> userJsonList = JsonUtils.filePathToEntity(TransferConfig.userPath, new UserEntity().getClass());
 //        System.out.println(userJsonList);
 //        for (UserEntity user : userJsonList) {
+//            System.out.println(++countUser);
 //            DatabaseUtils.userInsert(user);
 //        }
 //        int count = userGroupUpdate();
@@ -25,9 +27,11 @@ public class MainClass {
 
 //    public static void main(String[] args) {
 ////      打卡表的数据
+//        int count = 0;
 //        List<? extends ClocklnEntity> clocklnJsonList = JsonUtils.filePathToEntity(TransferConfig.clocklnPath, new ClocklnEntity().getClass());
 //        System.out.println(clocklnJsonList);
 //        for(ClocklnEntity clocklnEntity : clocklnJsonList) {
+//            System.out.println(++count);
 //            DatabaseUtils.clocklnInsert(clocklnEntity);
 //        }
 //        System.out.println("clock finish ~~~");
