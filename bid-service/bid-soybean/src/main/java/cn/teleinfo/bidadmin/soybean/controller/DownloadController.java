@@ -175,33 +175,39 @@ public class DownloadController extends BladeController {
                     long e3G = clocklnsToday.stream().filter(item -> 1 == item.getHubei() &&
                             StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination) &&
                             item.getComfirmed() != 2 &&
-                            DateUtil.between(DateUtil.parseDate(item.getGobacktime()), DateUtil.endOfDay(DateUtil.date()), DateUnit.DAY) < 14).count();
+                            2 == item.getLeave()
+                    ).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 6).setCellValue(e3G);
                     // 从湖北省或途径湖北来京员工人数 过隔离期人数 -----> 已离过京 + 途径湖北 && 打卡地在北京 && 不在隔离期
                     long e3H = clocklnsToday.stream().filter(item -> 1 == item.getHubei() &&
                             StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination) &&
                             item.getComfirmed() != 2 &&
-                            DateUtil.between(DateUtil.parseDate(item.getGobacktime()), DateUtil.endOfDay(DateUtil.date()), DateUnit.DAY) >= 14).count();
+                            1 == item.getLeave()
+                    ).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 7).setCellValue(e3H);
 
                     // 从湖北省以外地区来京员工人数 人数合计(E) -----> 已离过京 + 未经湖北
-                    long e3I = leaveClocklnsToday.stream().filter(item -> 0 == item.getHubei()).count();
+                    long e3I = clocklnsToday.stream().filter(item -> 0 == item.getHubei()).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 8).setCellValue(e3I);
                     // 从湖北省以外地区来京员工人数 其中未返京人数(F) -----> 已离过京 + 未经湖北 && 打卡地不在北京
-                    long e3J = leaveClocklnsToday.stream().filter(item -> 0 == item.getHubei() && !StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination)).count();
+                    long e3J = clocklnsToday.stream().filter(item -> 0 == item.getHubei() && !StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination)).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 9).setCellValue(e3J);
                     // 从湖北省以外地区来京员工人数 其中已返京人数(G) -----> 已离过京 + 未经湖北 && 打卡地在北京
-                    long e3K = leaveClocklnsToday.stream().filter(item -> 0 == item.getHubei() && StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination)).count();
+                    long e3K = clocklnsToday.stream().filter(item -> 0 == item.getHubei() && StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination)).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 10).setCellValue(e3K);
                     // 从湖北省以外地区来京员工人数 已返京人员中自行隔离(14天)人数 -----> 已离过京 + 未经湖北 && 打卡地在北京 && 在隔离期
-                    long e3L = leaveClocklnsToday.stream().filter(item -> 0 == item.getHubei() && StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination) &&
-                            item.getComfirmed() != 2 &&
-                            DateUtil.between(DateUtil.parseDate(item.getGobacktime()), DateUtil.endOfDay(DateUtil.date()), DateUnit.DAY) < 14).count();
+                    long e3L = clocklnsToday.stream().filter(item ->
+                            0 == item.getHubei() &&
+                            2 == item.getLeave() &&
+                            StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination) &&
+                            item.getComfirmed() != 2).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 11).setCellValue(e3L);
                     // 从湖北省以外地区来京员工人数 过隔离期人数 -----> 已离过京 + 未经湖北 && 打卡地在北京 && 不在隔离期
-                    long e3M = leaveClocklnsToday.stream().filter(item -> 0 == item.getHubei() && StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination) &&
-                            item.getComfirmed() != 2 &&
-                            DateUtil.between(DateUtil.parseDate(item.getGobacktime()), DateUtil.endOfDay(DateUtil.date()), DateUnit.DAY) >= 14).count();
+                    long e3M = clocklnsToday.stream().filter(item ->
+                            0 == item.getHubei() &&
+                            1 == item.getLeave() &&
+                            StrUtil.equals(StrUtil.subAfter(item.getCity(), "，", false),  destination) &&
+                            item.getComfirmed() != 2).count();
                     CellUtil.getOrCreateCell(RowUtil.getOrCreateRow(sheet, 2), 12).setCellValue(e3M);
 
                 }
