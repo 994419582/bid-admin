@@ -254,6 +254,8 @@ public class WxClocklnCensusController extends BladeController {
 		double haveNoJobPer = 0.0;
 		double superviseJob = 0.0;
 		double superviseJobPer = 0.0;
+		double rest = 0.0;
+		double restPer = 0.0;
 
 		int gobackBeijing=0;
 
@@ -333,7 +335,10 @@ public class WxClocklnCensusController extends BladeController {
 					haveNoJob++;
 				}else if (c.getJobstatus() ==4){
 					superviseJob++;
+				}else if (c.getJobstatus() ==5){
+					rest++;
 				}
+
 			}
 		}
 		if (list.size()>0) {
@@ -351,6 +356,7 @@ public class WxClocklnCensusController extends BladeController {
 			awayJobPer =awayJob/list.size() *100;
 			haveNoJobPer =haveNoJob/list.size() *100;
 			superviseJobPer =superviseJob/list.size() *100;
+			restPer =rest/list.size() *100;
 		}
 		StringBuffer buffer=new StringBuffer("{");
 		//写入总体统计数据
@@ -409,7 +415,8 @@ public class WxClocklnCensusController extends BladeController {
 				"{\"name\":\"在岗办公\",\"value\":"+new Double(onJob).intValue()+",\"percent\":"+format(+onJobPer)+"}," +
 				"{\"name\":\"居家办公\",\"value\":"+new Double(awayJob).intValue()+",\"percent\":"+format(awayJobPer)+"}," +
 				"{\"name\":\"居家隔离\",\"value\":"+new Double(haveNoJob).intValue()+",\"percent\":"+format(haveNoJobPer)+"}," +
-				"{\"name\":\"监督隔离\",\"value\":"+new Double(superviseJob).intValue()+",\"percent\":"+format(superviseJobPer)+"}" +
+				"{\"name\":\"监督隔离\",\"value\":"+new Double(superviseJob).intValue()+",\"percent\":"+format(superviseJobPer)+"}," +
+				"{\"name\":\"居家休息\",\"value\":"+new Double(rest).intValue()+",\"percent\":"+format(restPer)+"}" +
 			"]}"
 		);
 
