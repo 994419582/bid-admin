@@ -147,6 +147,35 @@ public class WxGroupController extends BladeController {
     }
 
     /**
+     * 查询此机构下拥有此手机号的用户信息
+     */
+    @GetMapping("/user/phone")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "查询此组织下拥有此手机号的用户信息", notes = "查询此组织下拥有此手机号的用户信息")
+    public R<UserVO> phone(@ApiParam(value = "机构ID",required = true) @RequestParam(name = "groupId",required = true) Integer groupId,
+                            @ApiParam(value = "手机号",required = true) @RequestParam(name = "phone",required = true) String phone) {
+        //获取改组织下所有用户Id
+        List<Integer> userIds = groupService.selectUserIdByParentId(groupId);
+        if (CollectionUtils.isEmpty(userIds)) {
+            R.data(null);
+        }
+        //查询用户ID对应的用户
+        LambdaQueryWrapper<User> queryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
+        List<User> userList = userService.list(queryWrapper);
+        //过滤手机号
+        List<User> users = userList.stream().filter(user -> {
+            return phone.equals(user.getPhone());
+        }).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(users)) {
+            return R.data(null);
+        }
+        //返回用户信息
+        User user = users.get(0);
+        return R.data(UserWrapper.build().entityVO(user));
+    }
+
+
+    /**
      * 群组是否存在
      *
      * @return
