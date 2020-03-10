@@ -23,10 +23,7 @@ import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
-import cn.teleinfo.bidadmin.soybean.vo.ExcelGroupVo;
-import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
-import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
+import cn.teleinfo.bidadmin.soybean.vo.*;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -119,6 +116,35 @@ public class WxGroupController extends BladeController {
         return R.data(GroupWrapper.build().entityVO(detail));
     }
 
+    /**
+     * 根据机构ID，查看管理员用户信息
+     */
+    @GetMapping("/manager")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "根据机构ID，查看管理员用户信息", notes = "根据机构ID，查看管理员用户信息")
+    public R<ManagerVo> manager(@ApiParam(name = "机构ID",required = true) @RequestParam(name = "groupId",required = true) Integer groupId) {
+        ManagerVo managerVo = new ManagerVo();
+        List<UserVO> managerList = managerVo.getManagers();
+        List<UserVO> dataManagerList = managerVo.getDataManagers();
+        Group group = groupService.getGroupById(groupId);
+        //获取管理员用户
+        String managers = group.getManagers();
+        for (Integer userId : Func.toIntList(managers)) {
+            User user = userService.getById(userId);
+            if (user != null) {
+                managerList.add(UserWrapper.build().entityVO(user));
+            }
+        }
+        //获取统计管理员用户
+        String dataManagers = group.getDataManagers();
+        for (Integer userId : Func.toIntList(dataManagers)) {
+            User user = userService.getById(userId);
+            if (user != null) {
+                dataManagerList.add(UserWrapper.build().entityVO(user));
+            }
+        }
+        return R.data(managerVo);
+    }
 
     /**
      * 群组是否存在
