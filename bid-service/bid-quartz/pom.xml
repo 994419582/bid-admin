@@ -27,15 +27,8 @@
         </dependency>
         <dependency>
             <groupId>cn.teleinfo</groupId>
-            <artifactId>bid-blockchain-api</artifactId>
+            <artifactId>bid-soybean-api</artifactId>
             <version>${bid.project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
-
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springblade</groupId>

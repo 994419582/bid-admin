@@ -165,7 +165,8 @@ public class SysJobServiceImpl extends BaseServiceImpl<SysJobMapper, SysJob> imp
     @Override
     public boolean insertJobCron(SysJob job)
     {
-        job.setStatus(ScheduleConstants.Status.PAUSE.getValue());
+//        job.setStatus(ScheduleConstants.Status.PAUSE.getValue());
+        job.setStatus(ScheduleConstants.Status.NORMAL.getValue());
         boolean flag= save(job);
         if (flag  == true)
         {
