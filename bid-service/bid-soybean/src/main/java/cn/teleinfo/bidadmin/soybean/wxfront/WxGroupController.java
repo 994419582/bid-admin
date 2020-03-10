@@ -122,7 +122,7 @@ public class WxGroupController extends BladeController {
     @GetMapping("/manager")
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "根据机构ID，查看管理员用户信息", notes = "根据机构ID，查看管理员用户信息")
-    public R<ManagerVo> manager(@ApiParam(name = "机构ID",required = true) @RequestParam(name = "groupId",required = true) Integer groupId) {
+    public R<ManagerVo> manager(@ApiParam(name = "groupId",required = true) @RequestParam(name = "groupId",required = true) Integer groupId) {
         ManagerVo managerVo = new ManagerVo();
         List<UserVO> managerList = managerVo.getManagers();
         List<UserVO> dataManagerList = managerVo.getDataManagers();
@@ -152,8 +152,10 @@ public class WxGroupController extends BladeController {
     @GetMapping("/user/phone")
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "查询此组织下拥有此手机号的用户信息", notes = "查询此组织下拥有此手机号的用户信息")
-    public R<UserVO> phone(@ApiParam(value = "机构ID",required = true) @RequestParam(name = "groupId",required = true) Integer groupId,
-                            @ApiParam(value = "手机号",required = true) @RequestParam(name = "phone",required = true) String phone) {
+    public R<UserVO> phone(@ApiParam(value = "groupId",required = true) @RequestParam(name = "groupId",required = true) Integer groupId,
+                            @ApiParam(value = "phone",required = true) @RequestParam(name = "phone",required = true) String phone) {
+        //去手机号空格
+        phone = phone.trim();
         //获取改组织下所有用户Id
         List<Integer> userIds = groupService.selectUserIdByParentId(groupId);
         if (CollectionUtils.isEmpty(userIds)) {
@@ -163,8 +165,9 @@ public class WxGroupController extends BladeController {
         LambdaQueryWrapper<User> queryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
         List<User> userList = userService.list(queryWrapper);
         //过滤手机号
+        String finalPhone = phone;
         List<User> users = userList.stream().filter(user -> {
-            return phone.equals(user.getPhone());
+            return finalPhone.equals(user.getPhone());
         }).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(users)) {
             return R.data(null);
