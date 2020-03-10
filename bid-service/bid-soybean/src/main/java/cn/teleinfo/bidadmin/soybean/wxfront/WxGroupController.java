@@ -127,6 +127,9 @@ public class WxGroupController extends BladeController {
         List<UserVO> managerList = managerVo.getManagers();
         List<UserVO> dataManagerList = managerVo.getDataManagers();
         Group group = groupService.getGroupById(groupId);
+        if (group == null) {
+            return R.data(null);
+        }
         //获取管理员用户
         String managers = group.getManagers();
         for (Integer userId : Func.toIntList(managers)) {
@@ -472,13 +475,6 @@ public class WxGroupController extends BladeController {
         Group group = new Group();
         BeanUtils.copyProperties(excelGroupVo, group);
         group.setCreateUser(excelGroupVo.getUserId());
-//        group.setLogo(logo);
-//        group.setName(name);
-//        group.setRemarks(remarks);
-//        group.setContact(contact);
-//        group.setPhone(phone);
-//        group.setCreateUser(userId);
-//        group.setAddressName(addressName);
         return R.data(groupService.excelImport(group, excelGroupVo.getExcelFile()));
     }
 
