@@ -48,7 +48,7 @@ public class ExcelGroupVo {
     @NotBlank(message = "联系电话不能为空")
     private String phone;
 
-    @ApiModelProperty(value = "Excel地址",required = true)
+    @ApiModelProperty(value = "Excel地址",required = false)
     private String excelFile;
 
     /**
