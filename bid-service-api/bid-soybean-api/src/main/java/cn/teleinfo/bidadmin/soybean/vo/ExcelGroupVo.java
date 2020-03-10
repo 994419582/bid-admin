@@ -20,7 +20,7 @@ public class ExcelGroupVo {
      * 群组名
      */
     @ApiModelProperty(value = "群组名", required = true)
-    @NotBlank(message = "群组名不能为空")
+    @NotBlank(message = "机构名称不能为空")
     private String name;
 
     /**
@@ -48,8 +48,7 @@ public class ExcelGroupVo {
     @NotBlank(message = "联系电话不能为空")
     private String phone;
 
-    @ApiModelProperty(value = "Excel地址",required = true)
-    @NotBlank(message = "Excel地址不能为空")
+    @ApiModelProperty(value = "Excel地址",required = false)
     private String excelFile;
 
     /**

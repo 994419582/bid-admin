@@ -750,10 +750,34 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public String excelImport(Group topGroup, String excelFile) {
+        //一级机构机构码
+        String topCode = generateGroupCode();
+        //excel地址为空默认创建一个个人组织
+        if (StringUtils.isBlank(excelFile)) {
+            //一级组织名称不能重复
+            LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
+                    eq(Group::getName, topGroup.getName()).eq(Group::getStatus, Group.NORMAL);
+            if (count(groupLambdaQueryWrapper) > 0) {
+                throw new ApiException("一级部门名称不能重名");
+            }
+            //查询一级组织父组织名称
+            String topParentName = getGroupById(Group.TOP_PARENT_ID).getName();
+            //创建一级组织
+            topGroup.setStatus(Group.NORMAL);
+            topGroup.setFullName(topParentName + "_" + topGroup.getName());
+            topGroup.setGroupType(Group.TYPE_PERSON);
+            topGroup.setGroupCode(topCode);
+            save(topGroup);
+            //维护一级组织中间表
+            ParentGroup topParentGroup = new ParentGroup();
+            topParentGroup.setGroupId(topGroup.getId());
+            topParentGroup.setParentId(Group.TOP_PARENT_ID);
+            parentGroupService.save(topParentGroup);
+            return topCode;
+        }
         String fullName = "";
         HttpURLConnection connection = null;
         InputStream inputStream = null;
-        String topCode = generateGroupCode();
         try {
             // 创建远程url连接对象
             URL url = new URL(excelFile);

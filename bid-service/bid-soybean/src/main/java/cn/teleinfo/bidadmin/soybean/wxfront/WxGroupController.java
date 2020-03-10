@@ -23,10 +23,7 @@ import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
-import cn.teleinfo.bidadmin.soybean.vo.ExcelGroupVo;
-import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
-import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
-import cn.teleinfo.bidadmin.soybean.vo.UserVO;
+import cn.teleinfo.bidadmin.soybean.vo.*;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -117,6 +114,70 @@ public class WxGroupController extends BladeController {
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getGroupCode, groupCode);
         Group detail = groupService.getOne(queryWrapper, false);
         return R.data(GroupWrapper.build().entityVO(detail));
+    }
+
+    /**
+     * 根据机构ID，查看管理员用户信息
+     */
+    @GetMapping("/manager")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "根据机构ID，查看管理员用户信息", notes = "根据机构ID，查看管理员用户信息")
+    public R<ManagerVo> manager(@ApiParam(name = "groupId",required = true) @RequestParam(name = "groupId",required = true) Integer groupId) {
+        ManagerVo managerVo = new ManagerVo();
+        List<UserVO> managerList = managerVo.getManagers();
+        List<UserVO> dataManagerList = managerVo.getDataManagers();
+        Group group = groupService.getGroupById(groupId);
+        if (group == null) {
+            return R.data(null);
+        }
+        //获取管理员用户
+        String managers = group.getManagers();
+        for (Integer userId : Func.toIntList(managers)) {
+            User user = userService.getById(userId);
+            if (user != null) {
+                managerList.add(UserWrapper.build().entityVO(user));
+            }
+        }
+        //获取统计管理员用户
+        String dataManagers = group.getDataManagers();
+        for (Integer userId : Func.toIntList(dataManagers)) {
+            User user = userService.getById(userId);
+            if (user != null) {
+                dataManagerList.add(UserWrapper.build().entityVO(user));
+            }
+        }
+        return R.data(managerVo);
+    }
+
+    /**
+     * 查询此机构下拥有此手机号的用户信息
+     */
+    @GetMapping("/user/phone")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "查询此组织下拥有此手机号的用户信息", notes = "查询此组织下拥有此手机号的用户信息")
+    public R<UserVO> phone(@ApiParam(value = "groupId",required = true) @RequestParam(name = "groupId",required = true) Integer groupId,
+                            @ApiParam(value = "phone",required = true) @RequestParam(name = "phone",required = true) String phone) {
+        //去手机号空格
+        phone = phone.trim();
+        //获取改组织下所有用户Id
+        List<Integer> userIds = groupService.selectUserIdByParentId(groupId);
+        if (CollectionUtils.isEmpty(userIds)) {
+            R.data(null);
+        }
+        //查询用户ID对应的用户
+        LambdaQueryWrapper<User> queryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
+        List<User> userList = userService.list(queryWrapper);
+        //过滤手机号
+        String finalPhone = phone;
+        List<User> users = userList.stream().filter(user -> {
+            return finalPhone.equals(user.getPhone());
+        }).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(users)) {
+            return R.data(null);
+        }
+        //返回用户信息
+        User user = users.get(0);
+        return R.data(UserWrapper.build().entityVO(user));
     }
 
 
@@ -414,13 +475,6 @@ public class WxGroupController extends BladeController {
         Group group = new Group();
         BeanUtils.copyProperties(excelGroupVo, group);
         group.setCreateUser(excelGroupVo.getUserId());
-//        group.setLogo(logo);
-//        group.setName(name);
-//        group.setRemarks(remarks);
-//        group.setContact(contact);
-//        group.setPhone(phone);
-//        group.setCreateUser(userId);
-//        group.setAddressName(addressName);
         return R.data(groupService.excelImport(group, excelGroupVo.getExcelFile()));
     }
 

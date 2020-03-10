@@ -20,7 +20,9 @@ import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,4 +50,7 @@ public interface GroupMapper extends BaseMapper<Group> {
 	 */
 	@Select("select s.id,s.name,p.parent_id as parentId,s.logo, s.managers, s.data_managers as dataManagers ,s.create_user createUser,s.user_account as userAccount, s.group_type as groupType  from soybean_group s, soybean_parent_group p where s.status = 0 and s.id = p.group_id order by p.parent_id")
 	List<GroupTreeVo> tree();
+
+	@Update("update soybean_group set user_account = user_account + #{addAccount} where id = #{groupId}")
+    void motifyUserAccount(@Param("groupId") Integer groupId, @Param("addAccount") Integer addAccount);
 }

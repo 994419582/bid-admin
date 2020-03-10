@@ -97,8 +97,8 @@ public interface IUserGroupService extends IService<UserGroup> {
     /**
      * 修改群人数
      *
-     * @param groupId
-     * @param addAccount
+     * @param groupId 部门ID
+     * @param addAccount 增加的数量
      */
     void motifyUserAccount(Integer groupId, Integer addAccount);
 }
