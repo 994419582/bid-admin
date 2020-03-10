@@ -372,6 +372,7 @@ public class WxClocklnCensusController extends BladeController {
 				"\"onJob\":"+new Double(onJob).intValue()+"," +
 				"\"awayJob\":"+new Double(awayJob).intValue()+"," +
 				"\"superviseJob\":"+new Double(superviseJob).intValue()+"," +
+				"\"rest\":"+new Double(rest).intValue()+"," +
 				"\"haveNoJob\":"+new Double(haveNoJob).intValue()+
 			"},"
 		);
