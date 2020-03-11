@@ -40,4 +40,7 @@ public class GroupVO extends Group {
 	@NotNull(message = "用户ID不能为null")
 	@ApiParam(value = "用户ID", required = true)
 	private Integer userId;
+
+	@ApiParam(value = "创建人姓名", required = false)
+	private String createrName;
 }

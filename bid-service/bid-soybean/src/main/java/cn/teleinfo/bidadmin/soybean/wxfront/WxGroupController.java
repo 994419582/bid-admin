@@ -72,17 +72,29 @@ public class WxGroupController extends BladeController {
      */
     @GetMapping("/detail")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "根据ID查看群信息", notes = "传入主键Id")
+    @ApiOperation(value = "根据ID查看群信息", notes = "传入主键Id,群创建人在用户表中被删除时，创建人姓名为空")
     public R<GroupVO> detail(Group group) {
-        try {
-            if (group.getId() == null) {
-                throw new ApiException("部门id不能为空");
-            }
-            Group detail = groupService.getGroupById(group.getId());
-            return R.data(GroupWrapper.build().entityVO(detail));
-        } catch (ApiException e) {
-            return R.fail(e.getMessage());
+        if (group.getId() == null) {
+            throw new ApiException("部门id不能为空");
         }
+        Group detail = groupService.getGroupById(group.getId());
+        GroupVO data = GroupWrapper.build().entityVO(detail);
+        //机构不存在返回null
+        if (data == null) {
+            return R.data(data);
+        }
+        //获取创建人姓名
+        Integer createUser = data.getCreateUser();
+        if (createUser == null) {
+            return R.data(data);
+        }
+        //查询创建人姓名
+        User user = userService.getById(createUser);
+        if (user == null) {
+            return R.data(data);
+        }
+        data.setCreaterName(user.getName());
+        return R.data(data);
     }
 
     /**
@@ -122,7 +134,7 @@ public class WxGroupController extends BladeController {
     @GetMapping("/manager")
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "根据机构ID，查看管理员用户信息", notes = "根据机构ID，查看管理员用户信息")
-    public R<ManagerVo> manager(@ApiParam(name = "groupId",required = true) @RequestParam(name = "groupId",required = true) Integer groupId) {
+    public R<ManagerVo> manager(@ApiParam(name = "groupId", required = true) @RequestParam(name = "groupId", required = true) Integer groupId) {
         ManagerVo managerVo = new ManagerVo();
         List<UserVO> managerList = managerVo.getManagers();
         List<UserVO> dataManagerList = managerVo.getDataManagers();
@@ -155,8 +167,8 @@ public class WxGroupController extends BladeController {
     @GetMapping("/user/phone")
     @ApiOperationSupport(order = 1)
     @ApiOperation(value = "查询此组织下拥有此手机号的用户信息", notes = "查询此组织下拥有此手机号的用户信息")
-    public R<UserVO> phone(@ApiParam(value = "groupId",required = true) @RequestParam(name = "groupId",required = true) Integer groupId,
-                            @ApiParam(value = "phone",required = true) @RequestParam(name = "phone",required = true) String phone) {
+    public R<UserVO> phone(@ApiParam(value = "groupId", required = true) @RequestParam(name = "groupId", required = true) Integer groupId,
+                           @ApiParam(value = "phone", required = true) @RequestParam(name = "phone", required = true) String phone) {
         //去手机号空格
         phone = phone.trim();
         //获取改组织下所有用户Id
