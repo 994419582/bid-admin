@@ -155,7 +155,7 @@ public class WxSubscribeController extends BladeController {
 			for (UserVO u : users) {
 				boolean flag = true;
 				for (Clockln c : clocklns) {
-					if (u.getId() == c.getUserId()) {
+					if (u.getId() == c.getUserId() || u.getId().equals(c.getUserId())) {
 						flag = false;
 						break;
 					}
