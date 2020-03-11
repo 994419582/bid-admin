@@ -153,6 +153,8 @@ public interface IGroupService extends IService<Group> {
 	 */
 	IPage<UserVO> selectUserPageByParentId(Integer parentId, IPage<User> page);
 
+	IPage<UserVO> selectUserPageAndCountByParentId(List<Integer> userIds, IPage<User> page);
+
 	UserBO selectUserByParentId(Integer parentId);
 	/**
 	 * 获取当前群和子群的所有用户列表
