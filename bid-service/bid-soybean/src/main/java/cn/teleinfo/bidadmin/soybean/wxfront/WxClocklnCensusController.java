@@ -167,29 +167,32 @@ public class WxClocklnCensusController extends BladeController {
 			return R.fail("该部门不存在,请输入正确的部门ID");
 		}
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
-		IPage<UserVO> users=groupService.selectUserPageAndCountByParentId(ids,Condition.getPage(query));
-		List<Clockln> list =new ArrayList<>();
-		if (ids.size() >0){
-			list=clocklnService.selectClocklnByGroup(ids,clocklnTime);
-		}
-		users.getRecords().forEach(x ->{
-			Clockln clockln=clocklnService.selectClocklnByUserID(x.getId(),clocklnTime);
-			if (clockln !=null) {
-				x.setClockInId(clockln.getId());
-				x.setHealthy(clockln.getHealthy());
-				x.setAdmitting(clockln.getAdmitting());
-				x.setComfirmed(clockln.getComfirmed());
-			}else {
-				x.setClockInId(0);
-				x.setHealthy(0);
-				x.setComfirmed(0);
-				x.setAdmitting(0);
+		if (ids.size()>0) {
+			IPage<UserVO> users = groupService.selectUserPageAndCountByParentId(ids, Condition.getPage(query));
+			List<Clockln> list = new ArrayList<>();
+			if (ids.size() > 0) {
+				list = clocklnService.selectClocklnByGroup(ids, clocklnTime);
 			}
-		});
-		Map map= new HashMap();
-		map.put("data",users);
-		map.put("unClockInCount",ids.size()-list.size());
-		return R.data(map);
+			users.getRecords().forEach(x -> {
+				Clockln clockln = clocklnService.selectClocklnByUserID(x.getId(), clocklnTime);
+				if (clockln != null) {
+					x.setClockInId(clockln.getId());
+					x.setHealthy(clockln.getHealthy());
+					x.setAdmitting(clockln.getAdmitting());
+					x.setComfirmed(clockln.getComfirmed());
+				} else {
+					x.setClockInId(0);
+					x.setHealthy(0);
+					x.setComfirmed(0);
+					x.setAdmitting(0);
+				}
+			});
+			Map map = new HashMap();
+			map.put("data", users);
+			map.put("unClockInCount", ids.size() - list.size());
+			return R.data(map);
+		}
+		return R.fail("该群组下没有用户");
 	}
 
 	/**
