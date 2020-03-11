@@ -114,7 +114,7 @@ public class WxSubscribeController extends BladeController {
 			return R.success("推送成功");
 		} else {
 			errorOpenId.deleteCharAt(errorOpenId.length()-1);
-			return R.fail(errorOpenId.toString());
+			return R.success(errorOpenId.toString());
 		}
 	}
 
@@ -182,7 +182,7 @@ public class WxSubscribeController extends BladeController {
 			return R.success("推送成功");
 		} else {
 			errorOpenId.deleteCharAt(errorOpenId.length()-1);
-			return R.fail(errorOpenId.toString());
+			return R.success(errorOpenId.toString());
 		}
 	}
 
@@ -252,7 +252,7 @@ public class WxSubscribeController extends BladeController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return R.fail(openId);
+		return R.success(openId);
 	}
 
 	private String getPropertiesAppId() {
