@@ -53,6 +53,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.text.CollationElementIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -462,32 +463,18 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Override
     public IPage<UserVO> selectUserPageByParentId(Integer parentId, IPage<User> page) {
-        if (!existGroup(parentId)) {
-            throw new ApiException("部门不存在");
-        }
-
-        List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
-        //当前群及子群ID集合
-        ArrayList<Integer> groupIds = new ArrayList<>();
-        //添加父群ID
-        groupIds.add(parentId);
-        //获取所有子群Id
-        getAllGroupIdByParentId(groupAndParent, parentId, groupIds);
-        //获取所有用户ID
-        LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
-                in(UserGroup::getGroupId, groupIds).
-                eq(UserGroup::getStatus, UserGroup.NORMAL);
-        List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
-        //为空时返回null
-        if (CollectionUtils.isEmpty(userGroups)) {
+        List<Integer> userIds =selectUserIdByParentId(parentId);
+        if (CollectionUtils.isEmpty(userIds)) {
             return UserWrapper.build().pageVO(page);
         }
-        List<Integer> userIds = new ArrayList<>();
-        userGroups.forEach(x->{
-            if (!userIds.contains(x.getUserId())){
-                userIds.add(x.getUserId());
-            }
-        });
+        //获取所有用户
+        LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
+        IPage<User> userIPage = userService.page(page, userQueryWrapper);
+        return UserWrapper.build().pageVO(userIPage);
+    }
+
+    @Override
+    public IPage<UserVO> selectUserPageAndCountByParentId(List<Integer> userIds, IPage<User> page) {
         //获取所有用户
         LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
         IPage<User> userIPage = userService.page(page, userQueryWrapper);
