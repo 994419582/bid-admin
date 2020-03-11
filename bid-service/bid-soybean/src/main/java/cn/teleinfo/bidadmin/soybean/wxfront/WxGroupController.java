@@ -174,7 +174,7 @@ public class WxGroupController extends BladeController {
         //获取改组织下所有用户Id
         List<Integer> userIds = groupService.selectUserIdByParentId(groupId);
         if (CollectionUtils.isEmpty(userIds)) {
-            R.data(null);
+            return R.data(null);
         }
         //查询用户ID对应的用户
         LambdaQueryWrapper<User> queryWrapper = Wrappers.<User>lambdaQuery().in(User::getId, userIds);
