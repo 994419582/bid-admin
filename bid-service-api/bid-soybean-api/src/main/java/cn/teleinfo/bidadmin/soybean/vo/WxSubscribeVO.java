@@ -15,28 +15,21 @@
  */
 package cn.teleinfo.bidadmin.soybean.vo;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import io.swagger.annotations.ApiModel;
+import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import io.swagger.annotations.ApiModel;
 
 /**
  * 视图实体类
  *
  * @author Blade
- * @since 2020-02-21
+ * @since 2020-03-12
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(value = "UserVO对象", description = "UserVO对象")
-public class UserVO extends User {
+@ApiModel(value = "WxSubscribeVO对象", description = "WxSubscribeVO对象")
+public class WxSubscribeVO extends WxSubscribe {
 	private static final long serialVersionUID = 1L;
 
-	private Integer clockInId;
-	private Integer healthy;
-
-	private Integer comfirmed;
-	private Integer admitting;
-
-	private Integer isSendSubscribeMsg;
 }
