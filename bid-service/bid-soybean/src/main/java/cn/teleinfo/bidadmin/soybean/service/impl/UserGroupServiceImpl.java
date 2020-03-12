@@ -143,17 +143,27 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
     @Override
     @Transactional
     public boolean quitGroup(UserGroup userGroup) {
-        Integer groupId = userGroup.getGroupId();
+        Integer parentGroupId = userGroup.getGroupId();
         Integer userId = userGroup.getUserId();
-        if (!groupService.existGroup(groupId)) {
+        if (!groupService.existGroup(parentGroupId)) {
             throw new ApiException("部门不存在");
         }
         if (!groupService.existUser(userId)) {
             throw new ApiException("用户不存在");
         }
-		if (!existUserGroup(groupId, userId)) {
-			throw new ApiException("用户已退群");
-		}
+        //查询改机构下有没有此用户
+        List<Integer> userIdList = groupService.selectUserIdByParentId(parentGroupId);
+        if (!userIdList.contains(userId)) {
+            throw new ApiException("您未加入该机构，不能退群");
+        }
+        //查询用户加入的组织
+        LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
+        UserGroup joinUserGroup = getOne(queryWrapper);
+        if (joinUserGroup == null) {
+            throw new ApiException("您已退群");
+        }
+        Integer groupId = joinUserGroup.getGroupId();
         //删除用户拥有的所有管理员权限
         List<Group> userManageGroups = groupService.getUserManageGroups(userId);
         for (Group group : userManageGroups) {
