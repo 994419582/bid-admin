@@ -201,7 +201,12 @@ public class WxSubscribeController extends BladeController {
 
 		for (UserVO u : subscribeUsers) {
 			R result = send(appId, u.getWechatId());
-			if (!result.isSuccess()) {
+			if (result.isSuccess()) {
+				WxSubscribe wxSubscribe = new WxSubscribe();
+				wxSubscribe.setWechatId(appId);
+				wxSubscribe.setSendDate(LocalDateTime.now());
+				return R.status(wxSubscribeService.save(wxSubscribe));
+			} else {
 				errorOpenId.append(result.getMsg());
 				errorOpenId.append(",");
 			}
