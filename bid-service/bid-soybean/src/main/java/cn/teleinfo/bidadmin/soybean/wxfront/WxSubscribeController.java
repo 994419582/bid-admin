@@ -120,8 +120,6 @@ public class WxSubscribeController extends BladeController {
 
 			WxSubscribe wx = wxSubscribeService.selectWxSubscribe(openId, null, date);
 			if (wx != null) {
-				errorOpenId.append(openId);
-				errorOpenId.append(",");
 				continue;
 			}
 
@@ -203,8 +201,6 @@ public class WxSubscribeController extends BladeController {
 		for (UserVO u : subscribeUsers) {
 			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe(u.getWechatId(), null, date);
 			if (wxUser != null) {
-				errorOpenId.append(u.getWechatId());
-				errorOpenId.append(",");
 				continue;
 			}
 			R result = send(appId, u.getWechatId());
