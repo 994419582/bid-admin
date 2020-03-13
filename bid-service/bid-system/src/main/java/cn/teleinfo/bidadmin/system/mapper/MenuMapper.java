@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import cn.teleinfo.bidadmin.system.dto.MenuDTO;
 import cn.teleinfo.bidadmin.system.entity.Menu;
 import cn.teleinfo.bidadmin.system.vo.MenuVO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -82,7 +83,7 @@ public interface MenuMapper extends BaseMapper<Menu> {
 	 * @param roleId
 	 * @return
 	 */
-	List<Menu> roleTreeMenu(Integer parentId,List<Integer> roleId);
+	List<Menu> roleTreeMenu(@Param("parentId") Integer parentId, @Param("roleId") List<Integer> roleId);
 
 
 	/**
