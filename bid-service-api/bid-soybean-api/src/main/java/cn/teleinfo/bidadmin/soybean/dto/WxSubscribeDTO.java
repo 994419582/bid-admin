@@ -13,30 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.teleinfo.bidadmin.soybean.vo;
+package cn.teleinfo.bidadmin.soybean.dto;
 
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import io.swagger.annotations.ApiModel;
+import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 视图实体类
+ * 数据传输对象实体类
  *
  * @author Blade
- * @since 2020-02-21
+ * @since 2020-03-12
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel(value = "UserVO对象", description = "UserVO对象")
-public class UserVO extends User {
+public class WxSubscribeDTO extends WxSubscribe {
 	private static final long serialVersionUID = 1L;
 
-	private Integer clockInId;
-	private Integer healthy;
-
-	private Integer comfirmed;
-	private Integer admitting;
-
-	private Integer isSendSubscribeMsg;
 }

@@ -161,7 +161,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
                 eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
         UserGroup joinUserGroup = getOne(queryWrapper);
         if (joinUserGroup == null) {
-            throw new ApiException("您已退群");
+            throw new ApiException("您未加入该机构, 不能退出");
         }
         Integer groupId = joinUserGroup.getGroupId();
         //删除用户拥有的所有管理员权限

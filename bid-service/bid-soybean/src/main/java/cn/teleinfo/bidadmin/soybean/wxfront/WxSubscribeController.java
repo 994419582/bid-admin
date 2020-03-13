@@ -21,20 +21,20 @@ import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.config.WxMaConfiguration;
 import cn.teleinfo.bidadmin.soybean.config.WxMaProperties;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
-import cn.teleinfo.bidadmin.soybean.entity.User;
+import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
-import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
+import cn.teleinfo.bidadmin.soybean.service.IWxSubscribeService;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
-import org.springblade.core.mp.support.Condition;
 import org.springframework.web.bind.annotation.*;
 import org.springblade.core.tool.api.R;
 
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,6 +56,8 @@ public class WxSubscribeController extends BladeController {
 	private IClocklnService clocklnService;
 
 	private IGroupService groupService;
+
+    private IWxSubscribeService wxSubscribeService;
 	/**
 	 * 微信小程序推送订阅消息
 	 * create By KingYiFan on 2020/01/06
@@ -72,11 +74,19 @@ public class WxSubscribeController extends BladeController {
 			return R.fail("请输入单个用户openId");
 		}
 
+		WxSubscribe wx = wxSubscribeService.selectWxSubscribe(openId, null, new Date());
+		if (wx != null) {
+			return R.fail("用户已被提醒");
+		}
+
 		String appId = getPropertiesAppId();
 
 		R r = send(appId, openId);
 		if (r.isSuccess()) {
-			return r;
+            WxSubscribe wxSubscribe = new WxSubscribe();
+            wxSubscribe.setWechatId(openId);
+            wxSubscribe.setSendDate(LocalDateTime.now());
+            return R.status(wxSubscribeService.save(wxSubscribe));
 		} else {
 			return R.data(r.getMsg());
 		}
@@ -106,13 +116,24 @@ public class WxSubscribeController extends BladeController {
 		String appId = getPropertiesAppId();
 
 		StringBuilder errorOpenId = new StringBuilder();
-
+		Date date = new Date();
 		for (String openId : openIdArray) {
-			R result = send(appId, openId);
-			if (!result.isSuccess()) {
-				errorOpenId.append(result.getMsg());
-				errorOpenId.append(",");
+
+			WxSubscribe wx = wxSubscribeService.selectWxSubscribe(openId, null, date);
+			if (wx != null) {
+				continue;
 			}
+
+			R result = send(appId, openId);
+			if (result.isSuccess()) {
+                WxSubscribe wxSubscribe = new WxSubscribe();
+                wxSubscribe.setWechatId(openId);
+                wxSubscribe.setSendDate(LocalDateTime.now());
+                wxSubscribeService.save(wxSubscribe);
+			} else {
+                errorOpenId.append(result.getMsg());
+                errorOpenId.append(",");
+            }
 		}
 
 		if (errorOpenId.length() == 0) {
@@ -137,6 +158,11 @@ public class WxSubscribeController extends BladeController {
 	@ResponseBody
 	public R group(@RequestParam(defaultValue = "")Integer groupId) throws Exception {
 
+		WxSubscribe wx = wxSubscribeService.selectWxSubscribe(null, groupId, new Date());
+		if (wx != null) {
+			return R.fail("该群组已被提醒");
+		}
+
 		List<UserVO> subscribeUsers = new ArrayList<>();
 
 		UserBO userBO = groupService.selectUserByParentId(groupId);
@@ -150,8 +176,6 @@ public class WxSubscribeController extends BladeController {
 
 			List<Clockln> clocklns = clocklnService.selectClocklnByGroup(ids, new Date());
 
-
-
 			for (UserVO u : users) {
 				boolean flag = true;
 				for (Clockln c : clocklns) {
@@ -164,7 +188,6 @@ public class WxSubscribeController extends BladeController {
 					subscribeUsers.add(u);
 				}
 			}
-
 		}
 
 		if (subscribeUsers.isEmpty()) {
@@ -174,14 +197,32 @@ public class WxSubscribeController extends BladeController {
 		String appId = getPropertiesAppId();
 
 		StringBuilder errorOpenId = new StringBuilder();
-
+		Date date = new Date();
+		LocalDateTime now = LocalDateTime.now();
 		for (UserVO u : subscribeUsers) {
+//			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe("u.getWechatId()", null, date);
+			String wechatId = u.getWechatId();
+			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe(wechatId, null, date);
+			if (wxUser != null) {
+				continue;
+			}
 			R result = send(appId, u.getWechatId());
-			if (!result.isSuccess()) {
+			if (result.isSuccess()) {
+				WxSubscribe wxSubscribe = new WxSubscribe();
+				wxSubscribe.setWechatId(u.getWechatId());
+				wxSubscribe.setSendDate(now);
+				wxSubscribeService.save(wxSubscribe);
+			} else {
 				errorOpenId.append(result.getMsg());
 				errorOpenId.append(",");
 			}
 		}
+
+
+        WxSubscribe wxSubscribeGroup = new WxSubscribe();
+        wxSubscribeGroup.setGroupId(groupId);
+        wxSubscribeGroup.setSendDate(now);
+        wxSubscribeService.save(wxSubscribeGroup);
 
 		if (errorOpenId.length() == 0) {
 			return R.success("推送成功");
