@@ -21,8 +21,7 @@ import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
-import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
-import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
+import cn.teleinfo.bidadmin.soybean.vo.*;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,6 +29,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
@@ -37,7 +37,6 @@ import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -239,7 +238,7 @@ public class GroupController extends BladeController {
     @ApiOperationSupport(order = 4)
 	@ApiOperation(value = "新增", notes = "传入group")
 	public R save(@Valid @RequestBody Group group) {
-		if (StringUtils.isEmpty(group.getParentId())) {
+		if (group.getParentId() != null) {
 			throw new ApiException("上级部门不能为空");
 		}
 		return R.status(groupService.saveGroup(group));
@@ -264,6 +263,22 @@ public class GroupController extends BladeController {
 			throw new ApiException("部门人数不能更新");
 		}
 		return R.status(groupService.updateGroup(group));
+	}
+
+	/**
+	 * 更新管理员
+	 */
+	@PostMapping("/updateManager")
+	@ApiOperationSupport(order = 5)
+	@ApiOperation(value = "修改群管理员", notes = "修改群管理员")
+	public R updateManager(@Valid @RequestBody GroupManagerVo managerVo) {
+		Group group = new Group();
+		List<Integer> managers = managerVo.getManagers();
+		List<Integer> dataManagers = managerVo.getDataManagers();
+		group.setId(managerVo.getId());
+		group.setManagers(StringUtils.join(managers, ","));
+		group.setDataManagers(StringUtils.join(dataManagers, ","));
+		return R.status(groupService.updateById(group));
 	}
 
 	/**
