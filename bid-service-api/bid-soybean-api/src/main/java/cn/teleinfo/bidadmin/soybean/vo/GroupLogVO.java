@@ -31,5 +31,6 @@ import lombok.EqualsAndHashCode;
 @ApiModel(value = "GroupLogVO对象", description = "GroupLogVO对象")
 public class GroupLogVO extends GroupLog {
 	private static final long serialVersionUID = 1L;
+	private String eventName;
 
 }
