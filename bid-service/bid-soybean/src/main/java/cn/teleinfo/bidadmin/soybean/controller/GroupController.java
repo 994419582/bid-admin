@@ -15,33 +15,36 @@
  */
 package cn.teleinfo.bidadmin.soybean.controller;
 
+import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiOperationSupport;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.mp.support.Query;
 import org.springblade.core.tool.api.R;
 import org.springblade.core.tool.utils.Func;
+import org.springblade.core.tool.utils.StringUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +62,8 @@ public class GroupController extends BladeController {
 	private IGroupService groupService;
 
 	private IParentGroupService parentGroupService;
+
+	private IClocklnService clocklnService;
 
 	/**
 	* 详情
@@ -250,6 +255,39 @@ public class GroupController extends BladeController {
 			}
 		}
 		return R.status(groupService.removeGroupByIds(ids));
+	}
+
+	/**
+	 * 自定义分页
+	 */
+	@GetMapping("/census")
+	@ApiOperationSupport(order = 3)
+	@ApiOperation(value = "获取统计页面所需统计数据", notes = "传入群ID和打卡日期")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
+	})
+	public R  census(@RequestParam(name = "groupId") Integer groupId) {
+		Date today = new Date(System.currentTimeMillis());
+
+
+		if (groupId == null){
+			return R.fail("部门ID不能为空");
+		}
+		Group group= groupService.getById(groupId);
+
+		if (group==null){
+			return R.fail("该部门不存在,请输入正确的部门ID");
+		}
+		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
+		List<Clockln> list =new ArrayList<>();
+		if (ids.size() >0){
+			list=clocklnService.selectClocklnByGroup(ids,today);
+		}
+		Map map= new HashMap();
+		map.put("clockIn",list.size());
+		map.put("unClockIn",ids.size()-list.size());
+
+		return R.data(map);
 	}
 
 }
