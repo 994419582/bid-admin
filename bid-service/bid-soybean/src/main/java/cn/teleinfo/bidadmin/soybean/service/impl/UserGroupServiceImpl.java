@@ -154,7 +154,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         //查询改机构下有没有此用户
         List<Integer> userIdList = groupService.selectUserIdByParentId(parentGroupId);
         if (!userIdList.contains(userId)) {
-            throw new ApiException("您未加入该机构，不能退群");
+            throw new ApiException("您未加入该机构，不能退出");
         }
         //查询用户加入的组织
         LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
@@ -273,7 +273,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         for (Integer id : toIntList) {
             UserGroup userGroup = getUserGroupById(id);
             if (userGroup == null) {
-                throw new ApiException("用户已退群");
+                throw new ApiException("该机构下未发现此用户");
             }
             Integer groupId = userGroup.getGroupId();
             Integer userId = userGroup.getUserId();
