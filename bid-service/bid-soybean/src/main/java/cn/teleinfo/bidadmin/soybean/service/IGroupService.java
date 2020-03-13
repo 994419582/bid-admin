@@ -192,4 +192,20 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	List<Group> getUserDataManageGroups(Integer userId);
+
+	/**
+	 * 生成机构唯一码
+	 *
+	 * @return
+	 */
+	String generateGroupCode();
+
+	/**
+	 * 查询改机构下所有子机构ID
+	 * @param groups
+	 * @param parentId
+	 * @param groupList 子机构ids
+	 * @return
+	 */
+	List<GroupTreeVo> getAllGroupIdByParentId(List<GroupTreeVo> groups, Integer parentId, List groupList);
 }

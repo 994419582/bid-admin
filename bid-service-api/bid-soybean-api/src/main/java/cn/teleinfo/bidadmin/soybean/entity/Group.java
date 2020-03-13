@@ -69,7 +69,7 @@ public class Group implements Serializable {
     /**
      * 群组名
      */
-    @ApiModelProperty(value = "群组名", required = true)
+    @ApiModelProperty(value = "机构名", required = true)
     @NotBlank(message = "名称不能为空")
     @Pattern(regexp = "^(?!null).*", message = "名称不能包含字符串null")
     @Excel(name = "下级机构*")
@@ -77,7 +77,7 @@ public class Group implements Serializable {
     /**
      * 群组名全称
      */
-    @ApiModelProperty(value = "群组名全称", required = false)
+    @ApiModelProperty(value = "机构名全称", required = false)
     @Pattern(regexp = "^(?!null).*", message = "全称不能包含字符串null")
     private String fullName;
     /**
@@ -88,23 +88,23 @@ public class Group implements Serializable {
     /**
      * 群logo
      */
-    @ApiModelProperty(value = "群logo")
+    @ApiModelProperty(value = "机构logo")
     private String logo;
     /**
      * 群人数
      */
-    @ApiModelProperty(value = "群人数", required = false)
+    @ApiModelProperty(value = "机构人数", required = false)
     @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer userAccount;
     /**
      * 群管理员
      */
-    @ApiModelProperty(value = "群管理员")
+    @ApiModelProperty(value = "机构管理员")
     private String managers;
     /**
      * 群创建人
      */
-    @ApiModelProperty(value = "群创建人")
+    @ApiModelProperty(value = "机构创建人")
     @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer createUser;
 
@@ -131,14 +131,14 @@ public class Group implements Serializable {
     /**
      * 群状态(0:正常，1:删除，2:审核中)
      */
-    @ApiModelProperty(value = "群状态(0:正常，1:删除，2:审核中)")
+    @ApiModelProperty(value = "机构状态(0:正常，1:删除，2:审核中)")
     private Integer status;
 
     /**
      * 群类型（组织，个人）
      */
-    @ApiModelProperty(value = "群组类型（组织0，个人1）",required = true)
-    @NotNull(message = "群组类型不能为空")
+    @ApiModelProperty(value = "机构类型（组织0，个人1）",required = true)
+    @NotNull(message = "机构类型不能为空")
     @Min(value = 0, message = "机构类型只能是0或者1")
     @Max(value = 1,message = "机构类型只能是0或者1")
     private Integer groupType;
@@ -146,7 +146,7 @@ public class Group implements Serializable {
     /**
      * 公司地址ID（只有公司和社区需要）
      */
-    @ApiModelProperty(value = "公司地址ID（只有公司和社区需要）")
+    @ApiModelProperty(value = "单位地址ID（只有公司和社区需要）")
     @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer addressId;
     /**
@@ -173,10 +173,10 @@ public class Group implements Serializable {
     @Excel(name = "联系电话")
     private String phone;
 
-    @ApiModelProperty(value = "数据管理员",required = false)
+    @ApiModelProperty(value = "统计管理员",required = false)
     private String dataManagers;
 
-    @ApiModelProperty(value = "父群主ID, 管理后台使用")
+    @ApiModelProperty(value = "上级机构ID, 管理后台使用")
     @TableField(exist = false)
     @JsonSerialize(nullsUsing = NullSerializer.class)
     private Integer parentId;
@@ -194,6 +194,9 @@ public class Group implements Serializable {
     @Excel(name = "上级机构*")
     private String parentName;
 
-    @ApiModelProperty(value = "组织唯一码")
+    @ApiModelProperty(value = "机构唯一码")
     private String groupCode;
+
+    @ApiModelProperty(value = "机构标识")
+    private String groupIdentify;
 }

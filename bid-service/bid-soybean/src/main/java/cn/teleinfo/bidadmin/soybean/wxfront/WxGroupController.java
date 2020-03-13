@@ -561,9 +561,9 @@ public class WxGroupController extends BladeController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "新增群管理员", notes = "新增群管理员，只有群组拥有者有权限，可以设置管理员）")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "managerId", value = "准备设置为数据管理员的用户ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "userId", value = "用户ID", required = true, paramType = "query", dataType = "int")
+            @ApiImplicitParam(name = "groupId", value = "群组ID", required = true,  dataType = "int"),
+            @ApiImplicitParam(name = "managerId", value = "准备设置为数据管理员的用户ID", required = true, dataType = "int"),
+            @ApiImplicitParam(name = "userId", value = "用户ID", required = true,  dataType = "int")
     })
     public R dataManager(@RequestParam(name = "groupId", required = true) Integer groupId,
                          @RequestParam(name = "managerId", required = true) Integer managerId,
@@ -759,7 +759,11 @@ public class WxGroupController extends BladeController {
         }
     }
 
-    @GetMapping("/test")
+    @PostMapping("/test")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "parentId", value = "子群组ID", required = true, dataType = "int"),
+            @ApiImplicitParam(name = "checkId", value = "创建人ID", required = true, dataType = "int")
+    })
     public R test(Integer parentId, Integer checkId) {
         List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
         boolean flag = groupService.isChildrenGroup(groupAndParent, parentId, checkId);

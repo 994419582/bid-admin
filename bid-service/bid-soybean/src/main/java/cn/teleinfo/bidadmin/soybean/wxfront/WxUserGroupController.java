@@ -119,7 +119,7 @@ public class WxUserGroupController extends BladeController {
             Integer userId = userGroup.getUserId();
             Integer managerId = userGroup.getManagerId();
             if (!userGroupService.existUserGroup(groupId, userId)) {
-                throw new ApiException("用户已退群");
+                throw new ApiException("改机构下未发现此用户");
             }
             List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
             //获取管理员管理的群
@@ -141,7 +141,7 @@ public class WxUserGroupController extends BladeController {
             //去除子群
             ArrayList<Integer> removeUserManagerIds = new ArrayList<>();
             for (Group userManageGroup : userManageGroups) {
-                for (Group group : managerGroups) {
+                for (Group group : userManageGroups) {
                     if (groupService.isChildrenGroup(groupAndParent, userManageGroup.getId(), group.getId())) {
                         removeUserManagerIds.add(group.getId());
                     }
@@ -154,7 +154,7 @@ public class WxUserGroupController extends BladeController {
             boolean flag = false;
             for (Group userManageGroup : userManageGroups) {
                 for (Group managerGroup : managerGroups) {
-                    if (groupService.isChildrenGroup(groupAndParent, userManageGroup.getId(), managerGroup.getId()) || userManageGroup.getId().equals(managerGroup.getId())) {
+                    if (groupService.isChildrenGroup(groupAndParent, userManageGroup.getId(), managerGroup.getId())) {
                         flag = true;
                     }
                 }
