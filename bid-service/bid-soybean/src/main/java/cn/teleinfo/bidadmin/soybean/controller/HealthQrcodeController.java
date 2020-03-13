@@ -112,7 +112,7 @@ public class HealthQrcodeController extends BladeController {
                 color = new Color(230, 56, 6);
                 colorString = "RED";
             }else {
-				if(clockln.getLeaveCity().equals(1)){
+				if(clockln.getLeaveCity().equals(2) || clockln.getLeave().equals(2)){
 					//14天内到达
 					if(clockln.getWuhan().equals(1)){
 						//接触过疑似、确诊
@@ -129,7 +129,7 @@ public class HealthQrcodeController extends BladeController {
 							colorString = "RED";
 						}
 					}
-				}else if(clockln.getLeaveCity().equals(2)) {
+				}else {
 					if(clockln.getWuhan().equals(1)){
 						//接触过疑似、确诊
 						color = new Color(230, 56, 6);
