@@ -16,11 +16,13 @@
 package cn.teleinfo.bidadmin.soybean.controller;
 
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.GroupVO;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
@@ -40,6 +42,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -88,6 +91,28 @@ public class GroupController extends BladeController {
 	}
 
 	/**
+	 * 根据父ID查询下一级子机构
+	 * @return
+	 */
+	@GetMapping("/selectChildGroup")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "群组列表", notes = "查询所有群")
+	public R<List<GroupVO>> selectChildGroup(Integer groupId) {
+		//查询下一级子机构id
+		LambdaQueryWrapper<ParentGroup> queryWrapper = Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getParentId, groupId);
+		List<ParentGroup> parentGroups = parentGroupService.list(queryWrapper);
+		if (CollectionUtils.isEmpty(parentGroups)) {
+			return R.data(null);
+		}
+		List<Integer> ids = parentGroups.stream().map(ParentGroup::getGroupId).collect(Collectors.toList());
+		//查询子机构
+		LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
+				in(Group::getId, ids).eq(Group::getStatus, Group.NORMAL);
+		List<Group> groupList = groupService.list(groupLambdaQueryWrapper);
+		return R.data(GroupWrapper.build().listVO(groupList));
+	}
+
+	/**
 	 * 模糊搜索
 	 * @return
 	 */
@@ -122,7 +147,23 @@ public class GroupController extends BladeController {
 	@GetMapping("/tree/children")
 	@ApiOperationSupport(order = 2)
 	@ApiOperation(value = "树形下拉列表字典", notes = "带有children的下拉树")
-	public R<List<GroupTreeVo>> treeChildren(Integer groupId) {
+	public R<List> treeChildren(Integer groupId, String name, Integer groupType,Integer topId) {
+		if (!StringUtils.isEmpty(name) || groupType != null || topId != null) {
+			String groupIdentify = null;
+			if (topId != null) {
+				Group group = groupService.getGroupById(topId);
+				if (group != null) {
+					groupIdentify = group.getGroupIdentify();
+				}
+			}
+			LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+					like(!StringUtils.isEmpty(name), Group::getName, name).
+					eq(groupType != null, Group::getGroupType, groupType).
+					eq(!StringUtils.isEmpty(groupIdentify), Group::getGroupIdentify, groupIdentify);
+			//搜索
+			List<Group> groupList = groupService.list(queryWrapper);
+			return R.data(groupList);
+		}
 		List<GroupTreeVo> tree = groupService.treeChildren(groupId);
 		return R.data(tree);
 	}

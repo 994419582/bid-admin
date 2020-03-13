@@ -48,7 +48,7 @@ public interface GroupMapper extends BaseMapper<Group> {
 	 * 群组下拉树
 	 * @return
 	 */
-	@Select("select s.id,s.name,p.parent_id as parentId,s.logo, s.managers, s.data_managers as dataManagers ,s.create_user createUser,s.user_account as userAccount, s.group_type as groupType  from soybean_group s, soybean_parent_group p where s.status = 0 and s.id = p.group_id order by p.parent_id")
+	@Select("select s.id,s.name,p.parent_id as parentId,s.logo, s.full_name as fullName,s.address_name as addressName,s.managers, s.data_managers as dataManagers ,s.create_user createUser,s.user_account as userAccount, s.group_type as groupType  from soybean_group s, soybean_parent_group p where s.status = 0 and s.id = p.group_id order by p.parent_id")
 	List<GroupTreeVo> tree();
 
 	@Update("update soybean_group set user_account = user_account + #{addAccount} where id = #{groupId}")

@@ -13,7 +13,6 @@ public class ExcelGroupVo {
      * 群logo
      */
     @ApiModelProperty(value = "群logo", required = true)
-    @NotBlank(message = "LOGO不能为空")
     private String logo;
 
     /**

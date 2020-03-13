@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
@@ -35,6 +36,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springblade.core.mp.support.Condition;
 import org.springblade.core.tool.utils.Func;
@@ -46,6 +48,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.FileSystemUtils;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -177,11 +182,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     /**
      * 递归构建树形下拉
+     *
      * @param groups
      * @param parentId
      * @return
      */
-    public List<GroupTreeVo> buildUserTree(List<GroupTreeVo> groups, Integer parentId, Integer userId, boolean manageFlag,boolean dataManageFlag) {
+    public List<GroupTreeVo> buildUserTree(List<GroupTreeVo> groups, Integer parentId, Integer userId, boolean manageFlag, boolean dataManageFlag) {
         List<GroupTreeVo> tree = new ArrayList<GroupTreeVo>();
 
         for (GroupTreeVo group : groups) {
@@ -280,7 +286,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 isManager = true;
             }
             boolean isDataManager = Func.toIntList(group.getDataManagers()).contains(userId);
-            List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId(), userId, isManager,isDataManager);
+            List<GroupTreeVo> groupTreeVos = buildUserTree(groupAndParentList, group.getId(), userId, isManager, isDataManager);
             //计算当前群人数
             for (GroupTreeVo treeVo : groupTreeVos) {
                 groupTreeVo.setUserAccount(groupTreeVo.getUserAccount() + treeVo.getUserAccount());
@@ -314,13 +320,13 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             if (createUser != null && createUser.equals(userId)) {
                 isCreater = true;
             }
-            if (!isManager && !isDataManager && !isCreater ) {
-                        //校验是否为其管理群的子群组
-                        boolean flag = false;
-                        for (Group group : filterList) {
-                            if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
-                                flag = true;
-                            }
+            if (!isManager && !isDataManager && !isCreater) {
+                //校验是否为其管理群的子群组
+                boolean flag = false;
+                for (Group group : filterList) {
+                    if (isChildrenGroup(groupAndParentListTemp, group.getId(), groupId)) {
+                        flag = true;
+                    }
                 }
                 if (flag == true) {
                     continue;
@@ -330,7 +336,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                         eq(Group::getStatus, Group.NORMAL);
                 Group group = getOne(groupQueryWrapper);
                 GroupTreeVo groupTreeVo = new GroupTreeVo();
-                BeanUtils.copyProperties(group,groupTreeVo);
+                BeanUtils.copyProperties(group, groupTreeVo);
                 groupTreeVo.setPermission(false);
                 groupTreeVo.setDataPermission(false);
                 treeRootList.add(groupTreeVo);
@@ -463,7 +469,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     @Override
     public IPage<UserVO> selectUserPageByParentId(Integer parentId, IPage<User> page) {
-        List<Integer> userIds =selectUserIdByParentId(parentId);
+        List<Integer> userIds = selectUserIdByParentId(parentId);
         if (CollectionUtils.isEmpty(userIds)) {
             return UserWrapper.build().pageVO(page);
         }
@@ -514,7 +520,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<User> userIPage = userService.list(userQueryWrapper);
 
         List<Group> groups = groupMapper.selectBatchIds(userGroups.stream().map(UserGroup::getGroupId).collect(Collectors.toList()));
-        
+
         UserBO ub = new UserBO();
         ub.setUserGroups(userGroups);
         ub.setGroups(groups);
@@ -541,8 +547,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 eq(UserGroup::getStatus, UserGroup.NORMAL);
         List<UserGroup> userGroups = userGroupService.list(userGroupQueryWrapper);
         List<Integer> userIds = new ArrayList<>();
-        userGroups.forEach(x->{
-            if (!userIds.contains(x.getUserId())){
+        userGroups.forEach(x -> {
+            if (!userIds.contains(x.getUserId())) {
                 userIds.add(x.getUserId());
             }
         });
@@ -581,6 +587,23 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             throw new ApiException("部门状态只能为空");
         }
         checkParentGroupAndManager(group);
+        //生成机构唯一码
+        String groupCode = generateGroupCode();
+        String groupIdentify = null;
+        //如果是一级机构则机构标识码等于机构唯一码，否则机构标识码取上级机构的机构标识码
+        Integer parentId = group.getParentId();
+        if (Group.TOP_PARENT_ID.equals(parentId)) {
+            groupIdentify = groupCode;
+        } else {
+            Group parentGroup = getGroupById(parentId);
+            if (parentGroup == null) {
+                throw new ApiException("上级机构不存在，请联系管理员");
+            }
+            groupIdentify = parentGroup.getGroupIdentify();
+        }
+        //设置机构唯一码和机构标识码
+        group.setGroupCode(groupCode);
+        group.setGroupIdentify(groupIdentify);
         //设置群人数为0
         group.setUserAccount(0);
         //新增群
@@ -589,7 +612,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //保存中间表
         ParentGroup parentGroup = new ParentGroup();
         parentGroup.setGroupId(group.getId());
-        parentGroup.setParentId(group.getParentId());
+        parentGroup.setParentId(parentId);
         parentGroup.setSort(group.getSort());
         parentGroupService.save(parentGroup);
         return true;
@@ -602,19 +625,23 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (parentId == null) {
             group.setParentId(Group.TOP_PARENT_ID);
         } else {
-                if (!existGroup(parentId)) {
-                    throw new ApiException("上级部门不存在");
+            if (!existGroup(parentId)) {
+                throw new ApiException("上级部门不存在");
+            }
+            Integer groupType = getGroupById(parentId).getGroupType();
+            if (Group.TYPE_PERSON.equals(groupType)) {
+                throw new ApiException("上级部门不能是末级部门");
+            }
+            if (groupId != null) {
+                if (groupId.equals(parentId)) {
+                    throw new ApiException("不能指定自己为上级部门");
                 }
-                if (groupId != null) {
-                    if (groupId.equals(parentId)) {
-                        throw new ApiException("不能指定自己为上级部门");
-                    }
-                    List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
-                    //校验是否为子群组
-                    if (isChildrenGroup(groupAndParentList, groupId, parentId)) {
-                        throw new ApiException("不能指定当前的下级部门为上级部门");
-                    }
+                List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
+                //校验是否为子群组
+                if (isChildrenGroup(groupAndParentList, groupId, parentId)) {
+                    throw new ApiException("不能指定当前的下级部门为上级部门");
                 }
+            }
         }
         //校验管理员是否存在
         String managers = group.getManagers();
@@ -626,7 +653,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 throw new ApiException("管理员不存在");
             }
         }
-        //校验管理员是否存在
+        //校验统计管理员是否存在
         String dataManagers = group.getDataManagers();
         if (!StringUtils.isEmpty(dataManagers) && !Pattern.matches(Group.PATTERN_STRING_LIST, dataManagers)) {
             throw new ApiException("数据管理员ids格式不正确，格式为: 1,2,3");
@@ -644,10 +671,42 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     public boolean updateGroup(Group group) {
         //校验父群和子群格式是否正确
         checkParentGroupAndManager(group);
-        //更新群
-        updateById(group);
         Integer groupId = group.getId();
         Integer parentId = group.getParentId();
+        //如果原来的上级机构不是顶级机构，更新时不允许设置上级机构为顶级机构
+        LambdaQueryWrapper<ParentGroup> queryWrapper = Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getGroupId, groupId);
+        Integer oldParentId = parentGroupService.getOne(queryWrapper).getParentId();
+        if (!Group.TOP_PARENT_ID.equals(oldParentId) && Group.TOP_PARENT_ID.equals(parentId)) {
+            throw new ApiException("修改机构信息时，不能设置上级机构为顶级机构");
+        }
+        //校验机构标识码是否一致
+        Group currentParentGroup = getGroupById(parentId);
+        Group currentGroup = getGroupById(group.getId());
+        String groupIdentify = currentGroup.getGroupIdentify();
+        if (groupIdentify != null && !Group.TOP_PARENT_ID.equals(parentId) && !groupIdentify.equals(currentParentGroup.getGroupIdentify())) {
+            throw new ApiException("不同机构之间不允许切换上级机构");
+        }
+        //校验类型
+        Integer groupType = group.getGroupType();
+        if (Group.TYPE_PERSON.equals(groupType)) {
+            //校验群下是否存在子群
+            LambdaQueryWrapper<ParentGroup> parentGroupLambdaQueryWrapper = Wrappers.<ParentGroup>lambdaQuery().
+                    eq(ParentGroup::getParentId, groupId);
+            if (parentGroupService.count(parentGroupLambdaQueryWrapper) > 0) {
+                throw new ApiException("改机构为其他机构的上级机构，不能设置为个人机构");
+            }
+        } else if (Group.TYPE_ORGANIZATION.equals(groupType)) {
+            //校验改机构下是否有人员
+            LambdaQueryWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                    eq(UserGroup::getGroupId, group).eq(UserGroup::getStatus, UserGroup.NORMAL);
+            if (userGroupService.count(userGroupLambdaQueryWrapper) > 0) {
+                throw new ApiException("改机构有人员加入，不能更改类型");
+            }
+        } else {
+            throw new ApiException("机构类型错误");
+        }
+        //更新群
+        updateById(group);
         //删除中间表
         parentGroupService.remove(Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getGroupId, groupId));
         //新增中间表
@@ -681,6 +740,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     /**
      * 递归构建树形下拉
+     *
      * @param groups
      * @param parentId
      * @return
@@ -709,9 +769,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
 
     /**
      * 递归校验是否是子群
-     * @param groups 所有群
+     *
+     * @param groups   所有群
      * @param parentId 群ID
-     * @param checkId 父群ID
+     * @param checkId  父群ID
      */
     public boolean isChildrenGroup(List<GroupTreeVo> groups, Integer parentId, Integer checkId) {
         boolean flag = false;
@@ -737,15 +798,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     @Override
     @Transactional
     public String excelImport(Group topGroup, String excelFile) {
-        //一级机构机构码
+        //一级机构机构唯一码，每个机构的唯一码不同，替换机构ID
         String topCode = generateGroupCode();
+        //生成机构标识码，机构及其子机构标识码相同，用来标识一个整体机构
+        String groupIdentify = topCode;
         //excel地址为空默认创建一个个人组织
         if (StringUtils.isBlank(excelFile)) {
             //一级组织名称不能重复
             LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
                     eq(Group::getName, topGroup.getName()).eq(Group::getStatus, Group.NORMAL);
             if (count(groupLambdaQueryWrapper) > 0) {
-                throw new ApiException("一级部门名称不能重名");
+                throw new ApiException("一级机构名称不能重名");
             }
             //查询一级组织父组织名称
             String topParentName = getGroupById(Group.TOP_PARENT_ID).getName();
@@ -754,6 +817,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             topGroup.setFullName(topParentName + "_" + topGroup.getName());
             topGroup.setGroupType(Group.TYPE_PERSON);
             topGroup.setGroupCode(topCode);
+            topGroup.setGroupIdentify(groupIdentify);
             save(topGroup);
             //维护一级组织中间表
             ParentGroup topParentGroup = new ParentGroup();
@@ -784,7 +848,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             } else {
                 throw new ApiException("获取文件异常");
             }
-            List<Group> metaGroups = ExcelUtils.importExcel(inputStream, 0,1, false, Group.class);
+            List<Group> metaGroups = ExcelUtils.importExcel(inputStream, 0, 1, false, Group.class);
             //过滤空数据
             List<Group> groups = metaGroups.stream().filter(group -> {
                 if (!StringUtils.isBlank(group.getName()) && !StringUtils.isBlank(group.getParentName())) {
@@ -819,7 +883,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     group.setDetailAddress(group.getDetailAddress().trim());
                 }
                 //设置全称
-                group.setFullName(group.getParentName() + "_" +group.getName());
+                group.setFullName(group.getParentName() + "_" + group.getName());
                 //设置地址
                 String addressName = group.getAddressName();
                 if (StringUtils.isBlank(addressName)) {
@@ -861,6 +925,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             topGroup.setFullName(topParentName + "_" + topGroup.getName());
             topGroup.setGroupType(Group.TYPE_ORGANIZATION);
             topGroup.setGroupCode(topCode);
+            topGroup.setGroupIdentify(groupIdentify);
             save(topGroup);
             //维护一级组织中间表
             ParentGroup topParentGroup = new ParentGroup();
@@ -880,6 +945,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     group.setPhone(null);
                 }
                 group.setGroupCode(generateGroupCode());
+                group.setGroupIdentify(groupIdentify);
                 fullName = group.getFullName();
                 save(group);
             }
@@ -893,15 +959,15 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 parentGroup.setGroupId(group.getId());
                 //查询父Id
                 List<Group> groupList = allGroups.stream().filter(filterGroup -> {
-                String name = filterGroup.getName();
-                if (name == null) {
-                    throw new ApiException("部门名称不能为空");
-                } else {
-                    return name.equals(group.getParentName());
-                }
+                    String name = filterGroup.getName();
+                    if (name == null) {
+                        throw new ApiException("部门名称不能为空");
+                    } else {
+                        return name.equals(group.getParentName());
+                    }
                 }).collect(Collectors.toList());
                 if (CollectionUtils.isEmpty(groupList)) {
-                    throw new ApiException("未发现"+group.getName()+"的上级部门");
+                    throw new ApiException("未发现" + group.getName() + "的上级部门");
                 }
                 if (groupList.size() > 1) {
                     throw new ApiException("一个部门只能有一个上级部门");
