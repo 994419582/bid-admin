@@ -107,64 +107,45 @@ public class HealthQrcodeController extends BladeController {
             if(clockln == null){
                 return R.fail("请先健康打卡！");
             }
-            String clockAddress = clockln.getAddress();
-            String companyAddress = StringUtils.isNotBlank(user.getCompanyAddress()) ? user.getCompanyAddress() : "";
-            //是否在工作地
-            Boolean isAtAddress = true;
-            if(StringUtils.isNotBlank(companyAddress)){
-                String[] companyAddressArr = companyAddress.split("-");
-                if(companyAddressArr.length >= 2){
-                	if(!clockAddress.contains(companyAddressArr[0]) || !clockAddress.contains(companyAddressArr[1])){
-                		isAtAddress = false;
-					}
-				}
-            }
             if(!clockln.getComfirmed().equals(1)){
                 //确诊
                 color = new Color(230, 56, 6);
                 colorString = "RED";
             }else {
-                if(!isAtAddress){
-                    //不在工作地 红码
-                    color = new Color(230, 56, 6);
-                    colorString = "RED";
-                }else {
-                	//在工作地
-                	if(clockln.getLeave().equals(2)){
-                		//14天内到达
-						if(clockln.getWuhan().equals(1)){
-							//接触过疑似、确诊
-							color = new Color(230, 56, 6);
-							colorString = "RED";
-						}else{
-							if(clockln.getHealthy().equals(1)){
-								//健康
-								color = new Color(246, 172, 50);
-								colorString = "YELLOW";
-							}else {
-								//异常
-								color = new Color(230, 56, 6);
-								colorString = "RED";
-							}
-						}
-					}else if(clockln.getLeave().equals(1)) {
-						if(clockln.getWuhan().equals(1)){
-							//接触过疑似、确诊
-							color = new Color(230, 56, 6);
-							colorString = "RED";
+				if(clockln.getLeave().equals(2)){
+					//14天内到达
+					if(clockln.getWuhan().equals(1)){
+						//接触过疑似、确诊
+						color = new Color(230, 56, 6);
+						colorString = "RED";
+					}else{
+						if(clockln.getHealthy().equals(1)){
+							//健康
+							color = new Color(246, 172, 50);
+							colorString = "YELLOW";
 						}else {
-							if(clockln.getHealthy().equals(1)){
-								//健康
-								color = new Color(36, 184, 124);
-								colorString = "GREEN";
-							}else {
-								//异常
-								color = new Color(246, 172, 50);
-								colorString = "YELLOW";
-							}
+							//异常
+							color = new Color(230, 56, 6);
+							colorString = "RED";
 						}
 					}
-                }
+				}else if(clockln.getLeave().equals(1)) {
+					if(clockln.getWuhan().equals(1)){
+						//接触过疑似、确诊
+						color = new Color(230, 56, 6);
+						colorString = "RED";
+					}else {
+						if(clockln.getHealthy().equals(1)){
+							//健康
+							color = new Color(36, 184, 124);
+							colorString = "GREEN";
+						}else {
+							//异常
+							color = new Color(246, 172, 50);
+							colorString = "YELLOW";
+						}
+					}
+				}
             }
             HealthQrcode healthQrcode = new HealthQrcode();
             healthQrcode.setUserId(userId);
@@ -185,7 +166,7 @@ public class HealthQrcodeController extends BladeController {
 		healthQrcodeVO.setBase64(base64);
 		healthQrcodeVO.setTitle(user.getName() + "的健康码");
 		if ("RED".equals(healthQrcodeVO.getColor())) {
-			healthQrcodeVO.setDescription("返回工作地后连续14天正常为绿码可通行。");
+			healthQrcodeVO.setDescription("连续14天正常为绿码可通行。");
 		} else if ("YELLOW".equals(healthQrcodeVO.getColor())) {
 			healthQrcodeVO.setDescription("请自觉持续观察和每天打卡，\n连续14天正常为绿码可通行。");
 		} else {
