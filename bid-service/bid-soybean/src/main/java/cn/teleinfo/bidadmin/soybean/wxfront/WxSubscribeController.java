@@ -32,6 +32,7 @@ import org.springblade.core.boot.ctrl.BladeController;
 import org.springframework.web.bind.annotation.*;
 import org.springblade.core.tool.api.R;
 
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -128,7 +129,7 @@ public class WxSubscribeController extends BladeController {
                 WxSubscribe wxSubscribe = new WxSubscribe();
                 wxSubscribe.setWechatId(openId);
                 wxSubscribe.setSendDate(LocalDateTime.now());
-                return R.status(wxSubscribeService.save(wxSubscribe));
+                wxSubscribeService.save(wxSubscribe);
 			} else {
                 errorOpenId.append(result.getMsg());
                 errorOpenId.append(",");
@@ -199,7 +200,9 @@ public class WxSubscribeController extends BladeController {
 		Date date = new Date();
 		LocalDateTime now = LocalDateTime.now();
 		for (UserVO u : subscribeUsers) {
-			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe(u.getWechatId(), null, date);
+//			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe("u.getWechatId()", null, date);
+			String wechatId = u.getWechatId();
+			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe(wechatId, null, date);
 			if (wxUser != null) {
 				continue;
 			}
@@ -208,7 +211,7 @@ public class WxSubscribeController extends BladeController {
 				WxSubscribe wxSubscribe = new WxSubscribe();
 				wxSubscribe.setWechatId(u.getWechatId());
 				wxSubscribe.setSendDate(now);
-				return R.status(wxSubscribeService.save(wxSubscribe));
+				wxSubscribeService.save(wxSubscribe);
 			} else {
 				errorOpenId.append(result.getMsg());
 				errorOpenId.append(",");
@@ -216,10 +219,10 @@ public class WxSubscribeController extends BladeController {
 		}
 
 
-        WxSubscribe wxSubscribe = new WxSubscribe();
-        wxSubscribe.setGroupId(groupId);
-        wxSubscribe.setSendDate(LocalDateTime.now());
-        wxSubscribeService.save(wxSubscribe);
+        WxSubscribe wxSubscribeGroup = new WxSubscribe();
+        wxSubscribeGroup.setGroupId(groupId);
+        wxSubscribeGroup.setSendDate(now);
+        wxSubscribeService.save(wxSubscribeGroup);
 
 		if (errorOpenId.length() == 0) {
 			return R.success("推送成功");
