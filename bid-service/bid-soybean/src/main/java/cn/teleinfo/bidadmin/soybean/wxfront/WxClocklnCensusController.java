@@ -17,12 +17,15 @@ package cn.teleinfo.bidadmin.soybean.wxfront;
 
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
+import cn.teleinfo.bidadmin.soybean.service.IWxSubscribeService;
 import cn.teleinfo.bidadmin.soybean.vo.ClocklnVO;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
@@ -39,6 +42,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 /**
@@ -58,6 +63,8 @@ public class WxClocklnCensusController extends BladeController {
 	private IGroupService groupService;
 
 	private IUserService userService;
+
+	private IWxSubscribeService wxSubscribeService;
 
 	/**
 	 * 获取群组分页打卡信息
@@ -186,10 +193,30 @@ public class WxClocklnCensusController extends BladeController {
 					x.setComfirmed(0);
 					x.setAdmitting(0);
 				}
+
+				// 用户是否提醒打卡
+				WxSubscribe wxSubscribe = wxSubscribeService.selectWxSubscribe(x.getWechatId(), null, clocklnTime);
+
+				if (wxSubscribe == null) {
+					x.setIsSendSubscribeMsg(0);
+				} else {
+					x.setIsSendSubscribeMsg(1);
+				}
 			});
 			Map map = new HashMap();
 			map.put("data", users);
 			map.put("unClockInCount", ids.size() - list.size());
+
+			// 群组是否提醒打卡
+
+			WxSubscribe wxSubscribe = wxSubscribeService.selectWxSubscribe(null, groupId, clocklnTime);
+
+			if (wxSubscribe == null) {
+				map.put("isSendSubscribeMsg", 0);
+			} else {
+				map.put("isSendSubscribeMsg", 1);
+			}
+
 			return R.data(map);
 		}
 		return R.fail("该群组下没有用户");

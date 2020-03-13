@@ -509,7 +509,7 @@ public class WxGroupController extends BladeController {
             //校验改群及其子群下是否有此用户
             List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
             if (!groupUserIds.contains(managerId)) {
-                throw new ApiException("改部门下未发现ID等于" + managerId + "的用户");
+                throw new ApiException("您没有权限,请联系创建者或上级管理员");
             }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
@@ -534,7 +534,7 @@ public class WxGroupController extends BladeController {
                 }
             }
             if (flag == false) {
-                throw new ApiException("用户没有权限");
+                throw new ApiException("您没有权限,请联系创建者或上级管理员");
             }
             Group group = groupService.getGroupById(groupId);
             String managers = group.getManagers();
@@ -561,9 +561,9 @@ public class WxGroupController extends BladeController {
     @ApiOperationSupport(order = 3)
     @ApiOperation(value = "新增群管理员", notes = "新增群管理员，只有群组拥有者有权限，可以设置管理员）")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "managerId", value = "准备设置为数据管理员的用户ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "userId", value = "用户ID", required = true, paramType = "query", dataType = "int")
+            @ApiImplicitParam(name = "groupId", value = "群组ID", required = true,  dataType = "int"),
+            @ApiImplicitParam(name = "managerId", value = "准备设置为数据管理员的用户ID", required = true, dataType = "int"),
+            @ApiImplicitParam(name = "userId", value = "用户ID", required = true,  dataType = "int")
     })
     public R dataManager(@RequestParam(name = "groupId", required = true) Integer groupId,
                          @RequestParam(name = "managerId", required = true) Integer managerId,
@@ -573,7 +573,7 @@ public class WxGroupController extends BladeController {
             //校验改群及其子群下是否有此用户
             List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
             if (!groupUserIds.contains(managerId)) {
-                throw new ApiException("改部门下未发现ID等于" + managerId + "的用户");
+                throw new ApiException("您没有权限,请联系创建者或上级管理员");
             }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
@@ -598,13 +598,13 @@ public class WxGroupController extends BladeController {
                 }
             }
             if (flag == false) {
-                throw new ApiException("您没有权限");
+                throw new ApiException("您没有权限,请联系创建者或上级管理员");
             }
             Group group = groupService.getGroupById(groupId);
             String dataManagers = group.getDataManagers();
             ArrayList<Integer> dataManagerList = new ArrayList<>(Func.toIntList(dataManagers));
             if (dataManagerList.contains(managerId)) {
-                throw new ApiException("此用户已经是数据管理员");
+                throw new ApiException("数据管理员已存在");
             }
             dataManagerList.add(managerId);
             String newManagers = StringUtils.join(dataManagerList, ",");
@@ -635,7 +635,7 @@ public class WxGroupController extends BladeController {
             //校验改群及其子群下是否有此用户
             List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
             if (!groupUserIds.contains(managerId)) {
-                throw new ApiException("改部门下未发现ID等于" + managerId + "的用户");
+                throw new ApiException("您没有权限,请联系创建者或上级管理员");
             }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
@@ -660,7 +660,7 @@ public class WxGroupController extends BladeController {
                 }
             }
             if (flag == false) {
-                throw new ApiException("用户没有权限");
+                throw new ApiException("您没有权限,请联系创建者或上级管理员");
             }
             Group group = groupService.getGroupById(groupId);
             String managers = group.getManagers();
@@ -697,7 +697,7 @@ public class WxGroupController extends BladeController {
             //校验改群及其子群下是否有此用户
             List<Integer> groupUserIds = groupService.selectUserIdByParentId(groupId);
             if (!groupUserIds.contains(managerId)) {
-                throw new ApiException("改部门下未发现ID等于" + managerId + "的用户");
+                throw new ApiException("您没有权限,请联系创建者或上级管理员");
             }
             //获取用户是管理员的群
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
@@ -722,7 +722,7 @@ public class WxGroupController extends BladeController {
                 }
             }
             if (flag == false) {
-                throw new ApiException("您没有权限");
+                throw new ApiException("您没有权限,请联系创建者或上级管理员");
             }
             Group group = groupService.getGroupById(groupId);
             String managers = group.getDataManagers();
@@ -759,7 +759,11 @@ public class WxGroupController extends BladeController {
         }
     }
 
-    @GetMapping("/test")
+    @PostMapping("/test")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "parentId", value = "子群组ID", required = true, dataType = "int"),
+            @ApiImplicitParam(name = "checkId", value = "创建人ID", required = true, dataType = "int")
+    })
     public R test(Integer parentId, Integer checkId) {
         List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
         boolean flag = groupService.isChildrenGroup(groupAndParent, parentId, checkId);

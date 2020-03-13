@@ -28,6 +28,12 @@ public class GroupTreeVo implements Serializable {
     private String name;
 
     /**
+     * 群组名
+     */
+    @ApiModelProperty(value = "群组全称")
+    private String fullName;
+
+    /**
      * 群人数
      */
     @ApiModelProperty(value = "群人数")
@@ -51,6 +57,9 @@ public class GroupTreeVo implements Serializable {
      */
     @ApiModelProperty(value = "组织类型(0组织群 1个人群)")
     private Integer groupType;
+
+    @ApiModelProperty(value = "公司地址名称")
+    private String addressName;
 
     /**
      * 是否有管理员权限
