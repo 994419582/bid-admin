@@ -25,9 +25,11 @@ import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
+import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
 import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.mybatis.spring.MyBatisSystemException;
@@ -89,6 +91,23 @@ public class WxUserGroupController extends BladeController {
             }
         } catch (MyBatisSystemException e) {
             return R.fail("数据异常, 请联系管理员");
+        }
+    }
+
+    /**
+     * 判断机构里是否存在此用户
+     */
+    @GetMapping("/exist")
+    @ApiOperationSupport(order = 4)
+    @ApiOperation(value = "判断机构里是否存在此用户", notes = "判断机构里是否存在此用户,存在返回true，不存在返回false")
+    public R<Boolean> exist(
+            @ApiParam(name = "userId",required = true,value = "用户ID") @RequestParam(name = "userId", required = true) Integer userId,
+            @ApiParam(name = "groupId",required = true,value = "机构ID") @RequestParam(name = "groupId", required = true) Integer groupId) {
+        List<Integer> ids = groupService.selectUserIdByParentId(groupId);
+        if (ids.contains(userId)) {
+            return R.data(true);
+        } else {
+            return R.data(false);
         }
     }
 
