@@ -15,6 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
+import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
@@ -156,7 +157,57 @@ public class WxClocklnCensusController extends BladeController {
 		}
 		return R.data(null);
 	}
+	/**
+	 * 已打卡人数列表
+	 */
+	@GetMapping("/clockIn")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "已打卡人数列表", notes = "传入群ID和打卡日期")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
+			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query")
+	})
+	public R<IPage<ClocklnVO>> clockIn(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime,Query query) {
+		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
+		if (ids.size()>0) {
+			IPage<ClocklnVO> pages = clocklnService.selectClocklnPageByGroup(Condition.getPage(query), ids, clocklnTime, null, null, null, null,null);
+			return R.data(pages);
+		}
+		return R.data(null);
+	}
 
+	/**
+	 * 已打卡人数列表
+	 */
+	@GetMapping("/unClockIn")
+	@ApiOperationSupport(order = 1)
+	@ApiOperation(value = "未打卡人数列表", notes = "传入群ID和打卡日期")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "groupId", value = "群组ID", paramType = "query", dataType = "int"),
+			@ApiImplicitParam(name = "clockInTime", value = "打卡日期", paramType = "query")
+	})
+	public R<List<UserVO>> unClockIn(@RequestParam(name = "groupId") Integer groupId, @RequestParam("clockInTime") @DateTimeFormat(pattern ="yyyy-MM-dd")Date clocklnTime) {
+		UserBO user=groupService.selectUserByParentId(groupId);
+		List<UserVO> users= user.getUsers();
+		List<Clockln> list =new ArrayList<>();
+		if (users.size() >0){
+			List<Integer> ids=new ArrayList<>();
+			users.forEach(x->{
+				ids.add(x.getId());
+			});
+			list=clocklnService.selectClocklnByGroup(ids,clocklnTime);
+		}
+		Iterator<UserVO> iterator=users.iterator();
+		while (iterator.hasNext()){
+			UserVO u=iterator.next();
+			for (Clockln c :list) {
+				if (u.getId()==c.getUserId()){
+					iterator.remove();
+				}
+			}
+		}
+		return R.data(users);
+	}
 	/**
 	* 获取群组分页打卡信息
 	*/
