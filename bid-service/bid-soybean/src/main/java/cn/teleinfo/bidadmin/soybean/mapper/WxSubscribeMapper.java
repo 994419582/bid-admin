@@ -19,6 +19,7 @@ import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
 import cn.teleinfo.bidadmin.soybean.vo.WxSubscribeVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Date;
@@ -42,4 +43,6 @@ public interface WxSubscribeMapper extends BaseMapper<WxSubscribe> {
 	List<WxSubscribeVO> selectWxSubscribePage(IPage page, WxSubscribeVO wxSubscribe);
 
 	WxSubscribe selectByWechatIdOrGroupId(@RequestParam("wechatId") String wechatId, @RequestParam("groupId") Integer groupId, @RequestParam("sendDate") Date sendDate);
+
+	Integer selectWxUnSubscribeCount(@Param("ids") List<Integer> ids, @Param("clocklnTime") Date clocklnTime);
 }

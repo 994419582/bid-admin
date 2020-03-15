@@ -16,6 +16,23 @@
         select * from soybean_wx_subscribe where is_deleted = 0
     </select>
 
+    <select id="selectWxUnSubscribeCount" resultType="Integer">
+        select count(*) from soybean_wx_subscribe t
+        LEFT JOIN soybean_user u ON 1=1
+        <if test="ids !=null">
+            AND u.id IN
+            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        where
+        t.wechat_id=u.wechat_id
+        <if test="clocklnTime !=null">
+            AND TO_DAYS(t.send_date) =TO_DAYS(#{clocklnTime})
+        </if>
+
+    </select>
+
     <select id="selectByWechatIdOrGroupId" resultType="cn.teleinfo.bidadmin.soybean.entity.WxSubscribe">
         select *
         FROM

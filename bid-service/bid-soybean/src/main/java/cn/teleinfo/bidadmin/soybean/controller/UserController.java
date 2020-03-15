@@ -256,5 +256,37 @@ public class UserController extends BladeController {
         return R.status(userService.removeUserByIds(Func.toIntList(ids)));
     }
 
+    /**
+     * 订阅消息
+     */
+    @PostMapping("/subscribe")
+    @ApiOperationSupport(order = 8)
+    @ApiOperation(value = "订阅消息", notes = "传入id")
+    public R subscribe(@ApiParam(value = "主键集合", required = true) @RequestParam Integer id) {
+        User user=userService.getById(id);
+        if (user == null ){
+            R.fail("用户不存在");
+        }
+        user.setMessage(user.getMessage()+1);
+        return R.status(userService.saveOrUpdate(user));
+    }
+
+    /**
+     * 订阅消息
+     */
+    @PostMapping("/unsubscribe")
+    @ApiOperationSupport(order = 9)
+    @ApiOperation(value = "取消订阅消息", notes = "传入id")
+    public R unSubscribe(@ApiParam(value = "主键集合", required = true) @RequestParam Integer id) {
+        User user=userService.getById(id);
+        if (user == null ){
+            R.fail("用户不存在");
+        }
+        if (user.getMessage()<=0){
+            R.fail("该用户没有订阅");
+        }
+        user.setMessage(user.getMessage()-1);
+        return R.status(userService.saveOrUpdate(user));
+    }
 
 }

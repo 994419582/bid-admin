@@ -26,6 +26,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  *  服务实现类
@@ -46,4 +47,7 @@ public class WxSubscribeServiceImpl extends ServiceImpl<WxSubscribeMapper, WxSub
 		return baseMapper.selectByWechatIdOrGroupId(wechatId, groupId, sendDate);
 	}
 
+	public Integer selectWxUnSubscribeCount(List<Integer> ids, Date clocklnTime){
+		return baseMapper.selectWxUnSubscribeCount( ids, clocklnTime);
+	}
 }

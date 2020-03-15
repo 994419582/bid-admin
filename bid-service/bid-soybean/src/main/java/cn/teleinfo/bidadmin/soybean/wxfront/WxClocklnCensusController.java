@@ -28,6 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.*;
+import io.swagger.models.auth.In;
 import lombok.AllArgsConstructor;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.mp.support.Condition;
@@ -40,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -175,8 +177,8 @@ public class WxClocklnCensusController extends BladeController {
 		}
 		List<Integer> ids=groupService.selectUserIdByParentId(groupId);
 		if (ids.size()>0) {
-			IPage<UserVO> users = groupService.selectUserPageAndCountByParentId(ids, Condition.getPage(query));
 			List<Clockln> list = new ArrayList<>();
+			IPage<UserVO> users = groupService.selectUserPageAndCountByParentId(ids, Condition.getPage(query));
 			if (ids.size() > 0) {
 				list = clocklnService.selectClocklnByGroup(ids, clocklnTime);
 			}
@@ -203,19 +205,35 @@ public class WxClocklnCensusController extends BladeController {
 					x.setIsSendSubscribeMsg(1);
 				}
 			});
+			Integer unClockIn=ids.size() - list.size();
 			Map map = new HashMap();
 			map.put("data", users);
-			map.put("unClockInCount", ids.size() - list.size());
+			map.put("unClockInCount", unClockIn);
 
 			// 群组是否提醒打卡
-
-			WxSubscribe wxSubscribe = wxSubscribeService.selectWxSubscribe(null, groupId, clocklnTime);
-
-			if (wxSubscribe == null) {
-				map.put("isSendSubscribeMsg", 0);
-			} else {
-				map.put("isSendSubscribeMsg", 1);
+   			int isSendSubscribeMsg=0;
+			if (unClockIn>0) {
+				WxSubscribe wxSubscribe = wxSubscribeService.selectWxSubscribe(null, groupId, clocklnTime);
+				if (wxSubscribe != null) {
+					Iterator<Integer> iterator=ids.iterator();
+					while (iterator.hasNext() ) {
+						Integer id=iterator.next();
+						for (Clockln clockln:list ) {
+							if (id == clockln.getUserId()){
+								iterator.remove();
+							}
+						}
+					}
+					Integer count=0;
+					if (ids.size()>0) {
+						count = wxSubscribeService.selectWxUnSubscribeCount(ids, clocklnTime);
+						if (count != unClockIn) {
+							isSendSubscribeMsg = 1;
+						}
+					}
+				}
 			}
+			map.put("isSendSubscribeMsg", isSendSubscribeMsg);
 
 			return R.data(map);
 		}

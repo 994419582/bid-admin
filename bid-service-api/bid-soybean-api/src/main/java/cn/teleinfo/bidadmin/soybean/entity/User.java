@@ -156,4 +156,7 @@ public class User implements Serializable {
     @ApiModelProperty(value = "公司详细地址")
     private String companyDetailAddress;
 
+    @ApiModelProperty(value = "订阅消息")
+    private  Integer message;
+
 }

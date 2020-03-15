@@ -21,9 +21,11 @@ import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.config.WxMaConfiguration;
 import cn.teleinfo.bidadmin.soybean.config.WxMaProperties;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
+import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.service.IWxSubscribeService;
 import cn.teleinfo.bidadmin.soybean.vo.UserVO;
 import io.swagger.annotations.*;
@@ -58,6 +60,8 @@ public class WxSubscribeController extends BladeController {
 	private IGroupService groupService;
 
     private IWxSubscribeService wxSubscribeService;
+
+    private IUserService userService;
 	/**
 	 * 微信小程序推送订阅消息
 	 * create By KingYiFan on 2020/01/06
@@ -74,6 +78,13 @@ public class WxSubscribeController extends BladeController {
 			return R.fail("请输入单个用户openId");
 		}
 
+		User user=userService.findByWechatId(openId);
+		if (user==null){
+			R.fail("该用户不存在");
+		}
+		if (user.getMessage()<=0){
+			R.fail("该用户没有订阅");
+		}
 		WxSubscribe wx = wxSubscribeService.selectWxSubscribe(openId, null, new Date());
 		if (wx != null) {
 			return R.fail("用户已被提醒");
@@ -86,7 +97,12 @@ public class WxSubscribeController extends BladeController {
             WxSubscribe wxSubscribe = new WxSubscribe();
             wxSubscribe.setWechatId(openId);
             wxSubscribe.setSendDate(LocalDateTime.now());
-            return R.status(wxSubscribeService.save(wxSubscribe));
+            user.setMessage(user.getMessage()-1);
+            if (userService.saveOrUpdate(user)) {
+				return R.status(wxSubscribeService.save(wxSubscribe));
+			}else {
+            	return R.fail("发送订阅消息失败");
+			}
 		} else {
 			return R.data(r.getMsg());
 		}
@@ -118,7 +134,13 @@ public class WxSubscribeController extends BladeController {
 		StringBuilder errorOpenId = new StringBuilder();
 		Date date = new Date();
 		for (String openId : openIdArray) {
-
+			User user=userService.findByWechatId(openId);
+			if (user==null){
+				continue;
+			}
+			if (user.getMessage()<=0){
+				continue;
+			}
 			WxSubscribe wx = wxSubscribeService.selectWxSubscribe(openId, null, date);
 			if (wx != null) {
 				continue;
@@ -129,6 +151,8 @@ public class WxSubscribeController extends BladeController {
                 WxSubscribe wxSubscribe = new WxSubscribe();
                 wxSubscribe.setWechatId(openId);
                 wxSubscribe.setSendDate(LocalDateTime.now());
+                user.setMessage(user.getMessage()-1);
+                userService.saveOrUpdate(user);
                 wxSubscribeService.save(wxSubscribe);
 			} else {
                 errorOpenId.append(result.getMsg());
@@ -202,6 +226,13 @@ public class WxSubscribeController extends BladeController {
 		for (UserVO u : subscribeUsers) {
 //			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe("u.getWechatId()", null, date);
 			String wechatId = u.getWechatId();
+			User user=userService.findByWechatId(wechatId);
+			if (user==null){
+				continue;
+			}
+			if (user.getMessage()<=0){
+				continue;
+			}
 			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe(wechatId, null, date);
 			if (wxUser != null) {
 				continue;
@@ -211,6 +242,8 @@ public class WxSubscribeController extends BladeController {
 				WxSubscribe wxSubscribe = new WxSubscribe();
 				wxSubscribe.setWechatId(u.getWechatId());
 				wxSubscribe.setSendDate(now);
+				user.setMessage(user.getMessage()-1);
+				userService.saveOrUpdate(user);
 				wxSubscribeService.save(wxSubscribe);
 			} else {
 				errorOpenId.append(result.getMsg());

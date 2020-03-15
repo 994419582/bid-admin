@@ -22,6 +22,7 @@ import org.springblade.core.mp.base.BaseService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  *  服务类
@@ -41,4 +42,6 @@ public interface IWxSubscribeService extends IService<WxSubscribe> {
 	IPage<WxSubscribeVO> selectWxSubscribePage(IPage<WxSubscribeVO> page, WxSubscribeVO wxSubscribe);
 
 	WxSubscribe selectWxSubscribe(String wechatId, Integer groupId, Date sendDate);
+
+    Integer selectWxUnSubscribeCount(List<Integer> ids, Date clocklnTime);
 }
