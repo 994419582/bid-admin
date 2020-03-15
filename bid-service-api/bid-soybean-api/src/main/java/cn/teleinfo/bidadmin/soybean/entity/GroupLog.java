@@ -26,6 +26,7 @@ import lombok.EqualsAndHashCode;
 import org.springblade.core.mp.base.BaseEntity;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 实体类
@@ -75,6 +76,6 @@ public class GroupLog implements Serializable {
      * 创建时间
      */
     @ApiModelProperty(value = "创建时间")
-    private Integer createTime;
+    private Date createTime;
 
 }

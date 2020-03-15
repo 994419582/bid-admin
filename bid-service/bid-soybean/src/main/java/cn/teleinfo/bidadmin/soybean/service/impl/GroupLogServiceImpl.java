@@ -48,8 +48,8 @@ public class GroupLogServiceImpl extends ServiceImpl<GroupLogMapper, GroupLog> i
 			throw new ApiException("部门ID不能为空");
 		}
 		GroupLog groupLog = new GroupLog();
-		groupLog.setUserId(groupId);
-		groupLog.setGroupId(userId);
+		groupLog.setUserId(userId);
+		groupLog.setGroupId(groupId);
 		groupLog.setEventType(eventType);
 		save(groupLog);
     }
