@@ -314,7 +314,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             //没有管理权限则添加进列表，并设置Permission为false
             Group checkGroup = getGroupById(groupId);
             boolean isManager = Func.toIntList(checkGroup.getManagers()).contains(userId);
-            boolean isDataManager = Func.toIntList(checkGroup.getDataManagers()).contains(groupId);
+            boolean isDataManager = Func.toIntList(checkGroup.getDataManagers()).contains(userId);
             Integer createUser = checkGroup.getCreateUser();
             boolean isCreater = false;
             if (createUser != null && createUser.equals(userId)) {
