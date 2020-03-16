@@ -897,6 +897,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                         throw new ApiException("单位地址格式错误");
                     }
                 }
+                //表格中详细地址为空时，地址取一级机构详细地址
+                String detailAddress = group.getDetailAddress();
+                if (StringUtils.isBlank(detailAddress)) {
+                    detailAddress = topGroup.getDetailAddress();
+                    group.setDetailAddress(detailAddress);
+                }
                 //校验部门是否是末级组织
                 boolean lastGroup = true;
                 for (Group parentGroup : groups) {
