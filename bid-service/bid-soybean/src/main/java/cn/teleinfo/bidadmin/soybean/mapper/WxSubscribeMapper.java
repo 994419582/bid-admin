@@ -42,7 +42,7 @@ public interface WxSubscribeMapper extends BaseMapper<WxSubscribe> {
 	 */
 	List<WxSubscribeVO> selectWxSubscribePage(IPage page, WxSubscribeVO wxSubscribe);
 
-	WxSubscribe selectByWechatIdOrGroupId(@RequestParam("wechatId") String wechatId, @RequestParam("groupId") Integer groupId, @RequestParam("sendDate") Date sendDate);
+	WxSubscribe selectByWechatIdOrGroupId(@Param("wechatId") String wechatId, @Param("groupId") Integer groupId, @Param("sendDate") Date sendDate);
 
 	Integer selectWxUnSubscribeCount(@Param("ids") List<Integer> ids, @Param("clocklnTime") Date clocklnTime);
 }
