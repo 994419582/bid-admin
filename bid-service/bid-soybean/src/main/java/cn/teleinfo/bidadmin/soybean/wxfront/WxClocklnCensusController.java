@@ -201,8 +201,9 @@ public class WxClocklnCensusController extends BladeController {
 		while (iterator.hasNext()){
 			UserVO u=iterator.next();
 			for (Clockln c :list) {
-				if (u.getId()==c.getUserId()){
+				if (u.getId()==c.getUserId() || u.getId().equals(c.getUserId())){
 					iterator.remove();
+					break;
 				}
 			}
 		}
