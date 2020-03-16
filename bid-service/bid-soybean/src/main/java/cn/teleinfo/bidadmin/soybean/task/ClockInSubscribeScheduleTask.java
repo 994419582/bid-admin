@@ -1,8 +1,10 @@
 package cn.teleinfo.bidadmin.soybean.task;
 
 import cn.teleinfo.bidadmin.soybean.config.WxSendSubscribe;
+import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
+import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.service.IWxSubscribeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -32,6 +34,9 @@ public class ClockInSubscribeScheduleTask {
     @Autowired
     private IWxSubscribeService wxSubscribeService;
 
+    @Autowired
+    private IClocklnService clocklnService;
+
     //3.添加定时任务
 //    @Scheduled(cron = "0/5 * * * * ?")
 //    private void configureTasks() {
@@ -49,6 +54,10 @@ public class ClockInSubscribeScheduleTask {
         for (User user : userIPage) {
             WxSubscribe wx = wxSubscribeService.selectWxSubscribe(user.getWechatId(), null, date);
             if (wx != null) {
+                continue;
+            }
+            Clockln clockln = clocklnService.selectClocklnByUserID(user.getId(), date);
+            if (clockln != null) {
                 continue;
             }
 

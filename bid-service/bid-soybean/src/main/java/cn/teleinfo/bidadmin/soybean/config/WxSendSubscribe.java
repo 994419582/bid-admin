@@ -92,8 +92,6 @@ public class WxSendSubscribe {
         if (configs == null) {
             throw new RuntimeException("配置服务端的大哥，拜托先看下项目首页的说明（readme文件），添加下相关配置，注意别配错了！");
         }
-        String appId = configs.get(0).getAppid();
-        System.out.println("sendDYTemplateMessage appId:===:" + appId);
-        return appId;
+        return configs.get(0).getAppid();
     }
 }
