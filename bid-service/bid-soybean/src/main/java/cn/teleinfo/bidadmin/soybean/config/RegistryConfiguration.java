@@ -34,14 +34,16 @@ public class RegistryConfiguration implements WebMvcConfigurer {
 		SecureRegistry secureRegistry = new SecureRegistry();
 //		secureRegistry.excludePathPatterns("/soybean/front/**");
 
-//		secureRegistry.excludePathPatterns("/wx/user/login");
-//		secureRegistry.excludePathPatterns("/wx/user/token");
-//		secureRegistry.excludePathPatterns("/user/saveOrUpdate");
+		secureRegistry.excludePathPatterns("/wx/user/login");
+		secureRegistry.excludePathPatterns("/wx/user/token");
+		secureRegistry.excludePathPatterns("/wx/user/phone");
+		secureRegistry.excludePathPatterns("/user/saveOrUpdate");
 
 		// TODO 权限暂时全部放开
-		secureRegistry.excludePathPatterns("/wx/**");
-		secureRegistry.excludePathPatterns("/user/**");
-		secureRegistry.excludePathPatterns("/group/**");
+//		secureRegistry.excludePathPatterns("/wx/**");
+//		secureRegistry.excludePathPatterns("/user/**");
+//		secureRegistry.excludePathPatterns("/group/**");
+
 		secureRegistry.excludePathPatterns("/download/**");
 		secureRegistry.excludePathPatterns("/healthQrcode/**");
 		return secureRegistry;

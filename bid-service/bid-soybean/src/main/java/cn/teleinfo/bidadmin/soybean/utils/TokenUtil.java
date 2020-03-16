@@ -69,7 +69,8 @@ public class TokenUtil {
 		authInfo.setRefreshToken(createRefreshToken(user).getToken());
 		authInfo.setTokenType(TokenConstant.BEARER);
 		authInfo.setLicense(TokenConstant.LICENSE_NAME);
-
+		authInfo.setAccount(user.getId()+"");
+		authInfo.setUserName(user.getWechatId());
 		return authInfo;
 	}
 

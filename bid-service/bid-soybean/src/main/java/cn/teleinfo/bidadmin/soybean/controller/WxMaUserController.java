@@ -70,7 +70,7 @@ public class WxMaUserController extends BladeController {
 //            }
             Map<String, String> map = new HashMap<>();
 
-            User user = userService.findByWechatId(appid);
+            User user = userService.findByWechatId(session.getOpenid());
             if (user == null) {
                 map.put("openid", session.getOpenid());
                 map.put("sessionKey", session.getSessionKey());
@@ -98,15 +98,19 @@ public class WxMaUserController extends BladeController {
     /**
      * 登陆接口
      *
-     * @param appid
+     * @param openid
      * @return
      */
     @ApiOperation(value = "token", notes = "token")
     @GetMapping("/token")
-    public R token(@RequestParam(name = "appid") String appid) {
-        User user = userService.findByWechatId(appid);
-        AuthInfo authInfo = createAuthInfo(user);
-        return R.data(authInfo);
+    public R token(@RequestParam(name = "openid") String openid) {
+        User user = userService.findByWechatId(openid);
+        if (user == null) {
+            return fail("该用户未注册");
+        } else {
+            AuthInfo authInfo = createAuthInfo(user);
+            return R.data(authInfo);
+        }
     }
 
     /**

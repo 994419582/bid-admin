@@ -15,11 +15,7 @@
  */
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
-import cn.binarywang.wx.miniapp.api.WxMaService;
-import cn.binarywang.wx.miniapp.bean.WxMaSubscribeMessage;
 import cn.teleinfo.bidadmin.soybean.bo.UserBO;
-import cn.teleinfo.bidadmin.soybean.config.WxMaConfiguration;
-import cn.teleinfo.bidadmin.soybean.config.WxMaProperties;
 import cn.teleinfo.bidadmin.soybean.config.WxSendSubscribe;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.User;
@@ -35,10 +31,7 @@ import org.springblade.core.boot.ctrl.BladeController;
 import org.springframework.web.bind.annotation.*;
 import org.springblade.core.tool.api.R;
 
-import javax.validation.constraints.NotBlank;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -267,5 +260,4 @@ public class WxSubscribeController extends BladeController {
 			return R.data(errorOpenId.toString());
 		}
 	}
-
 }
