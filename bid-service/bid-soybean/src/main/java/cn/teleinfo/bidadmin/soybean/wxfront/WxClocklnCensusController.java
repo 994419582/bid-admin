@@ -18,6 +18,7 @@ package cn.teleinfo.bidadmin.soybean.wxfront;
 import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.entity.Clockln;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
+import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.entity.WxSubscribe;
 import cn.teleinfo.bidadmin.soybean.service.IClocklnService;
 import cn.teleinfo.bidadmin.soybean.service.IGroupService;
@@ -265,6 +266,17 @@ public class WxClocklnCensusController extends BladeController {
 			// 群组是否提醒打卡
    			int isSendSubscribeMsg=0;
 			if (unClockIn>0) {
+				boolean flag = true;
+				for (Integer id : ids) {
+					User user = userService.getById(id);
+					if (user.getMessage() > 0) {
+						flag = false;
+					}
+					if (flag) {
+						isSendSubscribeMsg = 1;
+						break;
+					}
+				}
 				WxSubscribe wxSubscribe = wxSubscribeService.selectWxSubscribe(null, groupId, clocklnTime);
 				if (wxSubscribe != null) {
 					Iterator<Integer> iterator=ids.iterator();
@@ -274,6 +286,10 @@ public class WxClocklnCensusController extends BladeController {
 							if (id == clockln.getUserId()){
 								iterator.remove();
 							}
+						}
+						User user = userService.getById(id);
+						if (user.getMessage() > 0) {
+							flag = false;
 						}
 					}
 					Integer count=0;

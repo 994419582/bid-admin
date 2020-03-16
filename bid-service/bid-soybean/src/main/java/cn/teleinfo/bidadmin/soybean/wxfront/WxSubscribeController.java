@@ -227,7 +227,7 @@ public class WxSubscribeController extends BladeController {
 		Date date = new Date();
 		LocalDateTime now = LocalDateTime.now();
 		for (UserVO u : subscribeUsers) {
-//			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe("u.getWechatId()", null, date);
+//			WxSubscribe wxUser = wxSubscribeService.selectWxSubscribe(u.getWechatId(), null, date);
 			String wechatId = u.getWechatId();
 			User user=userService.findByWechatId(wechatId);
 			if (user==null){
