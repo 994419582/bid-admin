@@ -235,7 +235,8 @@ public class WxClocklnCensusController extends BladeController {
 			if (ids.size() > 0) {
 				list = clocklnService.selectClocklnByGroup(ids, clocklnTime);
 			}
-			users.getRecords().forEach(x -> {
+			boolean flag = false;
+			for(UserVO x : users.getRecords()) {
 				Clockln clockln = clocklnService.selectClocklnByUserID(x.getId(), clocklnTime);
 				if (clockln != null) {
 					x.setClockInId(clockln.getId());
@@ -254,54 +255,62 @@ public class WxClocklnCensusController extends BladeController {
 
 				if (wxSubscribe == null) {
 					x.setIsSendSubscribeMsg(0);
+					if (x.getMessage().intValue() > 0) {
+						flag = true;
+					}
 				} else {
 					x.setIsSendSubscribeMsg(1);
 				}
-			});
+			}
+
 			Integer unClockIn=ids.size() - list.size();
 			Map map = new HashMap();
 			map.put("data", users);
 			map.put("unClockInCount", unClockIn);
-
-			// 群组是否提醒打卡
-   			int isSendSubscribeMsg=0;
-			if (unClockIn>0) {
-				boolean flag = true;
-				for (Integer id : ids) {
-					User user = userService.getById(id);
-					if (user.getMessage() > 0) {
-						flag = false;
-					}
-					if (flag) {
-						isSendSubscribeMsg = 1;
-						break;
-					}
-				}
-				WxSubscribe wxSubscribe = wxSubscribeService.selectWxSubscribe(null, groupId, clocklnTime);
-				if (wxSubscribe != null) {
-					Iterator<Integer> iterator=ids.iterator();
-					while (iterator.hasNext() ) {
-						Integer id=iterator.next();
-						for (Clockln clockln:list ) {
-							if (id == clockln.getUserId()){
-								iterator.remove();
-							}
-						}
-						User user = userService.getById(id);
-						if (user.getMessage() > 0) {
-							flag = false;
-						}
-					}
-					Integer count=0;
-					if (ids.size()>0) {
-						count = wxSubscribeService.selectWxUnSubscribeCount(ids, clocklnTime);
-						if (count != unClockIn) {
-							isSendSubscribeMsg = 1;
-						}
-					}
-				}
+			map.put("isSendSubscribeMsg", 1);
+			if (flag) {
+				map.put("isSendSubscribeMsg", 0);
 			}
-			map.put("isSendSubscribeMsg", isSendSubscribeMsg);
+			// 群组是否提醒打卡
+//   			int isSendSubscribeMsg=0;
+//   			int isSendSubscribeMsg=1;
+//			if (unClockIn>0) {
+//				boolean flag = true;
+//				for (Integer id : ids) {
+//					User user = userService.getById(id);
+//					if (user.getMessage() > 0) {
+//						flag = false;
+//					}
+//					if (flag) {
+//						isSendSubscribeMsg = 1;
+//						break;
+//					}
+//				}
+//				WxSubscribe wxSubscribe = wxSubscribeService.selectWxSubscribe(null, groupId, clocklnTime);
+//				if (wxSubscribe != null) {
+//					Iterator<Integer> iterator=ids.iterator();
+//					while (iterator.hasNext() ) {
+//						Integer id=iterator.next();
+//						for (Clockln clockln:list ) {
+//							if (id == clockln.getUserId()){
+//								iterator.remove();
+//							}
+//						}
+//						User user = userService.getById(id);
+//						if (user.getMessage() > 0) {
+//							flag = false;
+//						}
+//					}
+//					Integer count=0;
+//					if (ids.size()>0) {
+//						count = wxSubscribeService.selectWxUnSubscribeCount(ids, clocklnTime);
+//						if (count != unClockIn) {
+//							isSendSubscribeMsg = 1;
+//						}
+//					}
+//				}
+//			}
+//			map.put("isSendSubscribeMsg", isSendSubscribeMsg);
 
 			return R.data(map);
 		}
