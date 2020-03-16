@@ -255,7 +255,7 @@ public class WxClocklnCensusController extends BladeController {
 
 				if (wxSubscribe == null) {
 					x.setIsSendSubscribeMsg(0);
-					if (x.getMessage().intValue() > 0) {
+					if (x.getMessage().intValue() > 0 && clockln == null) {
 						flag = true;
 					}
 				} else {
