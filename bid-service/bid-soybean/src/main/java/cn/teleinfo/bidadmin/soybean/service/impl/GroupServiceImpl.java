@@ -1005,18 +1005,25 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //获取用户是管理员的群
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
         List<Group> managerGroups = list(queryWrapper);
-        managerGroups.removeIf(group -> {
+//        managerGroups.removeIf(group -> {
+//            String managers = group.getManagers();
+//            if (Func.toIntList(managers).contains(userId)) {
+//                return false;
+//            }
+//            Integer createUser = group.getCreateUser();
+//            if (createUser != null && createUser.equals(userId)) {
+//                return false;
+//            }
+//            return true;
+//        });
+        List<Group> managerList = managerGroups.stream().filter(group -> {
             String managers = group.getManagers();
             if (Func.toIntList(managers).contains(userId)) {
-                return false;
+                return true;
             }
-            Integer createUser = group.getCreateUser();
-            if (createUser != null && createUser.equals(userId)) {
-                return false;
-            }
-            return true;
-        });
-        return managerGroups;
+            return false;
+        }).collect(Collectors.toList());
+        return managerList;
     }
 
     @Override
@@ -1024,14 +1031,21 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //获取用户是管理员的群
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
         List<Group> dataManagerGroups = list(queryWrapper);
-        dataManagerGroups.removeIf(group -> {
+//        dataManagerGroups.removeIf(group -> {
+//            String dataManagers = group.getDataManagers();
+//            if (Func.toIntList(dataManagers).contains(userId)) {
+//                return false;
+//            }
+//            return true;
+//        });
+        List<Group> dataManagerList = dataManagerGroups.stream().filter(group -> {
             String dataManagers = group.getDataManagers();
             if (Func.toIntList(dataManagers).contains(userId)) {
-                return false;
+                return true;
             }
-            return true;
-        });
-        return dataManagerGroups;
+            return false;
+        }).collect(Collectors.toList());
+        return dataManagerList;
     }
 
     /**
