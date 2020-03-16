@@ -30,6 +30,13 @@ public class ExcelGroupVo {
     private String addressName;
 
     /**
+     * 公司详细地址
+     */
+    @ApiModelProperty(value = "公司详细地址名称", required = true)
+    @NotBlank(message = "公司详细地址名称不能为空")
+    private String detailAddress;
+
+    /**
      * 备注
      */
     @ApiModelProperty(value = "简介", required = true)
