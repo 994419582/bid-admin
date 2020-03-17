@@ -27,6 +27,7 @@ import cn.teleinfo.bidadmin.soybean.vo.*;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -43,7 +44,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -403,30 +406,53 @@ public class WxGroupController extends BladeController {
     @ApiOperation(value = "群转让", notes = "传入group，群转让接口（只有群组拥有者有权限可以将群转让给其他人）")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "groupId", value = "群组ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "userId", value = "创建人用户ID", required = true, paramType = "query", dataType = "int"),
-            @ApiImplicitParam(name = "transferId", value = "转让人", required = true, paramType = "query", dataType = "int")
+            @ApiImplicitParam(name = "userId", value = "一级机构创建人用户ID", required = true, paramType = "query", dataType = "int"),
+            @ApiImplicitParam(name = "transferId", value = "被转让人", required = true, paramType = "query", dataType = "int")
     })
     public R transfer(@RequestParam(name = "groupId", required = true) Integer groupId,
                       @RequestParam(name = "userId", required = true) Integer userId,
                       @RequestParam(name = "transferId", required = true) Integer transferId) {
-        try {
-            if (!groupService.isGroupCreater(groupId, userId)) {
-                throw new ApiException("用户不是部门创建人");
-            }
-            if (!groupService.existUser(userId)) {
-                throw new ApiException("用户不存在");
-            }
-            if (!userGroupService.existUserGroup(groupId, transferId)) {
-                throw new ApiException("用户进入部门后才能任命为管理员");
-            }
-            Group group = new Group();
-            group.setId(groupId);
-            group.setCreateUser(transferId);
-
-            return R.status(groupService.updateById(group));
-        } catch (ApiException e) {
-            return R.fail(e.getMessage());
+        //判断是否是一级机构
+        LambdaQueryWrapper<ParentGroup> queryWrapper = Wrappers.<ParentGroup>lambdaQuery().
+                eq(ParentGroup::getGroupId, groupId);
+        ParentGroup parentGroup = parentGroupService.getOne(queryWrapper);
+        if (parentGroup == null) {
+            throw new ApiException("机构不存在");
         }
+        if (!Group.TOP_PARENT_ID.equals(parentGroup.getParentId())) {
+            throw new ApiException("只允许一级机构转让创建人");
+        }
+        //校验创建人
+        if (!groupService.isGroupCreater(groupId, userId)) {
+            throw new ApiException("您不是机构创建人");
+        }
+        //校验转让人是否输入改机构
+        List<Integer> joinUserIds = groupService.selectUserIdByParentId(groupId);
+        if (!joinUserIds.contains(transferId)) {
+            throw new ApiException("被转让人尚未加入该机构");
+        }
+        //更改创建人(改机构及其子机构创建人修改为被转让人)
+        Group topGroup = groupService.getGroupById(groupId);
+        if (topGroup == null) {
+            throw new ApiException("数据错误, 请联系管理员");
+        }
+        LambdaUpdateWrapper<Group> updateWrapper = Wrappers.<Group>lambdaUpdate().
+                eq(Group::getGroupIdentify, topGroup.getGroupIdentify()).
+                set(Group::getCreateUser, transferId);
+        groupService.update(updateWrapper);
+        //创建人已经加入机构，则变更为一级管理员
+        if (joinUserIds.contains(userId)) {
+            String managers = topGroup.getManagers();
+            HashSet<Integer> managerSet = new HashSet<>(Func.toIntList(managers));
+            managerSet.add(userId);
+            String newManagers = StringUtils.join(managerSet, ",");
+
+            Group group = new Group();
+            group.setId(topGroup.getId());
+            group.setManagers(newManagers);
+            groupService.updateById(topGroup);
+        }
+        return R.status(true);
     }
 
 
@@ -752,22 +778,12 @@ public class WxGroupController extends BladeController {
     })
     public R close(@RequestParam(name = "groupId", required = true) Integer groupId,
                    @RequestParam(name = "creatorId", required = true) Integer creatorId) {
-        try {
-            return R.status(groupService.close(groupId, creatorId));
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        return R.status(groupService.close(groupId, creatorId));
     }
 
     @PostMapping("/test")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "parentId", value = "子群组ID", required = true, dataType = "int"),
-            @ApiImplicitParam(name = "checkId", value = "创建人ID", required = true, dataType = "int")
-    })
     public R test(Integer parentId, Integer checkId) {
-        List<GroupTreeVo> groupAndParent = groupService.selectAllGroupAndParent();
-        boolean flag = groupService.isChildrenGroup(groupAndParent, parentId, checkId);
-        return R.data(flag);
+        return R.data(true);
     }
 
 }

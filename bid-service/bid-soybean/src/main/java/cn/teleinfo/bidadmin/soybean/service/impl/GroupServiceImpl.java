@@ -125,26 +125,39 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
+    @Transactional
     public boolean close(Integer groupId, Integer creatorId) {
         if (!isGroupCreater(groupId, creatorId)) {
-            throw new ApiException("不是部门创建人");
+            throw new ApiException("您不是机构创建人");
         }
-        //逻辑删除群
-        Group group = new Group();
-        group.setId(groupId);
-        group.setStatus(Group.DELETE);
-        updateById(group);
-        //逻辑删除群用户
-        LambdaUpdateWrapper<UserGroup> updateWrapper = Wrappers.<UserGroup>lambdaUpdate().
-                eq(UserGroup::getGroupId, groupId).
-                set(UserGroup::getStatus, UserGroup.DELETE);
-        userGroupService.update(updateWrapper);
-        // TODO: 2020/2/29 下次升级逻辑删除
-//        //逻辑删除父子
-//        LambdaUpdateWrapper<ParentGroup> parentGroupLambdaUpdateWrapper = Wrappers.<ParentGroup>lambdaUpdate().
-//                eq(ParentGroup::getParentId, 1).
-//                set(ParentGroup::getStatus, ParentGroup.DELETE);
-//        parentGroupService.update(parentGroupLambdaUpdateWrapper);
+        //判断是否是一级机构
+        LambdaQueryWrapper<ParentGroup> queryWrapper = Wrappers.<ParentGroup>lambdaQuery().
+                eq(ParentGroup::getGroupId, groupId);
+        ParentGroup parentGroup = parentGroupService.getOne(queryWrapper);
+        if (parentGroup == null) {
+            throw new ApiException("机构不存在");
+        }
+        if (!Group.TOP_PARENT_ID.equals(parentGroup.getParentId())) {
+            throw new ApiException("只允许解散一级机构");
+        }
+        //逻辑删除群下所有机构，及群成员
+        Group topGroup = getGroupById(groupId);
+        if (topGroup == null) {
+            throw new ApiException("数据错误, 请联系管理员");
+        }
+        LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
+                eq(Group::getGroupIdentify, topGroup.getGroupIdentify());
+        List<Group> groupList = list(groupLambdaQueryWrapper);
+        for (Group group : groupList) {
+            //逻辑删除群
+            group.setStatus(Group.DELETE);
+            updateById(group);
+            //逻辑删除群用户
+            LambdaUpdateWrapper<UserGroup> updateWrapper = Wrappers.<UserGroup>lambdaUpdate().
+                    eq(UserGroup::getGroupId, group.getId()).
+                    set(UserGroup::getStatus, UserGroup.DELETE);
+            userGroupService.update(updateWrapper);
+        }
         return true;
     }
 
