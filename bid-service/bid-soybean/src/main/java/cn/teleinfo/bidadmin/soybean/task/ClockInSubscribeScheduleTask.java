@@ -43,7 +43,7 @@ public class ClockInSubscribeScheduleTask {
 //        System.err.println("执行静态定时任务时间: " + LocalDateTime.now());
 //    }
 
-    @Scheduled(cron = "0 0 12 * * ?")
+    @Scheduled(cron = "0 0 10 * * ?")
     private void executeTask(){
         LambdaQueryWrapper<User> userQueryWrapper = Wrappers.<User>lambdaQuery().gt(User::getMessage,0) ;
         List<User> userIPage = userService.list(userQueryWrapper);
