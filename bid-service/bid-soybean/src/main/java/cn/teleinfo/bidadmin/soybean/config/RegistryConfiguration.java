@@ -38,6 +38,7 @@ public class RegistryConfiguration implements WebMvcConfigurer {
 		secureRegistry.excludePathPatterns("/wx/user/token");
 		secureRegistry.excludePathPatterns("/wx/user/phone");
 		secureRegistry.excludePathPatterns("/user/saveOrUpdate");
+		secureRegistry.excludePathPatterns("/wx/group/exist");
 
 		// TODO 权限暂时全部放开
 //		secureRegistry.excludePathPatterns("/wx/**");
