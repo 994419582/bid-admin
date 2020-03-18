@@ -101,4 +101,10 @@ public interface IUserGroupService extends IService<UserGroup> {
      * @param addAccount 增加的数量
      */
     void motifyUserAccount(Integer groupId, Integer addAccount);
+
+    /**
+     * 删除用户所有权限
+     * @param userId
+     */
+    void deleteAllPermission(Integer userId);
 }

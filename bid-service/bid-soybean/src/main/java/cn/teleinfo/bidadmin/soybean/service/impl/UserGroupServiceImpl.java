@@ -107,27 +107,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         //减少群人数
         motifyUserAccount(groupId, -1);
         //删除用户拥有的所有管理员权限
-        List<Group> userManageGroups = groupService.getUserManageGroups(userId);
-        for (Group group : userManageGroups) {
-            String managers = group.getManagers();
-            ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
-            //Group表移除此管理员
-            managerList.remove(userId);
-            String newManagers = StringUtils.join(managerList, ",");
-            group.setManagers(newManagers);
-            groupService.updateById(group);
-        }
-        //删除用户拥有的所有组织数据管理员权限
-        List<Group> userDataManageGroups = groupService.getUserDataManageGroups(userId);
-        for (Group group : userDataManageGroups) {
-            String dataManagers = group.getDataManagers();
-            ArrayList<Integer> dataManagerList = new ArrayList<>(Func.toIntList(dataManagers));
-            //Group表移除此管理员
-            dataManagerList.remove(userId);
-            String newDataManagers = StringUtils.join(dataManagerList, ",");
-            group.setDataManagers(newDataManagers);
-            groupService.updateById(group);
-        }
+        deleteAllPermission(userId);
         groupLogService.addLog(groupId, managerId, GroupLog.MANAGER_DELETE_USER);
         return true;
     }
@@ -164,6 +144,22 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             throw new ApiException("您未加入该机构, 不能退出");
         }
         Integer groupId = joinUserGroup.getGroupId();
+        //删除所有权限
+        deleteAllPermission(userId);
+        //更新状态为已删除
+        LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
+                eq(UserGroup::getUserId, userId).
+                eq(UserGroup::getGroupId, groupId).
+                set(UserGroup::getStatus, UserGroup.DELETE);
+        this.update(userGroupLambdaQueryWrapper);
+        //添加日志
+        groupLogService.addLog(groupId, userId, GroupLog.DELETE_USER);
+        //减少群人数
+        motifyUserAccount(groupId, -1);
+        return true;
+    }
+
+    public void deleteAllPermission(Integer userId) {
         //删除用户拥有的所有管理员权限
         List<Group> userManageGroups = groupService.getUserManageGroups(userId);
         for (Group group : userManageGroups) {
@@ -186,17 +182,6 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             group.setDataManagers(newDataManagers);
             groupService.updateById(group);
         }
-        //更新状态为已删除
-        LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
-                eq(UserGroup::getUserId, userId).
-                eq(UserGroup::getGroupId, groupId).
-                set(UserGroup::getStatus, UserGroup.DELETE);
-        this.update(userGroupLambdaQueryWrapper);
-        //添加日志
-        groupLogService.addLog(groupId, userId, GroupLog.DELETE_USER);
-        //减少群人数
-        motifyUserAccount(groupId, -1);
-        return true;
     }
 
     private Integer getUserGroupStatus(Integer groupId, Integer userId) {
@@ -278,27 +263,7 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             Integer groupId = userGroup.getGroupId();
             Integer userId = userGroup.getUserId();
             //删除用户拥有的所有管理员权限
-            List<Group> userManageGroups = groupService.getUserManageGroups(userId);
-            for (Group group : userManageGroups) {
-                String managers = group.getManagers();
-                ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
-                //Group表移除此管理员
-                managerList.remove(userId);
-                String newManagers = StringUtils.join(managerList, ",");
-                group.setManagers(newManagers);
-                groupService.updateById(group);
-            }
-            //删除用户拥有的所有组织数据管理员权限
-            List<Group> userDataManageGroups = groupService.getUserDataManageGroups(userId);
-            for (Group group : userDataManageGroups) {
-                String dataManagers = group.getDataManagers();
-                ArrayList<Integer> dataManagerList = new ArrayList<>(Func.toIntList(dataManagers));
-                //Group表移除此管理员
-                dataManagerList.remove(userId);
-                String newDataManagers = StringUtils.join(dataManagerList, ",");
-                group.setDataManagers(newDataManagers);
-                groupService.updateById(group);
-            }
+            deleteAllPermission(userId);
             //修改状态
             userGroup.setStatus(UserGroup.DELETE);
             updateById(userGroup);

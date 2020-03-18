@@ -60,6 +60,10 @@ public class Group implements Serializable {
     public static final Integer TYPE_ORGANIZATION = 0;
     public static final Integer TYPE_PERSON = 1;
 
+    //无部门名称(一级机构唯一码—_NO_DEPT)
+    public static final String NO_DEPT_CODE = "NO_DEPT";
+    public static final String NO_DEPT_NAME = "变动人员";
+
     /**
      * 主键
      */
@@ -138,9 +142,6 @@ public class Group implements Serializable {
      * 群类型（组织，个人）
      */
     @ApiModelProperty(value = "机构类型（组织0，个人1）",required = true)
-    @NotNull(message = "机构类型不能为空")
-    @Min(value = 0, message = "机构类型只能是0或者1")
-    @Max(value = 1,message = "机构类型只能是0或者1")
     private Integer groupType;
 
     /**
