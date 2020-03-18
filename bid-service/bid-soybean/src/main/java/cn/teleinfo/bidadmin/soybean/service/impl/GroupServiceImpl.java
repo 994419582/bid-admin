@@ -726,8 +726,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //获取一级机构
         Group firstGroup = getFirstGroup(groupIdentify);
         //校验是否为一级机构创建人
-        if (firstGroup.getCreateUser().equals(userId)) {
+        if (!firstGroup.getCreateUser().equals(userId)) {
             throw new ApiException("您不是一级机构创建人");
+        }
+        //一级部门不允许删除
+        if (firstGroup.getId().equals(groupId)) {
+            throw new ApiException("一级机构不允许删除");
         }
         //判断变动人员部门是否存在
         LambdaQueryWrapper<Group> noDeptQueryWrapper = Wrappers.<Group>lambdaQuery().

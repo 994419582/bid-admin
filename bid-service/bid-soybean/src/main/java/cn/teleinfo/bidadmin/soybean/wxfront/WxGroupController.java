@@ -370,7 +370,7 @@ public class WxGroupController extends BladeController {
      */
     @PostMapping("/remove")
     @ApiOperationSupport(order = 7)
-    @ApiOperation(value = "删除机构", notes = "请求类型: _postParams, 删除机构及其所有子机构，人员移动到变动人员部门")
+    @ApiOperation(value = "删除机构", notes = "请求类型: _postParams, 删除机构及其所有子机构，人员移动到变动人员部门，人员管理权限全部取消")
     public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam Integer groupId,
                     @ApiParam(value = "用户ID", required = true) @RequestParam Integer userId) {
         //用户是否存在
