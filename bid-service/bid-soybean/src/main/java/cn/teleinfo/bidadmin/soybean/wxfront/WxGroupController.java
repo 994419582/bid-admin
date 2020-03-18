@@ -422,15 +422,19 @@ public class WxGroupController extends BladeController {
         if (!Group.TOP_PARENT_ID.equals(parentGroup.getParentId())) {
             throw new ApiException("只允许一级机构转让创建人");
         }
+        //校验是否已经转让
+        if (groupService.isGroupCreater(groupId, transferId)) {
+            throw new ApiException("创建者已转让");
+        }
         //校验创建人
         if (!groupService.isGroupCreater(groupId, userId)) {
             throw new ApiException("您不是机构创建人");
         }
         //校验转让人是否输入改机构
         List<Integer> joinUserIds = groupService.selectUserIdByParentId(groupId);
-        if (!joinUserIds.contains(transferId)) {
-            throw new ApiException("被转让人尚未加入该机构");
-        }
+//        if (!joinUserIds.contains(transferId)) {
+//            throw new ApiException("被转让人尚未加入该机构");
+//        }
         //更改创建人(改机构及其子机构创建人修改为被转让人)
         Group topGroup = groupService.getGroupById(groupId);
         if (topGroup == null) {
@@ -450,7 +454,7 @@ public class WxGroupController extends BladeController {
             Group group = new Group();
             group.setId(topGroup.getId());
             group.setManagers(newManagers);
-            groupService.updateById(topGroup);
+            groupService.updateById(group);
         }
         return R.status(true);
     }
@@ -771,7 +775,7 @@ public class WxGroupController extends BladeController {
      */
     @PostMapping("/close")
     @ApiOperationSupport(order = 3)
-    @ApiOperation(value = "群组解散或者关闭接口", notes = "只有群主才可拥有此操作,采用逻辑删除将status状态设为1、并且接触该群与所有用户和其他群的父子关系，以上所有操作均使用逻辑操作改变状态值，并不实质删除任何数据")
+    @ApiOperation(value = "群组解散或者关闭接口", notes = "只有群主才可拥有此操作, 逻辑删除当前群及其子群，当前群和子群的用户也都一并删除")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "groupId", value = "子群组ID", required = true, paramType = "query", dataType = "int"),
             @ApiImplicitParam(name = "creatorId", value = "创建人ID", required = true, paramType = "query", dataType = "int")

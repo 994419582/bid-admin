@@ -152,6 +152,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             //逻辑删除群
             group.setStatus(Group.DELETE);
             updateById(group);
+            //删除中间表
+            LambdaQueryWrapper<ParentGroup> deleteWrapper = Wrappers.<ParentGroup>lambdaQuery().
+                    eq(ParentGroup::getGroupId, group.getId());
+            parentGroupService.remove(deleteWrapper);
             //逻辑删除群用户
             LambdaUpdateWrapper<UserGroup> updateWrapper = Wrappers.<UserGroup>lambdaUpdate().
                     eq(UserGroup::getGroupId, group.getId()).
@@ -417,7 +421,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         }
         Group group = this.getGroupById(groupId);
         if (group == null) {
-            throw new ApiException("部门组不存在");
+            throw new ApiException("机构不存在");
         }
         User user = userService.getById(userId);
         if (user == null) {

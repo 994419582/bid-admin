@@ -9,8 +9,11 @@ import cn.teleinfo.bidadmin.soybean.config.WxMaConfiguration;
 import cn.teleinfo.bidadmin.soybean.entity.User;
 import cn.teleinfo.bidadmin.soybean.service.IUserService;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -184,6 +187,15 @@ public class WxMaUserController extends BladeController {
 //        user.setPhone(phoneNoInfo.getPhoneNumber());
 //        userService.saveOrUpdate(user);
         return R.data(phoneNoInfo);
+    }
+
+    @ApiOperation(value = "根据手机号查询用户", notes = "根据手机号查询用户")
+    @GetMapping("/findUserByPhone")
+    public R<User> findUserByPhone(
+            @ApiParam(value = "手机号",required = true) @RequestParam String phone) {
+        LambdaQueryWrapper<User> queryWrapper = Wrappers.<User>lambdaQuery().eq(User::getPhone, StringUtils.trim(phone));
+        User user = userService.getOne(queryWrapper);
+        return R.data(user);
     }
 
 }
