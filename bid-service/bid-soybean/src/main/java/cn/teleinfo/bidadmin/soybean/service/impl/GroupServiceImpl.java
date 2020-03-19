@@ -644,6 +644,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setCreateUser(groupVO.getCreateUser());
         Integer parentId = group.getParentId();
         Integer createUser = group.getCreateUser();
+        //上级机构不能是顶级机构
+        if (Group.TOP_PARENT_ID.equals(parentId)) {
+            throw new ApiException("上级机构不能是顶级机构");
+        }
         //获取上级部门
         Group superiorGroup = getGroupById(parentId);
         if (superiorGroup == null) {
@@ -743,6 +747,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //一级部门不允许删除
         if (firstGroup.getId().equals(groupId)) {
             throw new ApiException("一级机构不允许删除");
+        }
+        if (Group.TOP_PARENT_ID.equals(groupId)) {
+            throw new ApiException("顶级机构不能删除");
         }
         //变动部门不允许删除
         if (group.getGroupCode().equals(groupIdentify + "_" + Group.NO_DEPT_CODE)) {
