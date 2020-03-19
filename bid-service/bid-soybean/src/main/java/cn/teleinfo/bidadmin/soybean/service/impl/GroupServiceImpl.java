@@ -654,7 +654,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //获取一级部门
         Group firstGroup = getFirstGroup(groupIdentify);
         //校验是否为一级机构创建人
-        if (firstGroup.getCreateUser().equals(createUser)) {
+        if (!firstGroup.getCreateUser().equals(createUser)) {
             throw new ApiException("您不是一级机构创建人");
         }
         //如果是末级部门, 则变更部门类型，并移动人员到变动人员部门中
@@ -662,6 +662,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (Group.TYPE_PERSON.equals(superiorGroupType)) {
             //变更上级部门类型
             superiorGroup.setGroupType(Group.TYPE_ORGANIZATION);
+            //人数清零
+            superiorGroup.setUserAccount(0);
             updateById(superiorGroup);
             //判断变动人员部门是否存在
             LambdaQueryWrapper<Group> noDeptQueryWrapper = Wrappers.<Group>lambdaQuery().
@@ -671,6 +673,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             if (noDeptGroup == null) {
                 Group newNoDeptGroup = new Group();
                 newNoDeptGroup.setName(Group.NO_DEPT_NAME);
+                newNoDeptGroup.setUserAccount(0);
                 newNoDeptGroup.setGroupCode(groupIdentify + "_" + Group.NO_DEPT_CODE);
                 newNoDeptGroup.setGroupIdentify(groupIdentify);
                 newNoDeptGroup.setFullName(firstGroup.getName() + "_" + newNoDeptGroup.getName());
@@ -695,6 +698,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             LambdaUpdateWrapper<UserGroup> userGroupUpdateWrapper = Wrappers.<UserGroup>lambdaUpdate().
                     eq(UserGroup::getGroupId, parentId).set(UserGroup::getGroupId, noDeptGroup.getId());
             userGroupService.update(userGroupUpdateWrapper);
+            //计算变动部门人数
+            LambdaQueryWrapper<UserGroup> countQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                    eq(UserGroup::getGroupId, noDeptGroup.getId()).eq(UserGroup::getStatus, Group.NORMAL);
+            int count = userGroupService.count(countQueryWrapper);
+            //更新人数
+            LambdaUpdateWrapper<Group> countUpdateWrapper = Wrappers.<Group>lambdaUpdate().
+                    eq(Group::getId, noDeptGroup.getId()).set(Group::getUserAccount, count);
+            update(countUpdateWrapper);
         }
         //开始创建机构
         //生成机构唯一码
@@ -732,6 +743,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //一级部门不允许删除
         if (firstGroup.getId().equals(groupId)) {
             throw new ApiException("一级机构不允许删除");
+        }
+        //变动部门不允许删除
+        if (group.getGroupCode().equals(groupIdentify + "_" + Group.NO_DEPT_CODE)) {
+            throw new ApiException(Group.NO_DEPT_NAME + "部门不能删除");
         }
         //判断变动人员部门是否存在
         LambdaQueryWrapper<Group> noDeptQueryWrapper = Wrappers.<Group>lambdaQuery().
@@ -778,6 +793,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             delGroup.setStatus(Group.DELETE);
             updateById(delGroup);
         }
+        //计算变动部门人数
+        LambdaQueryWrapper<UserGroup> countQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                eq(UserGroup::getGroupId, noDeptGroup.getId()).eq(UserGroup::getStatus, Group.NORMAL);
+        int count = userGroupService.count(countQueryWrapper);
+        //更新人数
+        LambdaUpdateWrapper<Group> countUpdateWrapper = Wrappers.<Group>lambdaUpdate().
+                eq(Group::getId, noDeptGroup.getId()).set(Group::getUserAccount, count);
+        update(countUpdateWrapper);
         return true;
     }
 
