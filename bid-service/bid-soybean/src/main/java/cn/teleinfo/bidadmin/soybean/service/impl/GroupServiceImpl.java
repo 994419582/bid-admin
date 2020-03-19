@@ -678,6 +678,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 Group newNoDeptGroup = new Group();
                 newNoDeptGroup.setName(Group.NO_DEPT_NAME);
                 newNoDeptGroup.setUserAccount(0);
+                newNoDeptGroup.setAddressName(firstGroup.getAddressName());
+                newNoDeptGroup.setDetailAddress(firstGroup.getDetailAddress());
                 newNoDeptGroup.setGroupCode(groupIdentify + "_" + Group.NO_DEPT_CODE);
                 newNoDeptGroup.setGroupIdentify(groupIdentify);
                 newNoDeptGroup.setFullName(firstGroup.getName() + "_" + newNoDeptGroup.getName());
@@ -719,6 +721,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         group.setFullName(superiorGroup.getName() + "_" + group.getName());
         group.setGroupType(Group.TYPE_PERSON);
         group.setGroupIdentify(groupIdentify);
+        group.setAddressName(superiorGroup.getAddressName());
+        group.setDetailAddress(superiorGroup.getDetailAddress());
         //设置部门人数为0
         group.setUserAccount(0);
         //设置部门状态
@@ -751,6 +755,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (Group.TOP_PARENT_ID.equals(groupId)) {
             throw new ApiException("顶级机构不能删除");
         }
+        //获取上级机构
+        LambdaQueryWrapper<ParentGroup> parentGroupQueryWrapper = Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getGroupId, groupId);
+        ParentGroup currentParentGroup = parentGroupService.getOne(parentGroupQueryWrapper);
+        if (currentParentGroup == null) {
+            throw new ApiException("数据异常，此部门上级部门不存在");
+        }
         //变动部门不允许删除
         if (group.getGroupCode().equals(groupIdentify + "_" + Group.NO_DEPT_CODE)) {
             throw new ApiException(Group.NO_DEPT_NAME + "部门不能删除");
@@ -763,6 +773,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (noDeptGroup == null) {
             Group newNoDeptGroup = new Group();
             newNoDeptGroup.setName(Group.NO_DEPT_NAME);
+            newNoDeptGroup.setAddressName(firstGroup.getAddressName());
+            newNoDeptGroup.setDetailAddress(firstGroup.getDetailAddress());
             newNoDeptGroup.setGroupCode(groupIdentify + "_" + Group.NO_DEPT_CODE);
             newNoDeptGroup.setGroupIdentify(groupIdentify);
             newNoDeptGroup.setFullName(firstGroup.getName() + "_" + newNoDeptGroup.getName());
@@ -799,6 +811,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             delGroup.setId(id);
             delGroup.setStatus(Group.DELETE);
             updateById(delGroup);
+            //删除中间表
+            LambdaQueryWrapper<ParentGroup> delQueryWrapper = Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getGroupId, id);
+            parentGroupService.remove(delQueryWrapper);
+        }
+        //如果上级部门下没有子部门，则更改类型为个人部门
+        LambdaQueryWrapper<ParentGroup> parentQueryWrapper = Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getParentId, currentParentGroup.getParentId());
+        if (parentGroupService.count(parentQueryWrapper) == 0) {
+            Group superiorGroup = new Group();
+            superiorGroup.setId(currentParentGroup.getParentId());
+            superiorGroup.setGroupType(Group.TYPE_PERSON);
+            updateById(superiorGroup);
         }
         //计算变动部门人数
         LambdaQueryWrapper<UserGroup> countQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
