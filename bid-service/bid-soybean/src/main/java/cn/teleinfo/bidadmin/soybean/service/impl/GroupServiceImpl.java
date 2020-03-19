@@ -635,6 +635,159 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return true;
     }
 
+    @Override
+    @Transactional
+    public boolean wxSaveGroup(GroupVO groupVO) {
+        Group group = new Group();
+        group.setName(groupVO.getName());
+        group.setParentId(groupVO.getParentId());
+        group.setCreateUser(groupVO.getCreateUser());
+        Integer parentId = group.getParentId();
+        Integer createUser = group.getCreateUser();
+        //获取上级部门
+        Group superiorGroup = getGroupById(parentId);
+        if (superiorGroup == null) {
+            throw new ApiException("上级机构不存在，请联系管理员");
+        }
+        //获取机构标识码
+        String groupIdentify = superiorGroup.getGroupIdentify();
+        //获取一级部门
+        Group firstGroup = getFirstGroup(groupIdentify);
+        //校验是否为一级机构创建人
+        if (firstGroup.getCreateUser().equals(createUser)) {
+            throw new ApiException("您不是一级机构创建人");
+        }
+        //如果是末级部门, 则变更部门类型，并移动人员到变动人员部门中
+        Integer superiorGroupType = superiorGroup.getGroupType();
+        if (Group.TYPE_PERSON.equals(superiorGroupType)) {
+            //变更上级部门类型
+            superiorGroup.setGroupType(Group.TYPE_ORGANIZATION);
+            updateById(superiorGroup);
+            //判断变动人员部门是否存在
+            LambdaQueryWrapper<Group> noDeptQueryWrapper = Wrappers.<Group>lambdaQuery().
+                    eq(Group::getGroupCode, groupIdentify + "_" + Group.NO_DEPT_CODE).eq(Group::getStatus, Group.NORMAL);
+            Group noDeptGroup = getOne(noDeptQueryWrapper);
+            //变动人员部门不存在，创建部门
+            if (noDeptGroup == null) {
+                Group newNoDeptGroup = new Group();
+                newNoDeptGroup.setName(Group.NO_DEPT_NAME);
+                newNoDeptGroup.setGroupCode(groupIdentify + "_" + Group.NO_DEPT_CODE);
+                newNoDeptGroup.setGroupIdentify(groupIdentify);
+                newNoDeptGroup.setFullName(firstGroup.getName() + "_" + newNoDeptGroup.getName());
+                newNoDeptGroup.setCreateUser(createUser);
+                newNoDeptGroup.setStatus(Group.NORMAL);
+                newNoDeptGroup.setGroupType(Group.TYPE_PERSON);
+                save(newNoDeptGroup);
+                //创建中间表
+                ParentGroup parentGroup = new ParentGroup();
+                parentGroup.setGroupId(newNoDeptGroup.getId());
+                parentGroup.setParentId(firstGroup.getId());
+                parentGroupService.save(parentGroup);
+                noDeptGroup = newNoDeptGroup;
+            }
+            //获取上级机构下所有人员
+            List<Integer> userIdList = selectUserIdByParentId(parentId);
+            //取消改机构下所有用户管理员和数据管理员权限
+            for (Integer userId : userIdList) {
+                userGroupService.deleteAllPermission(userId);
+            }
+            //把改机构下所有人员移动到变动人员部门
+            LambdaUpdateWrapper<UserGroup> userGroupUpdateWrapper = Wrappers.<UserGroup>lambdaUpdate().
+                    eq(UserGroup::getGroupId, parentId).set(UserGroup::getGroupId, noDeptGroup.getId());
+            userGroupService.update(userGroupUpdateWrapper);
+        }
+        //开始创建机构
+        //生成机构唯一码
+        String groupCode = generateGroupCode();
+        //设置机构唯一码和机构标识码
+        group.setGroupCode(groupCode);
+        group.setFullName(superiorGroup.getName() + "_" + group.getName());
+        group.setGroupType(Group.TYPE_PERSON);
+        group.setGroupIdentify(groupIdentify);
+        //设置部门人数为0
+        group.setUserAccount(0);
+        //设置部门状态
+        group.setStatus(Group.NORMAL);
+        save(group);
+        //保存中间表
+        ParentGroup parentGroup = new ParentGroup();
+        parentGroup.setGroupId(group.getId());
+        parentGroup.setParentId(parentId);
+        parentGroupService.save(parentGroup);
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean wxRemoveGroup(Integer groupId, Integer userId) {
+        Group group = getGroupById(groupId);
+        //获取机构标识码
+        String groupIdentify = group.getGroupIdentify();
+        //获取一级机构
+        Group firstGroup = getFirstGroup(groupIdentify);
+        //校验是否为一级机构创建人
+        if (!firstGroup.getCreateUser().equals(userId)) {
+            throw new ApiException("您不是一级机构创建人");
+        }
+        //一级部门不允许删除
+        if (firstGroup.getId().equals(groupId)) {
+            throw new ApiException("一级机构不允许删除");
+        }
+        //判断变动人员部门是否存在
+        LambdaQueryWrapper<Group> noDeptQueryWrapper = Wrappers.<Group>lambdaQuery().
+                eq(Group::getGroupCode, groupIdentify + "_" + Group.NO_DEPT_CODE).eq(Group::getStatus, Group.NORMAL);
+        Group noDeptGroup = getOne(noDeptQueryWrapper);
+        //变动人员部门不存在，创建部门
+        if (noDeptGroup == null) {
+            Group newNoDeptGroup = new Group();
+            newNoDeptGroup.setName(Group.NO_DEPT_NAME);
+            newNoDeptGroup.setGroupCode(groupIdentify + "_" + Group.NO_DEPT_CODE);
+            newNoDeptGroup.setGroupIdentify(groupIdentify);
+            newNoDeptGroup.setFullName(firstGroup.getName() + "_" + newNoDeptGroup.getName());
+            newNoDeptGroup.setCreateUser(userId);
+            newNoDeptGroup.setStatus(Group.NORMAL);
+            newNoDeptGroup.setGroupType(Group.TYPE_PERSON);
+            save(newNoDeptGroup);
+            //创建中间表
+            ParentGroup parentGroup = new ParentGroup();
+            parentGroup.setGroupId(newNoDeptGroup.getId());
+            parentGroup.setParentId(firstGroup.getId());
+            parentGroupService.save(parentGroup);
+            noDeptGroup = newNoDeptGroup;
+        }
+        //获取机构下所有人员
+        List<Integer> userIdList = selectUserIdByParentId(groupId);
+        //取消改机构下所有用户管理员和数据管理员权限
+        for (Integer id : userIdList) {
+            userGroupService.deleteAllPermission(id);
+        }
+        //获取机构下所有部门
+        List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
+        ArrayList<Integer> groupIds = new ArrayList<>();
+        groupIds.add(groupId);
+        getAllGroupIdByParentId(groupAndParent, groupId, groupIds);
+        //移动人员到变动人员部门
+        for (Integer id : groupIds) {
+            //把改机构下所有人员移动到变动人员部门
+            LambdaUpdateWrapper<UserGroup> userGroupUpdateWrapper = Wrappers.<UserGroup>lambdaUpdate().
+                    eq(UserGroup::getGroupId, id).set(UserGroup::getGroupId, noDeptGroup.getId());
+            userGroupService.update(userGroupUpdateWrapper);
+            //删除部门
+            Group delGroup = new Group();
+            delGroup.setId(id);
+            delGroup.setStatus(Group.DELETE);
+            updateById(delGroup);
+        }
+        return true;
+    }
+
+    @Override
+    public Group getFirstGroup(String groupIdentify) {
+        LambdaQueryWrapper<Group> topQueryWrapper = Wrappers.<Group>lambdaQuery().
+                eq(Group::getGroupCode, groupIdentify).eq(Group::getStatus, Group.NORMAL);
+        return getOne(topQueryWrapper);
+    }
+
     private boolean checkParentGroupAndManager(Group group) {
         //未指定群ID，默认父群组为顶级群组
         Integer groupId = group.getId();

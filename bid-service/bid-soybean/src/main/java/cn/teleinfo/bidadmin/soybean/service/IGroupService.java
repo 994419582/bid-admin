@@ -208,4 +208,26 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	List<GroupTreeVo> getAllGroupIdByParentId(List<GroupTreeVo> groups, Integer parentId, List groupList);
+
+	/**
+	 * wx新增机构
+	 * @param group
+	 * @return
+	 */
+	boolean wxSaveGroup(GroupVO group);
+
+	/**
+	 * 删除机构及其子机构
+	 * @param groupId
+	 * @param userId
+	 * @return
+	 */
+	boolean wxRemoveGroup(Integer groupId, Integer userId);
+
+	/**
+	 * 根据机构标识码获取一级机构
+	 * @param groupIdentify
+	 * @return
+	 */
+	Group getFirstGroup(String groupIdentify);
 }

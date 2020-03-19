@@ -315,87 +315,73 @@ public class WxGroupController extends BladeController {
      */
     @PostMapping("/save")
     @ApiOperationSupport(order = 4)
-    @ApiOperation(value = "新增群组", notes = "传入group,用户Id不能为null")
+    @ApiOperation(value = "微信新增部门", notes = "传入部门名称name, 上级部门parentId, 创建者userId")
     public R save(@Valid @RequestBody GroupVO group) {
-        try {
             //设置创建人
             Integer userId = group.getUserId();
             if (!groupService.existUser(userId)) {
                 throw new ApiException("用户不存在");
             }
             group.setCreateUser(userId);
-            return R.status(groupService.saveGroup(group));
-        } catch (ApiException e) {
-            return R.fail(e.getMessage());
-        }
+            return R.status(groupService.wxSaveGroup(group));
     }
 
 
-    /**
-     * 修改群组
-     */
-    @PostMapping("/update")
-    @ApiOperationSupport(order = 5)
-    @ApiOperation(value = "修改群组", notes = "不支持修改父群组和管理员以及群人数")
-    public R update(@Valid @RequestBody GroupVO group) {
-        try {
-            Integer userId = group.getUserId();
-            Integer groupId = group.getId();
-            if (groupId == null) {
-                throw new ApiException("主键Id不能为空");
-            }
-            if (!groupService.existGroup(groupId)) {
-                throw new ApiException("部门不存在");
-            }
-            //权限校验
-            if (!groupService.isGroupCreater(groupId, userId)) {
-                throw new ApiException("用户ID和部门创建人ID不一致");
-            }
-            //不提供管理员修改功能
-            if (group.getManagers() != null) {
-                throw new ApiException("此接口不提供管理员修改功能");
-            }
-            //不提供父群组修改功能
-            if (group.getParentId() != null) {
-                throw new ApiException("此接口不提供父部门修改功能");
-            }
-            //不提供人数修改功能
-            if (group.getUserAccount() != null) {
-                throw new ApiException("部门人数不能更新");
-            }
-            return R.status(groupService.updateById(group));
-        } catch (ApiException e) {
-            return R.fail(e.getMessage());
-        }
-    }
+//    /**
+//     * 修改群组
+//     */
+//    @PostMapping("/update")
+//    @ApiOperationSupport(order = 5)
+//    @ApiOperation(value = "修改群组", notes = "不支持修改父群组和管理员以及群人数")
+//    public R update(@Valid @RequestBody GroupVO group) {
+//        try {
+//            Integer userId = group.getUserId();
+//            Integer groupId = group.getId();
+//            if (groupId == null) {
+//                throw new ApiException("主键Id不能为空");
+//            }
+//            if (!groupService.existGroup(groupId)) {
+//                throw new ApiException("部门不存在");
+//            }
+//            //权限校验
+//            if (!groupService.isGroupCreater(groupId, userId)) {
+//                throw new ApiException("用户ID和部门创建人ID不一致");
+//            }
+//            //不提供管理员修改功能
+//            if (group.getManagers() != null) {
+//                throw new ApiException("此接口不提供管理员修改功能");
+//            }
+//            //不提供父群组修改功能
+//            if (group.getParentId() != null) {
+//                throw new ApiException("此接口不提供父部门修改功能");
+//            }
+//            //不提供人数修改功能
+//            if (group.getUserAccount() != null) {
+//                throw new ApiException("部门人数不能更新");
+//            }
+//            return R.status(groupService.updateById(group));
+//        } catch (ApiException e) {
+//            return R.fail(e.getMessage());
+//        }
+//    }
 
     /**
      * 删除
      */
     @PostMapping("/remove")
     @ApiOperationSupport(order = 7)
-    @ApiOperation(value = "逻辑删除", notes = "删除后status为1, 用户id必须和所有群组创建人一致")
-    public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam String ids,
+    @ApiOperation(value = "删除机构", notes = "请求类型: _postParams, 删除机构及其所有子机构，人员移动到变动人员部门，人员管理权限全部取消")
+    public R remove(@ApiParam(value = "主键集合", required = true) @RequestParam Integer groupId,
                     @ApiParam(value = "用户ID", required = true) @RequestParam Integer userId) {
-        try {
-            //用户是否存在
-            if (!groupService.existUser(userId)) {
-                throw new ApiException("用户不存在");
-            }
-            //查询用户Id和创建人是否一致
-            for (Integer id : Func.toIntList(ids)) {
-                if (!groupService.existGroup(id)) {
-                    throw new ApiException("部门不存在");
-                }
-                if (!groupService.isGroupCreater(id, userId)) {
-                    throw new ApiException("用户ID和部门创建人ID不一致");
-                }
-            }
-//            return R.status(groupService.removeGroupByIds(ids));
-            return R.data("暂时不提供不能删除功能");
-        } catch (ApiException e) {
-            return R.fail(e.getMessage());
+        //用户是否存在
+        if (!groupService.existUser(userId)) {
+            throw new ApiException("用户不存在");
         }
+        //部门是否存在
+        if (!groupService.existGroup(groupId)) {
+            throw new ApiException("部门不存在");
+        }
+        return R.status(groupService.wxRemoveGroup(groupId, userId));
     }
 
     /**
