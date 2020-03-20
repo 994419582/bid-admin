@@ -240,7 +240,7 @@ public class WxGroupController extends BladeController {
      */
     @GetMapping("/user/all")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "当前群及子群组列表", notes = "分页查询当前群及子群下所有用户")
+    @ApiOperation(value = "分页查询当前群及子群下所有用户", notes = "分页查询当前群及子群下所有用户")
     public R<IPage<UserVO>> selectUserPageByParentId(@RequestParam(name = "groupId", required = true) Integer groupId,
                                                      Query query) {
         try {
@@ -257,7 +257,7 @@ public class WxGroupController extends BladeController {
      */
     @GetMapping("/user/current")
     @ApiOperationSupport(order = 1)
-    @ApiOperation(value = "当前群组列表", notes = "分页查询当前群下所有用户")
+    @ApiOperation(value = "分页查询当前群下所有用户", notes = "分页查询当前群下所有用户")
     public R<IPage<UserVO>> selectUserByParentId(@RequestParam(name = "groupId", required = true) Integer groupId,
                                                  Query query) {
         try {

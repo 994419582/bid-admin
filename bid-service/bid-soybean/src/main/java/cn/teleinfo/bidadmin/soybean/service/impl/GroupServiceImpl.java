@@ -831,6 +831,38 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         LambdaUpdateWrapper<Group> countUpdateWrapper = Wrappers.<Group>lambdaUpdate().
                 eq(Group::getId, noDeptGroup.getId()).set(Group::getUserAccount, count);
         update(countUpdateWrapper);
+        //如果上级部门下只剩下变动人员部门，则删除变动部门，移动人员到一级机构
+        List<ParentGroup> childGroupList = parentGroupService.list(parentQueryWrapper);
+        if (childGroupList.size() == 1) {
+            ParentGroup parentGroup = childGroupList.get(0);
+            Group soleGroup = getGroupById(parentGroup.getGroupId());
+            if (soleGroup == null) {
+                throw new ApiException("数据异常，请联系管理员");
+            }
+            if (soleGroup.getGroupCode().endsWith(Group.NO_DEPT_CODE)) {
+                //移动变动人员部门的人员到一级机构
+                LambdaUpdateWrapper<UserGroup> userGroupUpdateWrapper = Wrappers.<UserGroup>lambdaUpdate().
+                        eq(UserGroup::getGroupId, noDeptGroup.getId()).set(UserGroup::getGroupId, firstGroup.getId());
+                userGroupService.update(userGroupUpdateWrapper);
+                //删除变动人员部门
+                noDeptGroup.setStatus(Group.DELETE);
+                updateById(noDeptGroup);
+                //删除中间表
+                LambdaQueryWrapper<ParentGroup> delQueryWrapper = Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getGroupId, noDeptGroup.getId());
+                parentGroupService.remove(delQueryWrapper);
+                //更改一级机构类型
+                firstGroup.setGroupType(Group.TYPE_PERSON);
+                updateById(firstGroup);
+                //计算一级机构人数
+                LambdaQueryWrapper<UserGroup> firstCountQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
+                        eq(UserGroup::getGroupId, firstGroup.getId()).eq(UserGroup::getStatus, Group.NORMAL);
+                int firstCount = userGroupService.count(firstCountQueryWrapper);
+                //更新人数
+                LambdaUpdateWrapper<Group> firstCountUpdateWrapper = Wrappers.<Group>lambdaUpdate().
+                        eq(Group::getId, firstGroup.getId()).set(Group::getUserAccount, firstCount);
+                update(firstCountUpdateWrapper);
+            }
+        }
         return true;
     }
 
