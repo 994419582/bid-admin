@@ -23,16 +23,14 @@ import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
 import cn.teleinfo.bidadmin.soybean.vo.GroupTreeVo;
 import cn.teleinfo.bidadmin.soybean.vo.UserGroupVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiOperationSupport;
 import io.swagger.annotations.ApiParam;
 import lombok.AllArgsConstructor;
-import org.apache.ibatis.exceptions.TooManyResultsException;
-import org.mybatis.spring.MyBatisSystemException;
 import org.springblade.core.boot.ctrl.BladeController;
 import org.springblade.core.tool.api.R;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 控制器
@@ -66,32 +65,29 @@ public class WxUserGroupController extends BladeController {
     @ApiOperationSupport(order = 4)
     @ApiOperation(value = "用户加群", notes = "传入userGroup")
     public R save(@Valid @RequestBody UserGroup userGroup) {
-        try {
-            return R.status(userGroupService.saveUserGroup(userGroup));
-        } catch (Exception e) {
-            return R.fail(e.getMessage());
-        }
+        return R.status(userGroupService.saveUserGroup(userGroup));
     }
 
     /**
      * 获取用户已加入的群
+     * @return
      */
     @GetMapping("/user/currentGroup")
     @ApiOperationSupport(order = 4)
     @ApiOperation(value = "获取用户已加入的群", notes = "获取用户已加入的群")
-    public R<Group> save(@Valid @RequestParam(name = "userId", required = true) Integer userId) {
+    public R<List<Group>> save(@Valid @RequestParam(name = "userId", required = true) Integer userId) {
+        //获取用户加入的部门
         LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
                 eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
-        try {
-            UserGroup userGroup = userGroupService.getOne(queryWrapper);
-            if (userGroup == null) {
-                return R.data(null);
-            } else {
-                return R.data(groupService.getById(userGroup.getGroupId()));
-            }
-        } catch (MyBatisSystemException e) {
-            return R.fail("数据异常, 请联系管理员");
+        List<UserGroup> userGroupList = userGroupService.list(queryWrapper);
+        if (CollectionUtils.isEmpty(userGroupList)) {
+            return R.data(null);
         }
+        //查询用户加入的所有部门
+        List<Integer> groupIds = userGroupList.stream().map(UserGroup::getGroupId).collect(Collectors.toList());
+        LambdaQueryWrapper<Group> groupQueryWrapper = Wrappers.<Group>lambdaQuery().
+                in(Group::getId, groupIds).eq(Group::getStatus,Group.NORMAL);
+        return R.data(groupService.list(groupQueryWrapper));
     }
 
     /**
@@ -131,7 +127,7 @@ public class WxUserGroupController extends BladeController {
      */
     @PostMapping("/manager/remove")
     @ApiOperationSupport(order = 4)
-    @ApiOperation(value = "群管理员踢除用户", notes = "传入要删除的用户userId，群组groupId，操作人managerId")
+    @ApiOperation(value = "群管理员踢除用户(维护中。。。)", notes = "传入要删除的用户userId，群组groupId，操作人managerId")
     public R save(@Valid @RequestBody UserGroupVO userGroup) {
         try {
             Integer groupId = userGroup.getGroupId();

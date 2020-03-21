@@ -29,6 +29,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.enums.ApiErrorCode;
 import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 服务实现类
@@ -104,11 +106,13 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
                 .set(UserGroup::getStatus, UserGroup.DELETE);
         //更改群状态
         this.update(queryWrapper);
+        //获取机构标识
+        String groupIdentify = groupService.getGroupById(groupId).getGroupIdentify();
+        //删除用户拥有的所有管理员权限
+        deleteAllPermission(userId,groupIdentify);
+        groupLogService.addLog(groupId, managerId, GroupLog.MANAGER_DELETE_USER);
         //减少群人数
         motifyUserAccount(groupId, -1);
-        //删除用户拥有的所有管理员权限
-        deleteAllPermission(userId);
-        groupLogService.addLog(groupId, managerId, GroupLog.MANAGER_DELETE_USER);
         return true;
     }
 
@@ -136,16 +140,26 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         if (!userIdList.contains(userId)) {
             throw new ApiException("您未加入该机构，不能退出");
         }
+        //查询上级机构
+        Group parentGroup = groupService.getGroupById(parentGroupId);
         //查询用户加入的组织
         LambdaQueryWrapper<UserGroup> queryWrapper = Wrappers.<UserGroup>lambdaQuery().
                 eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
-        UserGroup joinUserGroup = getOne(queryWrapper);
-        if (joinUserGroup == null) {
+        List<UserGroup> joinUserGroupList = list(queryWrapper);
+        //过滤当前机构下用户加入的部门
+        List<UserGroup> joinUserGroups = joinUserGroupList.stream().filter(joinUserGroup -> {
+            Group group = groupService.getGroupById(joinUserGroup.getGroupId());
+            if (group != null && group.getGroupIdentify().equals(parentGroup.getGroupIdentify())) {
+                return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(joinUserGroups)) {
             throw new ApiException("您未加入该机构, 不能退出");
         }
-        Integer groupId = joinUserGroup.getGroupId();
+        Integer groupId = joinUserGroups.get(0).getGroupId();
         //删除所有权限
-        deleteAllPermission(userId);
+        deleteAllPermission(userId,parentGroup.getGroupIdentify());
         //更新状态为已删除
         LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
                 eq(UserGroup::getUserId, userId).
@@ -184,12 +198,29 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         }
     }
 
-    private Integer getUserGroupStatus(Integer groupId, Integer userId) {
-        UserGroup userGroup = new UserGroup();
-        userGroup.setGroupId(groupId);
-        userGroup.setUserId(userId);
-        userGroup.setStatus(UserGroup.NORMAL);
-        return getOne(Condition.getQueryWrapper(userGroup)).getStatus();
+    public void deleteAllPermission(Integer userId, String groupIdentify) {
+        //删除用户拥有的所有管理员权限
+        List<Group> userManageGroups = groupService.getUserManageGroups(userId,groupIdentify);
+        for (Group group : userManageGroups) {
+            String managers = group.getManagers();
+            ArrayList<Integer> managerList = new ArrayList<>(Func.toIntList(managers));
+            //Group表移除此管理员
+            managerList.remove(userId);
+            String newManagers = StringUtils.join(managerList, ",");
+            group.setManagers(newManagers);
+            groupService.updateById(group);
+        }
+        //删除用户拥有的所有组织数据管理员权限
+        List<Group> userDataManageGroups = groupService.getUserDataManageGroups(userId,groupIdentify);
+        for (Group group : userDataManageGroups) {
+            String dataManagers = group.getDataManagers();
+            ArrayList<Integer> dataManagerList = new ArrayList<>(Func.toIntList(dataManagers));
+            //Group表移除此管理员
+            dataManagerList.remove(userId);
+            String newDataManagers = StringUtils.join(dataManagerList, ",");
+            group.setDataManagers(newDataManagers);
+            groupService.updateById(group);
+        }
     }
 
     @Override
@@ -206,50 +237,54 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
         if (userGroup.getStatus() != null) {
             throw new ApiException("新增时不能指定用户状态");
         }
-        Integer groupType = groupService.getGroupById(groupId).getGroupType();
+        Group group = groupService.getGroupById(groupId);
+        Integer groupType = group.getGroupType();
         if (!Group.TYPE_PERSON.equals(groupType)) {
             throw new ApiException("此部门不允许用户加入");
         }
-        //用户只能加入一个群组
+        //用户只能加入一个机构
         LambdaQueryWrapper<UserGroup> userGroupQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
                 eq(UserGroup::getUserId, userId).eq(UserGroup::getStatus, UserGroup.NORMAL);
-        List<UserGroup> list = list(userGroupQueryWrapper);
-        if (!CollectionUtils.isEmpty(list)) {
-            UserGroup joinUserGroup = list.get(0);
-            Group group = groupService.getById(joinUserGroup.getGroupId());
-            if (group == null) {
+        List<UserGroup> userGroupList = list(userGroupQueryWrapper);
+        for (UserGroup joinUserGroup : userGroupList) {
+            //获取此用户要加入的机构标识
+            String groupIdentify = group.getGroupIdentify();
+            //判断用户加入的机构中，是否跟将要加入的机构标识一致
+            Group joinGroup = groupService.getGroupById(joinUserGroup.getGroupId());
+            if (joinGroup == null) {
                 throw new ApiException("数据异常，请联系管理员");
             }
-            throw new ApiException("您已经加入到了" + group.getName() + "部门");
+            if (joinGroup.getGroupIdentify().equals(groupIdentify)) {
+                //获取一级机构
+                Group firstGroup = groupService.getFirstGroup(groupIdentify);
+                throw new ApiException("您已经加入了" + firstGroup.getName() + "下的" + joinGroup.getName() + "部门");
+            }
         }
-        //检查用此群是否存在此用户,不存在则新增
-        if (!existUserGroup(groupId, userId)) {
-            //添加群组
-            UserGroup newUserGroup = new UserGroup();
-            newUserGroup.setUserId(userId);
-            newUserGroup.setGroupId(groupId);
-            newUserGroup.setStatus(UserGroup.NORMAL);
-            this.save(newUserGroup);
-            //添加日志
-            groupLogService.addLog(groupId, userId, GroupLog.NEW_USER);
-            //增加群人数
-            motifyUserAccount(groupId, 1);
-            return true;
-        }
-        Integer userGroupStatus = getUserGroupStatus(groupId, userId);
-        if (userGroupStatus.equals(UserGroup.NORMAL)) {
-            throw new ApiException("用户已加群,状态为正常");
-        } else if (userGroupStatus.equals(UserGroup.APPROVAL_PENDING)) {
-            throw new ApiException("用户已加群，状态待审核");
-        } else {
-            //更新状态为正常
-            LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
-                    eq(UserGroup::getUserId, userId).
-                    eq(UserGroup::getGroupId, groupId).
-                    set(UserGroup::getStatus, UserGroup.NORMAL);
-            this.update(userGroupLambdaQueryWrapper);
-        }
+        //添加群组
+        UserGroup newUserGroup = new UserGroup();
+        newUserGroup.setUserId(userId);
+        newUserGroup.setGroupId(groupId);
+        newUserGroup.setStatus(UserGroup.NORMAL);
+        this.save(newUserGroup);
+        //添加日志
+        groupLogService.addLog(groupId, userId, GroupLog.NEW_USER);
+        //增加群人数
+        motifyUserAccount(groupId, 1);
         return true;
+//        Integer userGroupStatus = getUserGroupStatus(groupId, userId);
+//        if (userGroupStatus.equals(UserGroup.NORMAL)) {
+//            throw new ApiException("用户已加群,状态为正常");
+//        } else if (userGroupStatus.equals(UserGroup.APPROVAL_PENDING)) {
+//            throw new ApiException("用户已加群，状态待审核");
+//        } else {
+//            //更新状态为正常
+//            LambdaUpdateWrapper<UserGroup> userGroupLambdaQueryWrapper = Wrappers.<UserGroup>lambdaUpdate().
+//                    eq(UserGroup::getUserId, userId).
+//                    eq(UserGroup::getGroupId, groupId).
+//                    set(UserGroup::getStatus, UserGroup.NORMAL);
+//            this.update(userGroupLambdaQueryWrapper);
+//        }
+//        return true;
     }
 
     @Override
@@ -262,8 +297,10 @@ public class UserGroupServiceImpl extends ServiceImpl<UserGroupMapper, UserGroup
             }
             Integer groupId = userGroup.getGroupId();
             Integer userId = userGroup.getUserId();
+            //查询机构标识码
+            String groupIdentify = groupService.getGroupById(groupId).getGroupIdentify();
             //删除用户拥有的所有管理员权限
-            deleteAllPermission(userId);
+            deleteAllPermission(userId,groupIdentify);
             //修改状态
             userGroup.setStatus(UserGroup.DELETE);
             updateById(userGroup);

@@ -107,4 +107,11 @@ public interface IUserGroupService extends IService<UserGroup> {
      * @param userId
      */
     void deleteAllPermission(Integer userId);
+
+    /**
+     * 删除指定组织下用户的所有权限
+     * @param userId
+     * @param groupIdentify
+     */
+    void deleteAllPermission(Integer userId, String groupIdentify);
 }

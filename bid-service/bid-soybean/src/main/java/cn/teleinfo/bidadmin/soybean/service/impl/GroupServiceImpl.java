@@ -698,7 +698,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             List<Integer> userIdList = selectUserIdByParentId(parentId);
             //取消改机构下所有用户管理员和数据管理员权限
             for (Integer userId : userIdList) {
-                userGroupService.deleteAllPermission(userId);
+                userGroupService.deleteAllPermission(userId,groupIdentify);
             }
             //把改机构下所有人员移动到变动人员部门
             LambdaUpdateWrapper<UserGroup> userGroupUpdateWrapper = Wrappers.<UserGroup>lambdaUpdate().
@@ -793,7 +793,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<Integer> userIdList = selectUserIdByParentId(groupId);
         //取消改机构下所有用户管理员和数据管理员权限
         for (Integer id : userIdList) {
-            userGroupService.deleteAllPermission(id);
+            userGroupService.deleteAllPermission(id,groupIdentify);
         }
         //获取机构下所有部门
         List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
@@ -1266,17 +1266,6 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         //获取用户是管理员的群
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
         List<Group> managerGroups = list(queryWrapper);
-//        managerGroups.removeIf(group -> {
-//            String managers = group.getManagers();
-//            if (Func.toIntList(managers).contains(userId)) {
-//                return false;
-//            }
-//            Integer createUser = group.getCreateUser();
-//            if (createUser != null && createUser.equals(userId)) {
-//                return false;
-//            }
-//            return true;
-//        });
         List<Group> managerList = managerGroups.stream().filter(group -> {
             String managers = group.getManagers();
             if (Func.toIntList(managers).contains(userId)) {
@@ -1288,17 +1277,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
     }
 
     @Override
+    public List<Group> getUserManageGroups(Integer userId, String groupIdentify) {
+        //获取指定机构下用户是管理员的群
+        List<Group> userManageGroups = getUserManageGroups(userId);
+        return userManageGroups.stream().filter(group -> group.getGroupIdentify().equals(groupIdentify)).collect(Collectors.toList());
+    }
+
+    @Override
     public List<Group> getUserDataManageGroups(Integer userId) {
         //获取用户是管理员的群
         LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().eq(Group::getStatus, Group.NORMAL);
         List<Group> dataManagerGroups = list(queryWrapper);
-//        dataManagerGroups.removeIf(group -> {
-//            String dataManagers = group.getDataManagers();
-//            if (Func.toIntList(dataManagers).contains(userId)) {
-//                return false;
-//            }
-//            return true;
-//        });
         List<Group> dataManagerList = dataManagerGroups.stream().filter(group -> {
             String dataManagers = group.getDataManagers();
             if (Func.toIntList(dataManagers).contains(userId)) {
@@ -1309,28 +1298,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return dataManagerList;
     }
 
-    /**
-     * 临时解决Integer为null时, 返回前台为-1的问题
-     */
-    public static void modifyObject(Object model) {
-        // TODO: 2020/2/27
-        //获取实体类的所有属性，返回Field数组
-        Field[] fields = model.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            //获取属性的类型
-            field.setAccessible(true);
-            String type = field.getGenericType().toString();
-            if (type.equals("class java.lang.Integer")) {
-                try {
-                    Object obj = field.get(model);
-                    if (obj != null && Integer.valueOf(obj.toString()).equals(-1)) {
-                        field.set(model, null);
-                    }
-                } catch (IllegalAccessException e) {
-                    throw new ApiException("-1转null失败");
-                }
-            }
-        }
+    @Override
+    public List<Group> getUserDataManageGroups(Integer userId, String groupIdentify) {
+        //获取指定机构下用户是管理员的群
+        List<Group> userDataManageGroups = getUserDataManageGroups(userId);
+        return userDataManageGroups.stream().filter(group -> group.getGroupIdentify().equals(groupIdentify)).collect(Collectors.toList());
     }
 
     public String generateGroupCode() {
