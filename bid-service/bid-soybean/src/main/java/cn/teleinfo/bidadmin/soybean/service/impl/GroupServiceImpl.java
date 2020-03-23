@@ -850,16 +850,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                 //删除中间表
                 LambdaQueryWrapper<ParentGroup> delQueryWrapper = Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getGroupId, noDeptGroup.getId());
                 parentGroupService.remove(delQueryWrapper);
-                //更改一级机构类型
-                firstGroup.setGroupType(Group.TYPE_PERSON);
-                updateById(firstGroup);
+//                //更改一级机构类型
+//                firstGroup.setGroupType(Group.TYPE_PERSON);
+//                updateById(firstGroup);
                 //计算一级机构人数
                 LambdaQueryWrapper<UserGroup> firstCountQueryWrapper = Wrappers.<UserGroup>lambdaQuery().
                         eq(UserGroup::getGroupId, firstGroup.getId()).eq(UserGroup::getStatus, Group.NORMAL);
                 int firstCount = userGroupService.count(firstCountQueryWrapper);
-                //更新人数
-                LambdaUpdateWrapper<Group> firstCountUpdateWrapper = Wrappers.<Group>lambdaUpdate().
-                        eq(Group::getId, firstGroup.getId()).set(Group::getUserAccount, firstCount);
+                //更新人数和机构状态并清空所有管理员和数据管理员
+                LambdaUpdateWrapper<Group> firstCountUpdateWrapper = Wrappers.<Group>lambdaUpdate().eq(Group::getId, firstGroup.getId()).
+                        set(Group::getUserAccount, firstCount).set(Group::getDataManagers, "").
+                        set(Group::getManagers, "").set(Group::getGroupType, Group.TYPE_PERSON);
                 update(firstCountUpdateWrapper);
             }
         }
