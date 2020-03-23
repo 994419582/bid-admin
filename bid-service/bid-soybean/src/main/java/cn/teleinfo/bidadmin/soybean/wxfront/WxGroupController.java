@@ -44,7 +44,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -771,9 +770,28 @@ public class WxGroupController extends BladeController {
         return R.status(groupService.close(groupId, creatorId));
     }
 
-    @PostMapping("/test")
-    public R test(Integer parentId, Integer checkId) {
-        return R.data(true);
+    /**
+     * 获取当前部门所在的一级机构
+     *
+     * @return
+     */
+    @GetMapping("/firstGroup")
+    @ApiOperationSupport(order = 1)
+    @ApiOperation(value = "获取当前部门所在的一级机构", notes = "获取当前部门所在的一级机构")
+    public R<Group> selectFirstGroup(@RequestParam(name = "groupId", required = true) Integer groupId) {
+        //查询当前部门
+        Group group = groupService.getGroupById(groupId);
+        if (group == null) {
+            throw new ApiException("部门不存在");
+        }
+        LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                eq(Group::getGroupCode, group.getGroupIdentify()).eq(Group::getStatus, Group.NORMAL);
+        Group firstGroup = groupService.getOne(queryWrapper);
+        if (firstGroup == null) {
+            throw new ApiException("一级机构不存在");
+        }
+        return R.data(firstGroup);
     }
+
 
 }
