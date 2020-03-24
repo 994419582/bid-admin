@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 @Data
 public class ExcelGroupVo {
@@ -27,6 +28,7 @@ public class ExcelGroupVo {
      */
     @ApiModelProperty(value = "公司地址名称", required = true)
     @NotBlank(message = "公司地址名称不能为空")
+    @Pattern(regexp = "[^，]+，[^，]+，[^，]+",message = "地址格式不正确")
     private String addressName;
 
     /**
@@ -54,7 +56,7 @@ public class ExcelGroupVo {
     @NotBlank(message = "联系电话不能为空")
     private String phone;
 
-    @ApiModelProperty(value = "Excel地址",required = false)
+    @ApiModelProperty(value = "Excel文件地址",required = false)
     private String excelFile;
 
     /**

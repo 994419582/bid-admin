@@ -294,7 +294,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         for (Group group : filterList) {
             GroupTreeVo groupTreeVo = new GroupTreeVo();
             BeanUtils.copyProperties(group, groupTreeVo);
-            groupTreeVo.setUserAccount(0);
+            if (groupTreeVo.getGroupType().equals(Group.TYPE_ORGANIZATION)) {
+                groupTreeVo.setUserAccount(0);
+            }
             //查询所有群
             List<GroupTreeVo> groupAndParentList = selectAllGroupAndParent();
             boolean isManager = Func.toIntList(group.getManagers()).contains(userId);
@@ -653,10 +655,21 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         if (superiorGroup == null) {
             throw new ApiException("上级机构不存在，请联系管理员");
         }
+        //校验机构名称是否重复
+        List<Group> juniorGroups = getJuniorGroups(parentId);
+        for (Group juniorGroup : juniorGroups) {
+            if (juniorGroup.getName().equals(group.getName())) {
+                throw new ApiException(superiorGroup.getName() + "下不可以存在多个" + group.getName());
+            }
+        }
         //获取机构标识码
         String groupIdentify = superiorGroup.getGroupIdentify();
         //获取一级部门
         Group firstGroup = getFirstGroup(groupIdentify);
+        //logo为空取一级机构logo
+        if (StringUtils.isBlank(group.getLogo())) {
+            group.setLogo(firstGroup.getLogo());
+        }
         //校验是否为一级机构创建人
         if (!firstGroup.getCreateUser().equals(createUser)) {
             throw new ApiException("您不是一级机构创建人");
@@ -872,6 +885,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         LambdaQueryWrapper<Group> topQueryWrapper = Wrappers.<Group>lambdaQuery().
                 eq(Group::getGroupCode, groupIdentify).eq(Group::getStatus, Group.NORMAL);
         return getOne(topQueryWrapper);
+    }
+
+    @Override
+    public List<Group> getJuniorGroups(Integer parentId) {
+        LambdaQueryWrapper<ParentGroup> parentGroupQueryWrapper = Wrappers.<ParentGroup>lambdaQuery().eq(ParentGroup::getParentId, parentId);
+        List<Integer> groupIdList = parentGroupService.list(parentGroupQueryWrapper).stream().map(ParentGroup::getGroupId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(groupIdList)) {
+            return new ArrayList<Group>();
+        }
+        LambdaQueryWrapper<Group> groupQueryWrapper = Wrappers.<Group>lambdaQuery().in(Group::getId, groupIdList).eq(Group::getStatus, Group.NORMAL);
+        return list(groupQueryWrapper);
     }
 
     private boolean checkParentGroupAndManager(Group group) {
@@ -1124,20 +1148,12 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     throw new ApiException("上级部门名称不能为空");
                 }
                 //去除空格
-                group.setName(group.getName().trim());
-                group.setParentName(group.getParentName().trim());
-                if (!StringUtils.isBlank(group.getAddressName())) {
-                    group.setAddressName(group.getAddressName().trim());
-                }
-                if (!StringUtils.isBlank(group.getPhone())) {
-                    group.setPhone(group.getPhone().trim());
-                }
-                if (!StringUtils.isBlank(group.getContact())) {
-                    group.setContact(group.getContact().trim());
-                }
-                if (!StringUtils.isBlank(group.getDetailAddress())) {
-                    group.setDetailAddress(group.getDetailAddress().trim());
-                }
+                group.setName(StringUtils.trim(group.getName()));
+                group.setParentName(StringUtils.trim(group.getParentName()));
+                group.setAddressName(StringUtils.trim(group.getAddressName()));
+                group.setPhone(StringUtils.trim(group.getPhone()));
+                group.setContact(StringUtils.trim(group.getContact()));
+                group.setDetailAddress(StringUtils.trim(group.getDetailAddress()));
                 //设置全称
                 group.setFullName(group.getParentName() + "_" + group.getName());
                 //设置地址
@@ -1159,6 +1175,9 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     detailAddress = topGroup.getDetailAddress();
                     group.setDetailAddress(detailAddress);
                 }
+                //如果logo为空，则logo取一级机构logo
+                String logo = group.getLogo();
+                group.setLogo(StringUtils.isBlank(logo) ? topGroup.getLogo() : logo);
                 //校验部门是否是末级组织
                 boolean lastGroup = true;
                 for (Group parentGroup : groups) {
@@ -1168,10 +1187,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
                     }
                 }
                 //设置部门类型
-                if (lastGroup) {
-                    group.setGroupType(Group.TYPE_PERSON);
-                } else {
-                    group.setGroupType(Group.TYPE_ORGANIZATION);
+                group.setGroupType(lastGroup ? Group.TYPE_PERSON : Group.TYPE_ORGANIZATION);
+                //校验每个部门的下一级部门是否名称重复
+                long count = groups.stream().filter(filterGroup -> filterGroup.getName().equals(group.getName()) && filterGroup.getParentName().equals(group.getParentName())).count();
+                if (count > 1) {
+                    throw new ApiException(group.getParentName() + "下不可以存在多个" + group.getName());
                 }
             }
             //一级组织名称不能重复

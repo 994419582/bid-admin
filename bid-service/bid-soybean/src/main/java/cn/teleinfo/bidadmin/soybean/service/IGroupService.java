@@ -245,4 +245,11 @@ public interface IGroupService extends IService<Group> {
 	 * @return
 	 */
 	Group getFirstGroup(String groupIdentify);
+
+	/**
+	 * 获取当前机构下一级的子机构
+	 * @param parentId
+	 * @return
+	 */
+	List<Group> getJuniorGroups(Integer parentId);
 }
