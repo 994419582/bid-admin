@@ -15,14 +15,8 @@
  */
 package cn.teleinfo.bidadmin.soybean.wxfront;
 
-import cn.teleinfo.bidadmin.soybean.entity.Group;
-import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
-import cn.teleinfo.bidadmin.soybean.entity.User;
-import cn.teleinfo.bidadmin.soybean.entity.UserGroup;
-import cn.teleinfo.bidadmin.soybean.service.IGroupService;
-import cn.teleinfo.bidadmin.soybean.service.IParentGroupService;
-import cn.teleinfo.bidadmin.soybean.service.IUserGroupService;
-import cn.teleinfo.bidadmin.soybean.service.IUserService;
+import cn.teleinfo.bidadmin.soybean.entity.*;
+import cn.teleinfo.bidadmin.soybean.service.*;
 import cn.teleinfo.bidadmin.soybean.vo.*;
 import cn.teleinfo.bidadmin.soybean.wrapper.GroupWrapper;
 import cn.teleinfo.bidadmin.soybean.wrapper.UserWrapper;
@@ -45,6 +39,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,6 +63,8 @@ public class WxGroupController extends BladeController {
     private IUserService userService;
 
     private IUserGroupService userGroupService;
+
+    private INoticeService noticeService;
 
     /**
      * 根据ID查看群组详情
@@ -441,6 +438,16 @@ public class WxGroupController extends BladeController {
             group.setManagers(newManagers);
             groupService.updateById(group);
         }
+        //发送通知
+        User user = userService.getById(userId);
+        Notice notice = new Notice();
+        notice.setTitle("机构转让");
+        notice.setContent("您已被"+user.getName()+"指定为"+topGroup.getName()+"的创建者");
+        notice.setCategory(Notice.CATEGORY_TRANSFER_GROUP);
+        notice.setUserId(transferId);
+        notice.setStatus(Notice.STATUS_UNREAD);
+        notice.setCreateTime(new Date());
+        noticeService.save(notice);
         return R.status(true);
     }
 
