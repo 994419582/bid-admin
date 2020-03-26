@@ -254,6 +254,10 @@ public class WxInteractionController extends BladeController {
 			return R.fail("离京时间格式不正确，请写成2020-02-02");
 		}
 
+		if (clockln.getId() != null) {
+			clockln.setId(null);
+		}
+
 		LocalDateTime now = LocalDateTime.now();
 
 		QueryWrapper<Clockln> clocklnQueryWrapper = new QueryWrapper<>();
