@@ -135,13 +135,15 @@ public class UserController extends BladeController {
         user.setBidAddress(bid);
 
         boolean flag = userService.save(user);
-        if (!StringUtil.isEmpty(user.getPhone())) {
-            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
-                    eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
-            List<Group> detail = groupService.list(queryWrapper);
-            detail.forEach(x->{
-                joinGroup(user, x);
-            });
+        if (user.getId() != null && user.getId() >0) {
+            if (!StringUtil.isEmpty(user.getPhone())) {
+                LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                        eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON).eq(Group::getStatus, 0);
+                List<Group> detail = groupService.list(queryWrapper);
+                detail.forEach(x->{
+                    joinGroup(user, x);
+                });
+            }
         }
         return R.status(flag);
     }
@@ -168,13 +170,15 @@ public class UserController extends BladeController {
         user.setBidAddress(bid);
 
         boolean flag = userService.saveOrUpdate(user);
-        if (!StringUtil.isEmpty(user.getPhone())) {
-            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
-                    eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
-            List<Group> detail = groupService.list(queryWrapper);
-            detail.forEach(x->{
-                joinGroup(user, x);
-            });
+        if (user.getId() != null && user.getId() >0) {
+            if (!StringUtil.isEmpty(user.getPhone())) {
+                LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                        eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON).eq(Group::getStatus, 0);
+                List<Group> detail = groupService.list(queryWrapper);
+                detail.forEach(x->{
+                    joinGroup(user, x);
+                });
+            }
         }
         return R.status(flag);
     }
@@ -190,10 +194,10 @@ public class UserController extends BladeController {
         String bid = Keys.createBID(uuid);
         user.setBidAddress(bid);
         boolean flag = userService.submit(user);
-        if (user.getId() == null || user.getId() <0) {
+        if (user.getId() != null && user.getId() >0) {
             if (!StringUtil.isEmpty(user.getPhone())) {
                 LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
-                        eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
+                        eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON).eq(Group::getStatus, 0);
                 List<Group> detail = groupService.list(queryWrapper);
                 detail.forEach(x->{
                     joinGroup(user, x);
