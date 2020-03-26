@@ -225,7 +225,10 @@ public class UserController extends BladeController {
             managerList.add(user.getId());
             String newManagers = StringUtils.join(managerList, ",");
             group.setManagers(newManagers);
-            return R.status(groupService.updateById(group));
+            Group newGroup = new Group();
+            newGroup.setId(group.getId());
+            newGroup.setManagers(newManagers);
+            return R.status(groupService.updateById(newGroup));
         }
         return R.status(flag);
        /* Group group = groupService.getById(companyId);
