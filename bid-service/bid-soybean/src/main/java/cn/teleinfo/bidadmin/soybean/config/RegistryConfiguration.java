@@ -41,9 +41,9 @@ public class RegistryConfiguration implements WebMvcConfigurer {
 		secureRegistry.excludePathPatterns("/wx/group/exist");
 
 		// TODO 权限暂时全部放开
-//		secureRegistry.excludePathPatterns("/wx/**");
-//		secureRegistry.excludePathPatterns("/user/**");
-//		secureRegistry.excludePathPatterns("/group/**");
+		secureRegistry.excludePathPatterns("/wx/**");
+		secureRegistry.excludePathPatterns("/user/**");
+		secureRegistry.excludePathPatterns("/group/**");
 
 		secureRegistry.excludePathPatterns("/download/**");
 		secureRegistry.excludePathPatterns("/healthQrcode/**");
