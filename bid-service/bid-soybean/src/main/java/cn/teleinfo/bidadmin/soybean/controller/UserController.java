@@ -138,10 +138,10 @@ public class UserController extends BladeController {
         if (!StringUtil.isEmpty(user.getPhone())) {
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
                     eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
-            Group detail = groupService.getOne(queryWrapper, false);
-            if (detail != null) {
-                return joinGroup(user, detail);
-            }
+            List<Group> detail = groupService.list(queryWrapper);
+            detail.forEach(x->{
+                joinGroup(user, x);
+            });
         }
         return R.status(flag);
     }
@@ -171,10 +171,10 @@ public class UserController extends BladeController {
         if (!StringUtil.isEmpty(user.getPhone())) {
             LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
                     eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
-            Group detail = groupService.getOne(queryWrapper, false);
-            if (detail != null) {
-                return joinGroup(user, detail);
-            }
+            List<Group> detail = groupService.list(queryWrapper);
+            detail.forEach(x->{
+                joinGroup(user, x);
+            });
         }
         return R.status(flag);
     }
@@ -194,10 +194,10 @@ public class UserController extends BladeController {
             if (!StringUtil.isEmpty(user.getPhone())) {
                 LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
                         eq(Group::getPhone, user.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
-                Group detail = groupService.getOne(queryWrapper, false);
-                if (detail != null) {
-                    return joinGroup(user, detail);
-                }
+                List<Group> detail = groupService.list(queryWrapper);
+                detail.forEach(x->{
+                    joinGroup(user, x);
+                });
             }
         }
         return R.status(flag);
