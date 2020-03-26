@@ -17,6 +17,9 @@ package cn.teleinfo.bidadmin.soybean.service.impl;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.poi.excel.ExcelReader;
+import cn.hutool.poi.excel.ExcelUtil;
 import cn.teleinfo.bidadmin.soybean.bo.UserBO;
 import cn.teleinfo.bidadmin.soybean.entity.Group;
 import cn.teleinfo.bidadmin.soybean.entity.ParentGroup;
@@ -50,6 +53,7 @@ import org.springframework.util.FileSystemUtils;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
@@ -711,7 +715,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             List<Integer> userIdList = selectUserIdByParentId(parentId);
             //取消改机构下所有用户管理员和数据管理员权限
             for (Integer userId : userIdList) {
-                userGroupService.deleteAllPermission(userId,groupIdentify);
+                userGroupService.deleteAllPermission(userId, groupIdentify);
             }
             //把改机构下所有人员移动到变动人员部门
             LambdaUpdateWrapper<UserGroup> userGroupUpdateWrapper = Wrappers.<UserGroup>lambdaUpdate().
@@ -806,7 +810,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         List<Integer> userIdList = selectUserIdByParentId(groupId);
         //取消改机构下所有用户管理员和数据管理员权限
         for (Integer id : userIdList) {
-            userGroupService.deleteAllPermission(id,groupIdentify);
+            userGroupService.deleteAllPermission(id, groupIdentify);
         }
         //获取机构下所有部门
         List<GroupTreeVo> groupAndParent = selectAllGroupAndParent();
@@ -1075,6 +1079,76 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
         return false;
     }
 
+    public List<Group> readGroupExcel(String excelFile) {
+        HttpURLConnection connection = null;
+        InputStream inputStream = null;
+        ArrayList<Group> groups = new ArrayList<>();
+        // 创建远程url连接对象
+        try {
+            URL url = new URL(excelFile);
+            // 通过远程url连接对象打开一个连接，强转成httpURLConnection类
+            connection = (HttpURLConnection) url.openConnection();
+            // 设置连接方式：get
+            connection.setRequestMethod("GET");
+            // 设置连接主机服务器的超时时间：15000毫秒
+            connection.setConnectTimeout(15000);
+            // 设置读取远程返回的数据时间：60000毫秒
+            connection.setReadTimeout(60000);
+            // 发送请求
+            connection.connect();
+            // 通过connection连接，获取输入流
+            if (connection.getResponseCode() == 200) {
+                inputStream = connection.getInputStream();
+            } else {
+                throw new ApiException("获取文件异常");
+            }
+            ExcelReader reader = ExcelUtil.getReader(inputStream);
+            List<List<Object>> groupList = reader.read(17);
+            for (List<Object> groupRow : groupList) {
+                Group group = new Group();
+                group.setParentName(groupRow.get(0).toString());
+                group.setName(groupRow.get(1).toString());
+                String parentName = group.getParentName();
+                String name = group.getName();
+                if (!StringUtils.isBlank(parentName) && StringUtils.isBlank(name))
+                    throw new ApiException("请补全" + parentName + "的下级机构");
+                if (!StringUtils.isBlank(name) && StringUtils.isBlank(parentName))
+                    throw new ApiException("请补全" + name + "的上级机构");
+                group.setContact(groupRow.get(2).toString());
+                group.setPhone(groupRow.get(3).toString());
+                String province = groupRow.get(4).toString();
+                String city = groupRow.get(5).toString();
+                String district = groupRow.get(6).toString();
+                Integer flag = 0;
+                if (!StringUtils.isBlank(province))
+                    flag++;
+                if (!StringUtils.isBlank(city))
+                    flag++;
+                if (!StringUtils.isBlank(district))
+                    flag++;
+                if (flag > 0 && flag < 3)
+                    throw new ApiException("请补全" + name + "机构所在省份、城市、区");
+                group.setAddressName(flag.equals(3) ? province + "，" + city + "，" + district : "");
+                group.setDetailAddress(groupRow.get(7).toString());
+                groups.add(group);
+            }
+            return groups;
+        } catch (IOException e) {
+            throw new ApiException("文件读取失败");
+        } finally {
+            // 关闭资源
+            if (null != inputStream) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    throw new ApiException("断开与Excel资源连接异常");
+                }
+            }
+            // 断开与远程地址url的连接
+            connection.disconnect();
+        }
+    }
+
     @Override
     @Transactional
     public String excelImport(Group topGroup, String excelFile) {
@@ -1106,178 +1180,129 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, Group> implements
             parentGroupService.save(topParentGroup);
             return topCode;
         }
-        String fullName = "";
-        HttpURLConnection connection = null;
-        InputStream inputStream = null;
-        try {
-            // 创建远程url连接对象
-            URL url = new URL(excelFile);
-            // 通过远程url连接对象打开一个连接，强转成httpURLConnection类
-            connection = (HttpURLConnection) url.openConnection();
-            // 设置连接方式：get
-            connection.setRequestMethod("GET");
-            // 设置连接主机服务器的超时时间：15000毫秒
-            connection.setConnectTimeout(15000);
-            // 设置读取远程返回的数据时间：60000毫秒
-            connection.setReadTimeout(60000);
-            // 发送请求
-            connection.connect();
-            // 通过connection连接，获取输入流
-            if (connection.getResponseCode() == 200) {
-                inputStream = connection.getInputStream();
-            } else {
-                throw new ApiException("获取文件异常");
+        List<Group> metaGroups = readGroupExcel(excelFile);
+        //过滤空数据
+        List<Group> groups = metaGroups.stream().filter(group -> {
+            if (!StringUtils.isBlank(group.getName()) && !StringUtils.isBlank(group.getParentName())) {
+                return true;
             }
-            List<Group> metaGroups = ExcelUtils.importExcel(inputStream, 0, 1, false, Group.class);
-            //过滤空数据
-            List<Group> groups = metaGroups.stream().filter(group -> {
-                if (!StringUtils.isBlank(group.getName()) && !StringUtils.isBlank(group.getParentName())) {
-                    return true;
+            return false;
+        }).collect(Collectors.toList());
+        //模板校验
+        if (CollectionUtils.isEmpty(groups)) {
+            throw new ApiException("模板格式错误，或者数据为空");
+        }
+        for (Group group : groups) {
+            //去除空格
+            group.setName(StringUtils.trim(group.getName()));
+            group.setParentName(StringUtils.trim(group.getParentName()));
+            group.setAddressName(StringUtils.trim(group.getAddressName()));
+            group.setPhone(StringUtils.trim(group.getPhone()));
+            group.setContact(StringUtils.trim(group.getContact()));
+            group.setDetailAddress(StringUtils.trim(group.getDetailAddress()));
+            //设置全称
+            group.setFullName(group.getParentName() + "_" + group.getName());
+            //设置地址
+            String addressName = group.getAddressName();
+            if (StringUtils.isBlank(addressName)) {
+                addressName = topGroup.getAddressName();
+                group.setAddressName(addressName);
+            }
+            //校验地址格式
+            if (!StringUtils.isBlank(addressName)) {
+                String[] split = addressName.split("，");
+                if (split.length != 3) {
+                    throw new ApiException("单位地址格式错误");
                 }
-                return false;
-            }).collect(Collectors.toList());
-            //模板校验
-            if (CollectionUtils.isEmpty(groups)) {
-                throw new ApiException("模板格式错误，或者数据为空");
             }
-            for (Group group : groups) {
-                if (StringUtils.isBlank(group.getName())) {
+            //表格中详细地址为空时，地址取一级机构详细地址
+            String detailAddress = group.getDetailAddress();
+            if (StringUtils.isBlank(detailAddress)) {
+                detailAddress = topGroup.getDetailAddress();
+                group.setDetailAddress(detailAddress);
+            }
+            //如果logo为空，则logo取一级机构logo
+            String logo = group.getLogo();
+            group.setLogo(StringUtils.isBlank(logo) ? topGroup.getLogo() : logo);
+            //校验部门是否是末级组织
+            boolean lastGroup = true;
+            for (Group parentGroup : groups) {
+                if (parentGroup.getParentName().equals(group.getName())) {
+                    lastGroup = false;
+                    break;
+                }
+            }
+            //设置部门类型
+            group.setGroupType(lastGroup ? Group.TYPE_PERSON : Group.TYPE_ORGANIZATION);
+            //校验每个部门的下一级部门是否名称重复
+            long count = groups.stream().filter(filterGroup -> filterGroup.getName().equals(group.getName()) && filterGroup.getParentName().equals(group.getParentName())).count();
+            if (count > 1) {
+                throw new ApiException(group.getParentName() + "下不可以存在多个" + group.getName());
+            }
+        }
+        //一级组织名称不能重复
+        LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
+                eq(Group::getName, topGroup.getName()).eq(Group::getStatus, Group.NORMAL);
+        if (count(groupLambdaQueryWrapper) > 0) {
+            throw new ApiException("一级部门名称不能重名");
+        }
+        //查询一级组织父组织名称
+        String topParentName = getGroupById(Group.TOP_PARENT_ID).getName();
+        //创建一级组织
+        topGroup.setStatus(Group.NORMAL);
+        topGroup.setFullName(topParentName + "_" + topGroup.getName());
+        topGroup.setGroupType(Group.TYPE_ORGANIZATION);
+        topGroup.setGroupCode(topCode);
+        topGroup.setGroupIdentify(groupIdentify);
+        save(topGroup);
+        //维护一级组织中间表
+        ParentGroup topParentGroup = new ParentGroup();
+        topParentGroup.setGroupId(topGroup.getId());
+        topParentGroup.setParentId(Group.TOP_PARENT_ID);
+        parentGroupService.save(topParentGroup);
+        //保存所有子群
+        for (Group group : groups) {
+            group.setCreateUser(topGroup.getCreateUser());
+            group.setStatus(Group.NORMAL);
+            //校验管理员电话是否重复
+            LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
+                    eq(Group::getPhone, group.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
+            int count = count(queryWrapper);
+            if (count != 0) {
+                group.setContact(null);
+                group.setPhone(null);
+            }
+            group.setGroupCode(generateGroupCode());
+            group.setGroupIdentify(groupIdentify);
+            save(group);
+        }
+        //组装一个包含一级组织的群组
+        ArrayList<Group> allGroups = new ArrayList<>();
+        allGroups.add(topGroup);
+        allGroups.addAll(groups);
+        //维护子群组中间表
+        for (Group group : groups) {
+            ParentGroup parentGroup = new ParentGroup();
+            parentGroup.setGroupId(group.getId());
+            //查询父Id
+            List<Group> groupList = allGroups.stream().filter(filterGroup -> {
+                String name = filterGroup.getName();
+                if (name == null) {
                     throw new ApiException("部门名称不能为空");
+                } else {
+                    return name.equals(group.getParentName());
                 }
-                if (StringUtils.isBlank(group.getParentName())) {
-                    throw new ApiException("上级部门名称不能为空");
-                }
-                //去除空格
-                group.setName(StringUtils.trim(group.getName()));
-                group.setParentName(StringUtils.trim(group.getParentName()));
-                group.setAddressName(StringUtils.trim(group.getAddressName()));
-                group.setPhone(StringUtils.trim(group.getPhone()));
-                group.setContact(StringUtils.trim(group.getContact()));
-                group.setDetailAddress(StringUtils.trim(group.getDetailAddress()));
-                //设置全称
-                group.setFullName(group.getParentName() + "_" + group.getName());
-                //设置地址
-                String addressName = group.getAddressName();
-                if (StringUtils.isBlank(addressName)) {
-                    addressName = topGroup.getAddressName();
-                    group.setAddressName(addressName);
-                }
-                //校验地址格式
-                if (!StringUtils.isBlank(addressName)) {
-                    String[] split = addressName.split("，");
-                    if (split.length != 3) {
-                        throw new ApiException("单位地址格式错误");
-                    }
-                }
-                //表格中详细地址为空时，地址取一级机构详细地址
-                String detailAddress = group.getDetailAddress();
-                if (StringUtils.isBlank(detailAddress)) {
-                    detailAddress = topGroup.getDetailAddress();
-                    group.setDetailAddress(detailAddress);
-                }
-                //如果logo为空，则logo取一级机构logo
-                String logo = group.getLogo();
-                group.setLogo(StringUtils.isBlank(logo) ? topGroup.getLogo() : logo);
-                //校验部门是否是末级组织
-                boolean lastGroup = true;
-                for (Group parentGroup : groups) {
-                    if (parentGroup.getParentName().equals(group.getName())) {
-                        lastGroup = false;
-                        break;
-                    }
-                }
-                //设置部门类型
-                group.setGroupType(lastGroup ? Group.TYPE_PERSON : Group.TYPE_ORGANIZATION);
-                //校验每个部门的下一级部门是否名称重复
-                long count = groups.stream().filter(filterGroup -> filterGroup.getName().equals(group.getName()) && filterGroup.getParentName().equals(group.getParentName())).count();
-                if (count > 1) {
-                    throw new ApiException(group.getParentName() + "下不可以存在多个" + group.getName());
-                }
+            }).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(groupList)) {
+                throw new ApiException("未发现" + group.getName() + "的上级部门");
             }
-            //一级组织名称不能重复
-            LambdaQueryWrapper<Group> groupLambdaQueryWrapper = Wrappers.<Group>lambdaQuery().
-                    eq(Group::getName, topGroup.getName()).eq(Group::getStatus, Group.NORMAL);
-            if (count(groupLambdaQueryWrapper) > 0) {
-                throw new ApiException("一级部门名称不能重名");
+            if (groupList.size() > 1) {
+                throw new ApiException("一个部门只能有一个上级部门");
             }
-            //查询一级组织父组织名称
-            String topParentName = getGroupById(Group.TOP_PARENT_ID).getName();
-            //创建一级组织
-            topGroup.setStatus(Group.NORMAL);
-            topGroup.setFullName(topParentName + "_" + topGroup.getName());
-            topGroup.setGroupType(Group.TYPE_ORGANIZATION);
-            topGroup.setGroupCode(topCode);
-            topGroup.setGroupIdentify(groupIdentify);
-            save(topGroup);
-            //维护一级组织中间表
-            ParentGroup topParentGroup = new ParentGroup();
-            topParentGroup.setGroupId(topGroup.getId());
-            topParentGroup.setParentId(Group.TOP_PARENT_ID);
-            parentGroupService.save(topParentGroup);
-            //保存所有子群
-            for (Group group : groups) {
-                group.setCreateUser(topGroup.getCreateUser());
-                group.setStatus(Group.NORMAL);
-                //校验管理员电话是否重复
-                LambdaQueryWrapper<Group> queryWrapper = Wrappers.<Group>lambdaQuery().
-                        eq(Group::getPhone, group.getPhone()).eq(Group::getGroupType, Group.TYPE_PERSON);
-                int count = count(queryWrapper);
-                if (count != 0) {
-                    group.setContact(null);
-                    group.setPhone(null);
-                }
-                group.setGroupCode(generateGroupCode());
-                group.setGroupIdentify(groupIdentify);
-                fullName = group.getFullName();
-                save(group);
-            }
-            //组装一个包含一级组织的群组
-            ArrayList<Group> allGroups = new ArrayList<>();
-            allGroups.add(topGroup);
-            allGroups.addAll(groups);
-            //维护子群组中间表
-            for (Group group : groups) {
-                ParentGroup parentGroup = new ParentGroup();
-                parentGroup.setGroupId(group.getId());
-                //查询父Id
-                List<Group> groupList = allGroups.stream().filter(filterGroup -> {
-                    String name = filterGroup.getName();
-                    if (name == null) {
-                        throw new ApiException("部门名称不能为空");
-                    } else {
-                        return name.equals(group.getParentName());
-                    }
-                }).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(groupList)) {
-                    throw new ApiException("未发现" + group.getName() + "的上级部门");
-                }
-                if (groupList.size() > 1) {
-                    throw new ApiException("一个部门只能有一个上级部门");
-                }
-                //设置父ID
-                parentGroup.setParentId(groupList.get(0).getId());
-                //保存中间表
-                parentGroupService.save(parentGroup);
-            }
-        } catch (DuplicateKeyException e) {
-            throw new ApiException("部门全称" + fullName + "已存在");
-        } catch (ProtocolException e) {
-            throw new ApiException("读取文件异常");
-        } catch (MalformedURLException e) {
-            throw new ApiException("文件读取失败");
-        } catch (IOException e) {
-            throw new ApiException("文件读取失败");
-        } finally {
-            // 关闭资源
-            if (null != inputStream) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    throw new ApiException("断开与Excel资源连接异常");
-                }
-            }
-            // 断开与远程地址url的连接
-            connection.disconnect();
+            //设置父ID
+            parentGroup.setParentId(groupList.get(0).getId());
+            //保存中间表
+            parentGroupService.save(parentGroup);
         }
         return topCode;
     }
