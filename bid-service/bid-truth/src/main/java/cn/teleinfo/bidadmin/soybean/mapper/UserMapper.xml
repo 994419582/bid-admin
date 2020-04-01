@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.soybean.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="userResultMap" type="cn.teleinfo.bidadmin.soybean.entity.User">
+        <id column="id" property="id"/>
+        <result column="wechat_id" property="wechatId"/>
+        <result column="nickname" property="nickName"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="id_type" property="idType"/>
+        <result column="id_number" property="idNumber"/>
+        <result column="remarks" property="remarks"/>
+        <result column="gender" property="gender"/>
+        <result column="country" property="country"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="home_id" property="homeId"/>
+        <result column="home_address" property="homeAddress"/>
+        <result column="detail_address" property="detailAddress"/>
+    </resultMap>
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="userVOResultMap" type="cn.teleinfo.bidadmin.soybean.vo.UserVO">
+        <id column="id" property="id"/>
+        <result column="wechat_id" property="wechatId"/>
+        <result column="nickname" property="nickName"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="id_type" property="idType"/>
+        <result column="id_number" property="idNumber"/>
+        <result column="remarks" property="remarks"/>
+        <result column="gender" property="gender"/>
+        <result column="country" property="country"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="home_id" property="homeId"/>
+        <result column="home_address" property="homeAddress"/>
+        <result column="detail_address" property="detailAddress"/>
+    </resultMap>
+
+    <select id="selectUserPage" resultMap="userResultMap">
+        select * from soybean_user where is_deleted = 0
+    </select>
+
+    <select id="selectUserVOPage" resultMap="userResultMap">
+        SELECT
+			u.*
+		FROM
+			soybean_user u
+		JOIN soybean_user_group g ON u.id = g.user_id
+		WHERE
+         g.status=0
+        <if test=" param2 !=null">
+            AND  g.group_id= #{ param2 }
+        </if>
+
+		  </select>
+
+</mapper>

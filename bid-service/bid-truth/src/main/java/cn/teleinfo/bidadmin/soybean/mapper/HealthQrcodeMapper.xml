@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.soybean.mapper.HealthQrcodeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="healthQrcodeResultMap" type="cn.teleinfo.bidadmin.soybean.entity.HealthQrcode">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="user_id" property="userId"/>
+        <result column="is_leave" property="isLeave"/>
+        <result column="return_date" property="recordDate"/>
+        <result column="current_address" property="currentAddress"/>
+        <result column="is_touch_case" property="isTouchCase"/>
+        <result column="current_health" property="currentHealth"/>
+        <result column="code_img_url" property="codeImgUrl"/>
+        <result column="record_date" property="recordDate"/>
+        <result column="color" property="color"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="healthQrcodeResultVOMap" type="cn.teleinfo.bidadmin.soybean.vo.HealthQrcodeVO">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="user_id" property="userId"/>
+        <result column="is_leave" property="isLeave"/>
+        <result column="return_date" property="recordDate"/>
+        <result column="current_address" property="currentAddress"/>
+        <result column="is_touch_case" property="isTouchCase"/>
+        <result column="current_health" property="currentHealth"/>
+        <result column="code_img_url" property="codeImgUrl"/>
+        <result column="record_date" property="recordDate"/>
+        <result column="color" property="color"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <select id="findTopByUserIdAndRecordDateBeforeOrderByRecordDateDesc" resultMap="healthQrcodeResultMap">
+        select * from soybean_health_qrcode where
+        user_id = #{param1}
+        and TO_DAYS(#{param2}) >= TO_DAYS(record_date)
+        order by record_date desc
+        limit 1
+    </select>
+</mapper>

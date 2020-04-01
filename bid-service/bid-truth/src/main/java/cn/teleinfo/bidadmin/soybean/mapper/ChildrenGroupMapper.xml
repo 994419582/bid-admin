@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.soybean.mapper.ChildrenGroupMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="childrenGroupResultMap" type="cn.teleinfo.bidadmin.soybean.entity.ChildrenGroup">
+        <id column="id" property="id"/>
+        <result column="status" property="status"/>
+        <result column="child_id" property="childId"/>
+        <result column="group_id" property="groupId"/>
+    </resultMap>
+
+
+    <select id="selectChildrenGroupPage" resultMap="childrenGroupResultMap">
+        select * from soybean_children_group where is_deleted = 0
+    </select>
+
+</mapper>

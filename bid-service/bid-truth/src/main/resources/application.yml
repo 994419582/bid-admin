@@ -1,0 +1,34 @@
+#服务器端口
+server:
+  port: 8116
+
+
+wx:
+  miniapp:
+    configs:
+      - appid: wx9f50de1f1b6b94c6
+        secret: b00d3a0dac225c6fe40e5060572180f6
+        msgDataFormat: JSON
+      - appid: wxd69df881f0c947dc
+        secret: 1b13f6d4d5bae3a536291457497584eb
+        msgDataFormat: JSON
+      - appid: wx5236affef117da53
+        secret: 515a54fb09b7b2f55166089ebab28b7c
+        msgDataFormat: JSON
+
+
+#数据源配置
+spring:
+  datasource:
+    url: ${blade.datasource.dev.url}
+    username: ${blade.datasource.dev.username}
+    password: ${blade.datasource.dev.password}
+
+swagger:
+  title: bid-soybean 接口文档系统
+  description: bid-soybean 接口文档系统
+  version: 2.4.0
+  base-packages: cn.teleinfo.bidadmin
+  contact:
+    name: shiweijun
+    email: shiweijun@teleinfo.cn

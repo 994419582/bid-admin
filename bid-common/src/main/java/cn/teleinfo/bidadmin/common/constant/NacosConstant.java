@@ -25,8 +25,8 @@ public interface NacosConstant {
     /**
      * nacos 地址
      */
-    String NACOS_ADDR = "127.0.0.1:8848";   // 本地环境
-//    String NACOS_ADDR = "172.17.3.40:8888";   //  生产环境
+//    String NACOS_ADDR = "127.0.0.1:8848";   // 本地环境
+    String NACOS_ADDR = "172.17.3.40:8888";   //  生产环境
 //    String NACOS_ADDR = "39.100.208.235:8848";  //    测试环境
 
     /**

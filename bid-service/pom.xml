@@ -17,6 +17,7 @@
     <description>bid 微服务集合</description>
 
     <modules>
+        <module>bid-truth</module>
         <module>bid-soybean</module>
         <module>bid-desk</module>
         <module>bid-log</module>

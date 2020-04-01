@@ -40,6 +40,7 @@ public interface AppConstant {
      * 模块名称
      */
     String APPLICATION_SOYBEAN_NAME = APPLICATION_NAME_PREFIX + "soybean";
+    String APPLICATION_TRUTH_NAME = APPLICATION_NAME_PREFIX + "truth";
 
     /**
      * 定时器模块名称

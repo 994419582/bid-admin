@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.soybean.mapper.ClocklnMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="clocklnResultMap" type="cn.teleinfo.bidadmin.soybean.entity.Clockln">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="user_id" property="userId"/>
+        <result column="address" property="address"/>
+        <result column="healthy" property="healthy"/>
+        <result column="hospital" property="hospital"/>
+        <result column="wuhan" property="wuhan"/>
+        <result column="comfirmed" property="comfirmed"/>
+        <result column="gobacktime" property="gobacktime"/>
+        <result column="remarks" property="remarks"/>
+        <result column="quarantine" property="quarantine"/>
+        <result column="reason" property="reason"/>
+    </resultMap>
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="clocklnResultVOMap" type="cn.teleinfo.bidadmin.soybean.vo.ClocklnVO">
+        <id column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="user_id" property="userId"/>
+        <result column="address" property="address"/>
+        <result column="healthy" property="healthy"/>
+        <result column="hospital" property="hospital"/>
+        <result column="wuhan" property="wuhan"/>
+        <result column="gobacktime" property="gobacktime"/>
+        <result column="remarks" property="remarks"/>
+        <result column="comfirmed" property="comfirmed"/>
+        <result column="quarantine" property="quarantine"/>
+        <result column="reason" property="reason"/>
+        <result column="name" property="userName"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="phone" property="phone"/>
+        <result column="jobstatus" property="jobstatus"/>
+    </resultMap>
+
+
+    <select id="selectClocklnPage" resultMap="clocklnResultMap">
+        select * from soybean_clockln where 1=1
+    </select>
+
+
+    <select id="selectClocklnByUserID" resultType="cn.teleinfo.bidadmin.soybean.entity.Clockln">
+        select *
+        FROM
+        soybean_clockln t
+        where 1=1
+        <if test="param1 !=null">
+            AND  t.user_id=#{param1}
+        </if>
+
+        <if test="param2 !=null">
+            AND TO_DAYS(t.create_time) =TO_DAYS(#{param2})
+        </if>
+    </select>
+
+    <select id="selectClocklnByGroup" resultMap="clocklnResultMap">
+        select t.*
+        FROM
+        soybean_clockln t
+        where 1=1
+        <if test="param1 !=null">
+            and t.user_id in
+            <foreach collection="param1" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+
+        <if test="param2 !=null">
+            AND TO_DAYS(t.create_time) =TO_DAYS(#{param2})
+        </if>
+        ORDER BY t.create_time DESC
+    </select>
+
+    <select id="selectClocklnPageByGroup" resultMap="clocklnResultVOMap">
+        select t.* ,u.name,u.avatar_url,u.phone
+        FROM
+        soybean_clockln t
+        LEFT JOIN soybean_user u ON t.user_id = u.id
+        where 1=1
+        <if test="ids !=null">
+            and t.user_id in
+            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test="clockInTime !=null">
+            AND TO_DAYS(t.create_time) = TO_DAYS(#{clockInTime})
+        </if>
+
+        <choose>
+            <when test="healthy !=null and healthy==1">
+               AND t.healthy=1
+            </when>
+            <when test="healthy !=null and healthy==2">
+                AND t.healthy=2
+            </when>
+            <when test="healthy !=null and healthy==0">
+               AND t.healthy=0
+            </when>
+        </choose>
+
+        <choose>
+            <when test="region !=null and region==1">
+                and t.city LIKE '%武汉%'
+            </when>
+            <when test="region !=null and region==2">
+                and t.city LIKE '%湖北%' AND t.city not like '%武汉%'
+            </when>
+            <when test="region !=null and region==3">
+                <if test="city !=null and city !=''">
+                  and ( #{city}  LIKE CONCAT('%',t.city,'%') and (t.city !='' and t.city is NOT NULL) )
+                </if>
+            </when>
+            <when test="region !=null and region==4">
+                and( (t.city NOT LIKE '%湖北%'
+                <if test="city !=null and city !=''">and t.city NOT LIKE CONCAT( '%',#{city},'%')
+                </if>
+                ) OR t.city is null)
+            </when>
+        </choose>
+
+        <choose>
+            <when test="hospitalization !=null and hospitalization==1">
+                and t.comfirmed =2
+            </when>
+            <when test="hospitalization !=null and hospitalization==2">
+                and t.comfirmed != 2 and (t.leave =2 OR t.leave_city =2)
+            </when>
+            <when test="hospitalization !=null and hospitalization==3">
+                and t.comfirmed != 2 and  t.leave !=2 AND t.leave_city !=2
+            </when>
+        </choose>
+
+        <choose>
+            <when test="jobstatus !=null and jobstatus==1">
+                AND t.jobstatus=1
+            </when>
+            <when test="jobstatus !=null and jobstatus==2">
+                AND t.jobstatus=2
+            </when>
+            <when test="jobstatus !=null and jobstatus==3">
+                AND t.jobstatus=3
+            </when>
+            <when test="jobstatus !=null and jobstatus==4">
+                AND t.jobstatus=4
+            </when>
+            <when test="jobstatus !=null and jobstatus==5">
+                AND t.jobstatus=5
+            </when>
+        </choose>
+
+        ORDER BY t.comfirmed ,t.create_time  DESC
+    </select>
+
+    <select id="findByUserIdInAndCreatetimeBetween" resultMap="clocklnResultVOMap">
+        select * from soybean_clockln where
+        1=1
+        <if test="ids !=null">
+            and user_id in
+            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test="from !=null">
+            <![CDATA[ AND create_time >= #{from} ]]>
+            <if test="to !=null">
+                <![CDATA[ AND create_time <= #{to} ]]>
+            </if>
+        </if>
+    </select>
+    <select id="findByUserIdInAndCreateTime" resultMap="clocklnResultVOMap">
+        select * from soybean_clockln where
+        1=1
+        <if test="ids !=null">
+            and user_id in
+            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+
+        <if test="clockInTime !=null">
+            AND TO_DAYS(t.create_time) =TO_DAYS(#{clockInTime})
+        </if>
+    </select>
+
+    <select id="selectTopByUserIdOrderByCreateTimeDesc"
+            resultType="cn.teleinfo.bidadmin.soybean.entity.Clockln">
+        select * from soybean_clockln where
+        user_id = #{param1}
+        order by create_time desc
+        limit 1
+    </select>
+
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.teleinfo.bidadmin.soybean.mapper.MessageMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="messageResultMap" type="cn.teleinfo.bidadmin.soybean.entity.Message">
+        <id column="id" property="id"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="msg_type" property="msgType"/>
+        <result column="message" property="message"/>
+        <result column="title" property="title"/>
+        <result column="sender" property="sender"/>
+        <result column="remarks" property="remarks"/>
+        <result column="answer" property="answer"/>
+    </resultMap>
+
+
+    <select id="selectMessagePage" resultMap="messageResultMap">
+        select * from soybean_message where is_deleted = 0
+    </select>
+
+</mapper>
